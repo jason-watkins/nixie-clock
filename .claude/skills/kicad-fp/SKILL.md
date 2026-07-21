@@ -39,6 +39,7 @@ upstream libraries outside the repo).
 | `drc` | Run KiCad DRC (including unconnected items and schematic parity), print all violations |
 | `netlen [PAT...]` | Per-net routed copper length (segments + true arc lengths), widths, layers, item count; optional net-name regex filters, sorted longest-first |
 | `vias [PAT...] [--bbox X1 Y1 X2 Y2]` | List vias with position, size/drill, net name, and free-via flag; filter by net regex and/or region |
+| `tracks [PAT...] [--bbox X1 Y1 X2 Y2] [--layer L]` | List individual track segments/arcs: layer, endpoints, width, length, net — for congestion and plane-cut analysis |
 | `zones` | List all zones: net, layer, priority, polygon bbox, keepout rule flags, teardrop names |
 
 ## Typical workflows

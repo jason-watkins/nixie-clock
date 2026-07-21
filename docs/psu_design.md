@@ -201,12 +201,156 @@ DA2032 datasheet application figure when drawing.
 | C_SS | 47 nF | ≈4.7 ms ramp |
 | R_COMP / C_COMP / C_HF | 10 kΩ / 100 nF / 220 pF | starting values, bench-verify |
 
+## 13. USB-C PD front end — CYPD3176 (EZ-PD BCR-PLUS)
+
+Style ruling for this whole section: **modern SMD, no retro-styling** — USB-C
+is anachronistic on this board by definition, so it is built to current
+industry practice. Hand-solder floor: 0805 passives (prefer 1206 for anything
+with a job), no 0402/0603.
+
+- **Connector: JAE DX07S016JA1R1500** (16-pin USB-C receptacle; stock
+  footprint `Connector_USB:USB_C_Receptacle_JAE_DX07S016JA1R1500`, symbol
+  `Connector:USB_C_Receptacle_USB2.0_16P`). D+/D− wired to the BCR for legacy
+  fast-charge protocols. Buy 3 (practice/spare).
+- **Controller: CYPD3176** (`nixie_clock:CYPD3176` symbol, vendored QFN-24
+  footprint with fixed 3D model). Resistor-configured, no firmware.
+- **Negotiation window: 9–12 V** — VBUS_MIN = 9 V, VBUS_MAX = 12 V; BCR takes
+  the highest offer in-window (12 V when available, 9 V fallback — matches the
+  flyback's 8.5–13 V design envelope exactly). 12 V is the PD-optional rung;
+  9 V is effectively universal, so every ≥15 W adapter works.
+- **Config straps** (Table 2/3/4, dividers from VDDD 3.3 V, 1206 1 %).
+  All divider tops tie to the **VDDD pin (23)** — the figures' "VDDIO" label
+  means this pin. It must NOT be the AP63203 rail: (a) straps are read
+  ratiometrically against VDDD, so sourcing from VDDD cancels its tolerance;
+  (b) fatal sequencing — the 3.3 V buck is downstream of the load switch,
+  which closes only after the contract the straps configure. VDDD is alive
+  from raw 5 V VBUS during negotiation.
+  | Pin | Setting | Pull-up | Pull-down |
+  |---|---|---|---|
+  | VBUS_MIN | 9 V | 5.1 kΩ | 1 kΩ |
+  | VBUS_MAX | 12 V | 5.1 kΩ | 2.4 kΩ |
+  | ISNK_COARSE | 1 A | 5.1 kΩ | 1 kΩ |
+  | ISNK_FINE | +0 mA | open | 0 Ω (strap to GND) |
+  | CHARGING_MODE | float | — | — (enables all legacy protocols) |
+  | DATAMODE/FLIP | no-data app | 1 kΩ to VDDD | — |
+- **Load switch: populated** (modern practice; slew-limited gate driver =
+  inrush control into the 100 µF bank; fast disconnect on OVP/UVP).
+  Back-to-back PFET pair on VBUS_CTRL per Fig. 4 (series gate R + 49.9 kΩ
+  G-S R; sources tied at mid-node, gates common, body diodes opposed).
+  Criteria: dual PMOS SO-8, **V_DS −30 V required** (SMAJ15A clamps at
+  24.4 V across the off pair — 20 V parts sit inside the clamp window),
+  **V_GS abs max ±20 V** (Table 20: gate driver pulls gate to ground with
+  source at VBUS → V_GS up to −12.6 V; excludes ±8/±12 V parts; logic-level
+  threshold NOT required — full-rail drive), R_DS(on) ≤ 100 mΩ @ −4.5 V
+  (two in series ≤ 0.1 V @ 0.5 A). Gate charge/speed irrelevant (µA
+  slew-controlled drive is the inrush-control feature).
+  **SAFE_PWR branch: unpopulated** (exists to power
+  notification logic we don't have); SAFE_PWR_EN unconnected.
+- **CSP: tied directly to VSS — shunt omitted, sink OCP disabled by design.**
+  The reference's 5 mΩ sits in the ground return (the only reason its
+  TYPE-C_GND/SYSTEM_GND split exists), and OCP recovery requires an I2C host
+  command we have no host to send — a tripped OCP would latch the board dark
+  until power-cycle. Protection is redundant anyway: fixed characterized load,
+  adapter OCP, BCR OVP/UVP (via VBUS_IN_DIS, unaffected), flyback
+  cycle-by-cycle limit. Single unified GND net preserved.
+- **Protection:** SMAJ15A unidirectional TVS across VBUS at the connector
+  (15 V standoff > 13 V max rail; clamp ~24 V < 45 V BIAS / 25 V cap limits);
+  **4 × ST ESDA051 (SOD-323, 5 V standoff, uni, 12.8 V clamp)** — one each on
+  CC1, CC2, D+, D−. Hot-plug is this board's normal operating procedure.
+  USBLC6-2SC6 was **rejected**: its pin-5 "VBUS" rail carries an internal
+  6 V zener (DS4260 §1 V_BR row) — fatal on a 9–12 V PD rail — and no rail
+  on this board satisfies it (+5 V is dead during the D± handshake and would
+  load it via the steering diodes; VDDD sits at zero margin vs its clamp).
+  CC-line scope note: 5 V-standoff parts cover ESD only; VBUS-to-CC cable
+  faults are handled on-chip (22 V-rated CC pins + built-in short protection).
+- **Bypass** (X7R 0805): VDDD 1 µF + 2×100 nF, VCCD 1 µF, VBUS_IN_DIS
+  3.3 µF + 1 µF (≥25 V on VBUS-side caps).
+- **Indicator: single FAULT LED** — red 1206 + 220 Ω from FAULT pin
+  (sized at the GPIO's guaranteed 4 mA / V_OH = VDDD−0.6 V spec point with
+  ~150 Ω pin impedance included; worst-case shorted-LED current 9 mA vs
+  25 mA pin abs-max — inherently safe). Red is electrically mandatory:
+  only ~2.7 V guaranteed drive. FAULT → 220 Ω → anode; cathode → GND
+  (drives high on: no contract, no in-window voltage, insufficient current,
+  VBUS out of limits, sink OCP). Deliberately *bright*: it only lights in
+  alarm states. Silk `PD FAULT`. No "PD OK" pilot — the tubes are the pilot
+  light. HPI_INT/SDA/SCL unconnected (no SOC).
+- **D+/D−: wired, not NC** — they carry the legacy fast-charge handshake
+  (the reason the 3176 was chosen over the 3177). Common the connector's
+  duplicate pairs (A6+B6, A7+B7) at the receptacle, route to pins 5/6.
+  Not USB data — quasi-static signaling, no diff-pair discipline.
+- **DC_OUT_DIS** wires to the switched (output) side of the FET pair — the
+  chip's output-voltage monitor.
+
+### 13.1 Front-end BOM summary
+
+| Item | Package | Role | Status |
+|---|---|---|---|
+| JAE DX07S016JA1R1500 | USB-C 16P | connector (buy 3) | PN final |
+| CYPD3176-24LQXQ | QFN-24 | PD sink controller | PN final |
+| SMAJ15A (Littelfuse) | SMA | VBUS TVS | PN final |
+| MM3Z10 (onsemi) 10 V ±2 % zener | SOD-323 | load-switch G-S clamp (conducts ~0.9 mA continuously at 12 V contracts — by design) | PN final |
+| ST ESDA051 ×4 | SOD-323 | CC1/CC2/D+/D− ESD | PN final (note exact suffix) |
+| dual PFET **DMP3085LSD-13** (Diodes) −30 V, V_GSS ±20 V, 95 mΩ max @ −4.5 V (≈50–70 mΩ at our −9 V drive) | SO-8 | load switch | PN final |
+| ~~5 mΩ shunt~~ | — | ~~CSP sense~~ — CSP tied to VSS, OCP disabled | deleted |
+| red LED | 1206 | PD FAULT | PN pending |
+| 5.1 kΩ ×3, 1 kΩ ×3, 2.4 kΩ, 0 Ω, 680 Ω | 1206 | straps/LED | commodity |
+| 49.9 kΩ + series gate R (verify vs Fig. 4) | 1206 | FET gate network | verify |
+| 3.3 µF ≥25 V; 1 µF ×3; 100 nF ×2 | 1206/0805 X7R | bypass | commodity |
+
+## 14. Logic rails — twin bucks (5 V and 3.3 V)
+
+Linear 7805 dropped (0.4–0.7 W input-dependent loss) in favor of two copies
+of one synchronous-buck block, identical except the IC:
+
+- **+5 V: AP63205** (fixed 5 V, TSOT-26, 2 A capable) — feeds the four
+  K155ID1s and nothing else. **No level shifters needed for the MCU phase**:
+  the K155ID1 is standard TTL (V_IH = 2.0 V absolute), so 3.3 V CMOS GPIO
+  drives the BCD inputs directly (GPIO sinks ~1.6 mA per input low —
+  trivial). Verify V_IH on the К155ИД1 datasheet at MCU-phase start.
+  Load profile: ~0.1 A, static (digit changes are tens-of-mA steps at 1 Hz)
+  — a single 22 µF output cap would suffice; we keep 2×22 for twin-block
+  BOM symmetry with the 3.3 V rail, whose ESP32-class burst load
+  (300–500 mA, sub-ms) genuinely needs both caps.
+- **+3.3 V: AP63203** (same family/footprint/support parts) — feeds the
+  future MCU section; retires the dangling `+3V3` net (R206 PGOOD pullup).
+  Chosen over an LDO-from-5V so the rail survives any MCU choice including
+  Wi-Fi-class burst loads.
+- Support per block, **verified against AP632XX.pdf** (Fig. 1/21 typical
+  application, both blocks identical):
+  - **L = 4.7 µH** shielded SMD (datasheet window 2.2–10 µH; spec
+    I_sat ≥ 2.5 A — sized to the chip's 2 A capability, not our load, so the
+    BOM line survives any future loading; low DCR for efficiency)
+  - **C_IN = 10 µF** X7R ≥25 V 1206 (input is up to 13 V V_BUS)
+  - **C_OUT = 2 × 22 µF** X7R 16 V 1206 (datasheet calls for two — cap count
+    scales with ripple current, and the vendor sized for the full 2 A)
+  - **C_BST = 100 nF** 0805 between BST and SW
+  - **FB ties directly to VOUT** (fixed-output variants — no divider)
+  - **EN: leave open or tie to VIN** (auto-start; the 1.18 V precision
+    threshold is for optional UVLO we don't need — sequencing is handled
+    upstream by the BCR's load switch)
+  - Built-in 4 ms soft-start (no inrush interaction with the BCR's
+    slew-limited FET turn-on); 22 µA quiescent.
+- **No library work:** stock symbols `Regulator_Switching:AP63203WU` /
+  `AP63205WU` + stock TSOT-23-6 footprint.
+- Both bucks run ~1.1 MHz — two decades from the flyback's 150 kHz, no
+  interaction. TTL K155ID1s are indifferent to switcher ripple.
+
 ## Open items
 
-- [ ] Compensation values → bench load-step verification
-- [ ] Thermal check of 7805 at 12 V input (0.7 W, bare TO-220 ≈ +35 °C)
-- [ ] CH224K detail design (config resistor, CC ESD, PG wiring)
-- [ ] Netclass patterns for PSU-sheet local HV nets (`HV_SEC`, switch node)
+- [ ] Compensation values → bench load-step verification (flyback COMP network)
+- [ ] Source pending PNs: red LED,
+      buck inductor (4.7 µH, I_sat ≥ 2.5 A, shielded)
+- [x] Gate network confirmed from Fig. 4: 1 kΩ series (VBUS_CTRL→gates),
+      49.9 kΩ gate–source, 10 kΩ gate→VBUS_C default-off pull-up, 1 µF
+      gate→VBUS_C + 1 µF gate→V_BUS (ramp integrator), MM3Z10 G-S clamp
+- [ ] Draw the input-power sheet (BCR + protection + load switch + twin bucks)
+- [ ] Verify netclass patterns cover input-sheet nets (raw V_BUS at connector
+      vs. switched V_{BUS}; new sheet-path prefixes)
+- [ ] MCU phase: verify К155ИД1 V_IH = 2.0 V (enables direct 3.3 V GPIO
+      drive, no level shifters); wire 16 dangling BCD labels; +3V3 loads
+
+Resolved since first written: ~~7805 thermal check~~ (7805 replaced by twin
+bucks, §14); ~~CH224K detail design~~ (CYPD3176 selected and designed, §13).
 
 ## Glossary
 
@@ -246,6 +390,21 @@ DA2032 datasheet application figure when drawing.
   above the default 5 V over the USB-C **CC** (Configuration Channel) lines.
 - **NOS** — New Old Stock: unused vintage components (the Soviet tubes),
   whose exact strike voltage we could not verify — hence the output trimmer.
+- **TVS** — Transient Voltage Suppressor: an avalanche diode optimized for
+  absorbing brief high-energy surges (loose voltage tolerance, huge peak
+  power) rather than precision. Invisible below its standoff voltage; clamps
+  hard above breakdown. Contrast zener (precision, milliwatts).
+- **Buck (converter)** — step-down switching regulator; *synchronous* means
+  both switches are FETs (no diode), raising efficiency.
+- **LDO** — Low-DropOut linear regulator: quiet, simple, dissipates
+  (V_in − V_out) × I as heat. The rejected alternative for the 3.3 V rail.
+- **PFET / PMOS** — P-channel MOSFET; conducts when its gate is pulled below
+  its source. Used back-to-back (sources tied) as a load switch so the two
+  body diodes block in both directions when off.
+- **OVP / UVP / OCP** — Over-Voltage / Under-Voltage / Over-Current
+  Protection.
+- **BCR** — Barrel Connector Replacement: Infineon's name for the CYPD317x
+  family (a PD sink that turns USB-C into a plain DC rail).
 
 ### Electrical quantities (subscript symbols)
 
@@ -297,6 +456,11 @@ DA2032 datasheet application figure when drawing.
 ### Packages, footprints & materials
 
 - **TO-220** — the common three-lead through-hole power package (FET, 7805).
+- **QFN** — Quad Flat No-lead: leadless SMD package with pads under the body
+  edges plus an exposed pad (CYPD3176). **SOT-23 / TSOT-26** — small
+  gull-wing SMD transistor/IC packages, ~0.95 mm pitch, hand-solderable
+  (AP6320x bucks). **SO-8 / SOIC-8** — 8-pin gull-wing SMD, 1.27 mm pitch
+  (the dual-PFET load switch).
 - **SMD** — Surface-Mount Device; **2512 / 0805 / 0207** — package size codes
   (2512/0805 are SMD imperial sizes; 0207 is a through-hole resistor body
   length in mm).

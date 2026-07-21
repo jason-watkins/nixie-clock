@@ -499,6 +499,40 @@ def cmd_vias(args):
     print(f"-- {count} via(s)")
 
 
+def cmd_tracks(args):
+    root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    nets = _net_table(root)
+    pats = [re.compile(p) for p in args.patterns] if args.patterns else None
+    count, total = 0, 0.0
+    for tag in ("segment", "arc"):
+        for s in kids(root, tag):
+            name = nets.get(kidval(s, "net"), "?")
+            if pats and not any(p.search(name) for p in pats):
+                continue
+            lay = kidval(s, "layer")
+            if args.layer and lay != args.layer:
+                continue
+            st, en = kid(s, "start"), kid(s, "end")
+            x1, y1, x2, y2 = float(st[1]), float(st[2]), float(en[1]), float(en[2])
+            if args.bbox:
+                bx1, by1, bx2, by2 = args.bbox
+                lo_x, hi_x = min(bx1, bx2), max(bx1, bx2)
+                lo_y, hi_y = min(by1, by2), max(by1, by2)
+                if not (lo_x <= x1 <= hi_x and lo_y <= y1 <= hi_y) and \
+                   not (lo_x <= x2 <= hi_x and lo_y <= y2 <= hi_y):
+                    continue
+            if tag == "arc":
+                m = kid(s, "mid")
+                ln = _arc_length(x1, y1, float(m[1]), float(m[2]), x2, y2)
+            else:
+                ln = math.hypot(x2 - x1, y2 - y1)
+            count += 1
+            total += ln
+            print(f"{lay:6s} ({x1:7.2f},{y1:7.2f})->({x2:7.2f},{y2:7.2f})  "
+                  f"w={kidval(s, 'width')}  {ln:6.2f} mm  {name}")
+    print(f"-- {count} track(s), {total:.1f} mm")
+
+
 def cmd_zones(args):
     root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
     for z in kids(root, "zone"):
@@ -607,6 +641,13 @@ def main():
     p.add_argument("--bbox", nargs=4, type=float, metavar=("X1", "Y1", "X2", "Y2"),
                    help="only vias inside this rectangle (mm)")
     p.set_defaults(func=cmd_vias)
+
+    p = sub.add_parser("tracks")
+    p.add_argument("patterns", nargs="*", help="net-name regexes (default: all)")
+    p.add_argument("--bbox", nargs=4, type=float, metavar=("X1", "Y1", "X2", "Y2"),
+                   help="only tracks with an endpoint inside this rectangle (mm)")
+    p.add_argument("--layer", help="only this layer (e.g. B.Cu)")
+    p.set_defaults(func=cmd_tracks)
 
     sub.add_parser("zones").set_defaults(func=cmd_zones)
 

@@ -392,7 +392,7 @@
 						(type none)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 12.7 0)
 					(length 5.08)
 					(name "1"
@@ -410,7 +410,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 10.16 0)
 					(length 5.08)
 					(name "2"
@@ -428,7 +428,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 7.62 0)
 					(length 5.08)
 					(name "3"
@@ -446,7 +446,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 5.08 0)
 					(length 5.08)
 					(name "4"
@@ -464,7 +464,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 2.54 0)
 					(length 5.08)
 					(name "5"
@@ -482,7 +482,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 0 0)
 					(length 5.08)
 					(name "6"
@@ -500,7 +500,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 -2.54 0)
 					(length 5.08)
 					(name "7"
@@ -518,7 +518,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 -5.08 0)
 					(length 5.08)
 					(name "8"
@@ -536,7 +536,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 -7.62 0)
 					(length 5.08)
 					(name "9"
@@ -554,7 +554,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -12.7 -10.16 0)
 					(length 5.08)
 					(name "0"
@@ -572,7 +572,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at 10.16 12.7 180)
 					(length 5.08)
 					(name "LHDP"
@@ -590,7 +590,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at 10.16 0 180)
 					(length 5.08)
 					(name "A"
@@ -861,7 +861,7 @@
 						(type none)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at -7.62 0 0)
 					(length 2.54)
 					(name "A"
@@ -879,7 +879,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at 7.62 0 180)
 					(length 2.54)
 					(name "K"
@@ -897,7 +897,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin bidirectional line
 					(at 7.62 -2.54 180)
 					(length 3.302)
 					(name "KA"
@@ -6263,48 +6263,6 @@
 		)
 	)
 	(sheet
-		(at 85.09 130.81)
-		(size 74.93 60.96)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "687ac175-299e-4fc0-a2f4-cfde8a21ab3d")
-		(property "Sheetname" "Input Power"
-			(at 85.09 130.0984 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "untitled.kicad_sch"
-			(at 85.09 192.3546 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(instances
-			(project "pcb"
-				(path "/7326c864-f0c7-4b19-9935-f5e4e9f8dcd3"
-					(page "3")
-				)
-			)
-		)
-	)
-	(sheet
 		(at 15.24 130.81)
 		(size 67.31 60.96)
 		(exclude_from_sim no)
@@ -6320,7 +6278,7 @@
 			(color 0 0 0 0.0000)
 		)
 		(uuid "8f1be496-1c27-4235-9c2c-7add84679757")
-		(property "Sheetname" "HV Supply"
+		(property "Sheetname" "Power Supply"
 			(at 15.24 130.0984 0)
 			(effects
 				(font

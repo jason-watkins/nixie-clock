@@ -2,6 +2,522 @@
 	(version 20241209)
 	(generator "kicad_symbol_editor")
 	(generator_version "9.0")
+	(symbol "CYPD3176"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "U"
+			(at -18.796 17.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "CYPD3176"
+			(at -18.796 15.494 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "nixie_clock:QFN-24-1EP_4x4mm_P0.5mm_EP2.75x2.75mm_ThermalVias"
+			(at 0 -22.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/infineon-cypd3176-24lqxq-datasheet-en.pdf"
+			(at 0 -25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Infineon EZ-PD BCR-PLUS USB-C PD sink controller, resistor-configured, QFN-24; symbol arranged per datasheet Fig. 4 application diagram"
+			(at 0 -27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "CYPD3176_0_1"
+			(rectangle
+				(start -19.05 19.05)
+				(end 19.05 -19.05)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "CYPD3176_1_1"
+			(pin power_in line
+				(at -24.13 10.16 0)
+				(length 5.08)
+				(name "VBUS_IN_DIS"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "18"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -24.13 7.62 0)
+				(length 5.08)
+				(name "CC2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "14"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -24.13 5.08 0)
+				(length 5.08)
+				(name "CC1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "15"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -24.13 2.54 0)
+				(length 5.08)
+				(name "D+"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "5"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -24.13 0 0)
+				(length 5.08)
+				(name "D-"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -24.13 -2.54 0)
+				(length 5.08)
+				(name "CHARGING_MODE"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "9"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_out line
+				(at -24.13 -5.08 0)
+				(length 5.08)
+				(name "VCCD"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "24"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -24.13 -7.62 0)
+				(length 5.08)
+				(name "CSP"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "19"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_in line
+				(at -24.13 -10.16 0)
+				(length 5.08)
+				(name "VSS"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "22"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_in line
+				(at -12.7 -24.13 90)
+				(length 5.08)
+				(name "EPAD"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "25"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -7.62 -24.13 90)
+				(length 5.08)
+				(name "ISNK_COARSE"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "17"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at -5.08 24.13 270)
+				(length 5.08)
+				(name "VBUS_CTRL"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -2.54 -24.13 90)
+				(length 5.08)
+				(name "ISNK_FINE"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "16"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_out line
+				(at 0 24.13 270)
+				(length 5.08)
+				(name "VDDD"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "23"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 2.54 -24.13 90)
+				(length 5.08)
+				(name "VBUS_MIN"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at 5.08 24.13 270)
+				(length 5.08)
+				(name "SAFE_PWR_EN"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "4"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 7.62 -24.13 90)
+				(length 5.08)
+				(name "VBUS_MAX"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 24.13 10.16 180)
+				(length 5.08)
+				(name "DC_OUT_DIS"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "11"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 24.13 7.62 180)
+				(length 5.08)
+				(name "HPI_SDA"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "12"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 24.13 5.08 180)
+				(length 5.08)
+				(name "HPI_SCL"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "13"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin open_collector line
+				(at 24.13 2.54 180)
+				(length 5.08)
+				(name "HPI_INT"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "7"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at 24.13 0 180)
+				(length 5.08)
+				(name "DATAMODE/FLIP"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "10"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at 24.13 -2.54 180)
+				(length 5.08)
+				(name "DNU1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "20"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at 24.13 -5.08 180)
+				(length 5.08)
+				(name "DNU2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "21"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin open_collector line
+				(at 24.13 -7.62 180)
+				(length 5.08)
+				(name "FAULT"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "8"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 	(symbol "DA2032-AL"
 		(pin_names
 			(offset 1.016)
@@ -797,7 +1313,7 @@
 					(type none)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 12.7 0)
 				(length 5.08)
 				(name "1"
@@ -815,7 +1331,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 10.16 0)
 				(length 5.08)
 				(name "2"
@@ -833,7 +1349,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 7.62 0)
 				(length 5.08)
 				(name "3"
@@ -851,7 +1367,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 5.08 0)
 				(length 5.08)
 				(name "4"
@@ -869,7 +1385,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 2.54 0)
 				(length 5.08)
 				(name "5"
@@ -887,7 +1403,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 0 0)
 				(length 5.08)
 				(name "6"
@@ -905,7 +1421,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 -2.54 0)
 				(length 5.08)
 				(name "7"
@@ -923,7 +1439,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 -5.08 0)
 				(length 5.08)
 				(name "8"
@@ -941,7 +1457,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 -7.62 0)
 				(length 5.08)
 				(name "9"
@@ -959,7 +1475,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -12.7 -10.16 0)
 				(length 5.08)
 				(name "0"
@@ -977,7 +1493,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 10.16 12.7 180)
 				(length 5.08)
 				(name "LHDP"
@@ -995,7 +1511,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 10.16 0 180)
 				(length 5.08)
 				(name "A"
@@ -1266,7 +1782,7 @@
 					(type none)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at -7.62 0 0)
 				(length 2.54)
 				(name "A"
@@ -1284,7 +1800,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 7.62 0 180)
 				(length 2.54)
 				(name "K"
@@ -1302,7 +1818,7 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 7.62 -2.54 180)
 				(length 3.302)
 				(name "KA"
@@ -2042,139 +2558,4 @@
 		)
 		(embedded_fonts no)
 	)
-  (symbol "CYPD3176"
-    (exclude_from_sim no)
-    (in_bom yes)
-    (on_board yes)
-    (property "Reference" "U"
-      (at -19.05 16.51 0)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Value" "CYPD3176"
-      (at -19.05 -17.78 0)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Footprint" "nixie_clock:QFN-24-1EP_4x4mm_P0.5mm_EP2.75x2.75mm_ThermalVias"
-      (at 0 -22.86 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "Datasheet" "${KIPRJMOD}/../docs/datasheets/infineon-cypd3176-24lqxq-datasheet-en.pdf"
-      (at 0 -25.4 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (property "Description" "Infineon EZ-PD BCR-PLUS USB-C PD sink controller, resistor-configured, QFN-24"
-      (at 0 -27.94 0)
-      (effects (font (size 1.27 1.27)) (hide yes))
-    )
-    (symbol "CYPD3176_0_1"
-      (rectangle
-        (start -19.05 15.24)
-        (end 19.05 -15.24)
-        (stroke (width 0.254) (type default))
-        (fill (type background))
-      )
-    )
-    (symbol "CYPD3176_1_1"
-    (pin input line (at -24.13 6.35 0) (length 5.08)
-      (name "VBUS_MIN" (effects (font (size 1.27 1.27))))
-      (number "1" (effects (font (size 1.27 1.27))))
-    )
-    (pin input line (at -24.13 3.8099999999999996 0) (length 5.08)
-      (name "VBUS_MAX" (effects (font (size 1.27 1.27))))
-      (number "2" (effects (font (size 1.27 1.27))))
-    )
-    (pin output line (at -24.13 1.2699999999999996 0) (length 5.08)
-      (name "VBUS_CTRL" (effects (font (size 1.27 1.27))))
-      (number "3" (effects (font (size 1.27 1.27))))
-    )
-    (pin output line (at -24.13 -1.2700000000000005 0) (length 5.08)
-      (name "SAFE_PWR_EN" (effects (font (size 1.27 1.27))))
-      (number "4" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at -24.13 -3.8100000000000005 0) (length 5.08)
-      (name "D+" (effects (font (size 1.27 1.27))))
-      (number "5" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at -24.13 -6.35 0) (length 5.08)
-      (name "D-" (effects (font (size 1.27 1.27))))
-      (number "6" (effects (font (size 1.27 1.27))))
-    )
-    (pin open_collector line (at -6.35 -20.32 90) (length 5.08)
-      (name "HPI_INT" (effects (font (size 1.27 1.27))))
-      (number "7" (effects (font (size 1.27 1.27))))
-    )
-    (pin open_collector line (at -3.8099999999999996 -20.32 90) (length 5.08)
-      (name "FAULT" (effects (font (size 1.27 1.27))))
-      (number "8" (effects (font (size 1.27 1.27))))
-    )
-    (pin input line (at -1.2699999999999996 -20.32 90) (length 5.08)
-      (name "CHARGING_MODE" (effects (font (size 1.27 1.27))))
-      (number "9" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at 1.2700000000000005 -20.32 90) (length 5.08)
-      (name "DATAMODE/FLIP" (effects (font (size 1.27 1.27))))
-      (number "10" (effects (font (size 1.27 1.27))))
-    )
-    (pin input line (at 3.8100000000000005 -20.32 90) (length 5.08)
-      (name "DC_OUT_DIS" (effects (font (size 1.27 1.27))))
-      (number "11" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at 6.35 -20.32 90) (length 5.08)
-      (name "HPI_SDA" (effects (font (size 1.27 1.27))))
-      (number "12" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at 24.13 -6.35 180) (length 5.08)
-      (name "HPI_SCL" (effects (font (size 1.27 1.27))))
-      (number "13" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at 24.13 -3.8099999999999996 180) (length 5.08)
-      (name "CC2" (effects (font (size 1.27 1.27))))
-      (number "14" (effects (font (size 1.27 1.27))))
-    )
-    (pin bidirectional line (at 24.13 -1.2699999999999996 180) (length 5.08)
-      (name "CC1" (effects (font (size 1.27 1.27))))
-      (number "15" (effects (font (size 1.27 1.27))))
-    )
-    (pin input line (at 24.13 1.2700000000000005 180) (length 5.08)
-      (name "ISNK_FINE" (effects (font (size 1.27 1.27))))
-      (number "16" (effects (font (size 1.27 1.27))))
-    )
-    (pin input line (at 24.13 3.8100000000000005 180) (length 5.08)
-      (name "ISNK_COARSE" (effects (font (size 1.27 1.27))))
-      (number "17" (effects (font (size 1.27 1.27))))
-    )
-    (pin power_in line (at 24.13 6.35 180) (length 5.08)
-      (name "VBUS_IN_DIS" (effects (font (size 1.27 1.27))))
-      (number "18" (effects (font (size 1.27 1.27))))
-    )
-    (pin power_out line (at -6.35 20.32 270) (length 5.08)
-      (name "VCCD" (effects (font (size 1.27 1.27))))
-      (number "24" (effects (font (size 1.27 1.27))))
-    )
-    (pin power_out line (at -3.8099999999999996 20.32 270) (length 5.08)
-      (name "VDDD" (effects (font (size 1.27 1.27))))
-      (number "23" (effects (font (size 1.27 1.27))))
-    )
-    (pin power_in line (at -1.2699999999999996 20.32 270) (length 5.08)
-      (name "VSS" (effects (font (size 1.27 1.27))))
-      (number "22" (effects (font (size 1.27 1.27))))
-    )
-    (pin no_connect line (at 1.2700000000000005 20.32 270) (length 5.08)
-      (name "DNU2" (effects (font (size 1.27 1.27))))
-      (number "21" (effects (font (size 1.27 1.27))))
-    )
-    (pin no_connect line (at 3.8100000000000005 20.32 270) (length 5.08)
-      (name "DNU1" (effects (font (size 1.27 1.27))))
-      (number "20" (effects (font (size 1.27 1.27))))
-    )
-    (pin input line (at 6.35 20.32 270) (length 5.08)
-      (name "CSP" (effects (font (size 1.27 1.27))))
-      (number "19" (effects (font (size 1.27 1.27))))
-    )
-    (pin power_in line (at 11.43 -20.32 90) (length 5.08)
-      (name "EPAD" (effects (font (size 1.27 1.27))))
-      (number "25" (effects (font (size 1.27 1.27))))
-    )
-    )
-  )
 )

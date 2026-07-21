@@ -1,0 +1,9 @@
+(version 1)
+
+(rule "J301 internal NPTH geometry per JAE drawing"
+  (condition "A.memberOfFootprint('J301') && B.memberOfFootprint('J301')")
+  (constraint edge_clearance (min 0.2mm)))
+
+(rule "T201 fixed pin pitch, isolation rated by manufacturer"
+  (condition "A.memberOfFootprint('T201') && B.memberOfFootprint('T201')")
+  (constraint clearance (min 0.6mm)))
