@@ -1,0 +1,19 @@
+# Normalize line endings for KiCad's text-based files (KiCad uses LF natively).
+# This keeps diffs clean and avoids CRLF/LF churn across Windows/macOS/Linux.
+*.kicad_pro   text eol=lf
+*.kicad_sch   text eol=lf
+*.kicad_pcb   text eol=lf
+*.kicad_sym   text eol=lf
+*.kicad_mod   text eol=lf
+*.kicad_dru   text eol=lf
+*.kicad_wks   text eol=lf
+sym-lib-table text eol=lf
+fp-lib-table  text eol=lf
+
+# Treat 3D models and images as binary (no diff/merge, no EOL conversion).
+*.step  binary
+*.stp   binary
+*.wrl   binary
+*.png   binary
+*.jpg   binary
+*.pdf   binary

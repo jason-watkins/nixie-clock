@@ -1,0 +1,138 @@
+(footprint "C_Rect_L3.8mm_W2.5mm_P5.08mm_Goldmax"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "Kemet Goldmax radial dipped MLCC, body 3.81x2.54mm, seated height 5.08mm, LS 5.08mm outward-formed leads (C317 case)")
+	(tags "capacitor radial ceramic dipped goldmax")
+	(property "Reference" "REF**"
+		(at 0 -2.5 0)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe01")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "C_Rect_L3.8mm_W2.5mm_P5.08mm_Goldmax"
+		(at 0 2.5 0)
+		(layer "F.Fab")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe02")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_line
+		(start -1.91 -1.28)
+		(end 1.91 -1.28)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe03")
+	)
+	(fp_line
+		(start -1.91 1.28)
+		(end 1.91 1.28)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe04")
+	)
+	(fp_line
+		(start -1.91 -1.28)
+		(end -1.91 -0.85)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe05")
+	)
+	(fp_line
+		(start -1.91 1.28)
+		(end -1.91 0.85)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe06")
+	)
+	(fp_line
+		(start 1.91 -1.28)
+		(end 1.91 -0.85)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe07")
+	)
+	(fp_line
+		(start 1.91 1.28)
+		(end 1.91 0.85)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe08")
+	)
+	(fp_rect
+		(start -1.9 -1.27)
+		(end 1.9 1.27)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe09")
+	)
+	(fp_rect
+		(start -3.6 -1.55)
+		(end 3.6 1.55)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe0a")
+	)
+	(pad "1" thru_hole circle
+		(at -2.54 0)
+		(size 1.6 1.6)
+		(drill 0.8)
+		(layers "*.Cu" "*.Mask")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe0b")
+	)
+	(pad "2" thru_hole circle
+		(at 2.54 0)
+		(size 1.6 1.6)
+		(drill 0.8)
+		(layers "*.Cu" "*.Mask")
+		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe0c")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/C317.step"
+		(offset
+			(xyz -1.9 1.27 1.6)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 0 0)
+		)
+	)
+)

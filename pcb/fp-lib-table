@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "nixie_clock")(type "KiCad")(uri "${KIPRJMOD}/lib/nixie_clock.pretty")(options "")(descr "Vendored nixie clock footprints"))
+)

@@ -1,0 +1,89 @@
+(footprint "C_Rect_L7.1mm_W4.1mm_P5.08mm_Goldmax"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "Kemet Goldmax radial dipped MLCC, body 7.11x4.07mm, seated height 9.14mm, LS 5.08mm (C330 case)")
+	(tags "capacitor radial ceramic dipped goldmax")
+	(property "Reference" "REF**"
+		(at 0 -3.25 0)
+		(layer "F.SilkS")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b01")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "C_Rect_L7.1mm_W4.1mm_P5.08mm_Goldmax"
+		(at 0 3.25 0)
+		(layer "F.Fab")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b02")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_rect
+		(start -3.56 -2.04)
+		(end 3.56 2.04)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b03")
+	)
+	(fp_rect
+		(start -3.55 -2.03)
+		(end 3.55 2.03)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b04")
+	)
+	(fp_rect
+		(start -3.81 -2.29)
+		(end 3.81 2.29)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b05")
+	)
+	(pad "1" thru_hole circle
+		(at -2.54 0)
+		(size 1.6 1.6)
+		(drill 0.8)
+		(layers "*.Cu" "*.Mask")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b06")
+	)
+	(pad "2" thru_hole circle
+		(at 2.54 0)
+		(size 1.6 1.6)
+		(drill 0.8)
+		(layers "*.Cu" "*.Mask")
+		(uuid "8d2e3ba1-51e2-4c9f-ab7f-3a12d64f9b07")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/C330.step"
+		(offset
+			(xyz -3.5 2.0 3.5)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 0 0)
+		)
+	)
+)

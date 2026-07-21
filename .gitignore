@@ -1,0 +1,37 @@
+# KiCad .gitignore
+# See: https://gitlab.com/kicad/code/kicad templates
+
+# --- Auto-generated backups ---
+*-backups/
+*.bak
+
+# --- Autosave / temporary scratch files ---
+_autosave-*
+\#auto_saved_files\#
+*.000
+
+# --- Lock files (created while KiCad has files open) ---
+*.lck
+~*.lck
+*~
+
+# --- Per-user local project state (window/display prefs, not design data) ---
+*.kicad_prl
+
+# --- Caches (regenerated automatically) ---
+fp-info-cache
+*-cache.lib
+*.sch-bak
+
+# --- Generated / fabrication outputs ---
+# Uncomment or adjust to match where you export these.
+production/
+
+# --- Claude Code personal settings (team settings live in .claude/settings.json) ---
+.claude/settings.local.json
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+
+*.pyc

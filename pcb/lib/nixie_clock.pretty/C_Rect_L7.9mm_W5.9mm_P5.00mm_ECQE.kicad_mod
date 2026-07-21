@@ -1,0 +1,89 @@
+(footprint "C_Rect_L7.9mm_W5.9mm_P5.00mm_ECQE"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "Panasonic ECQ-E(B) metallized polyester box film cap, body 7.9x5.9mm, seated height 10.0mm, LS 5.0mm")
+	(tags "capacitor film box polyester ECQ-E")
+	(property "Reference" "REF**"
+		(at 0 -4.2 0)
+		(layer "F.SilkS")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd01")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "C_Rect_L7.9mm_W5.9mm_P5.00mm_ECQE"
+		(at 0 4.2 0)
+		(layer "F.Fab")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd02")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_rect
+		(start -3.96 -2.96)
+		(end 3.96 2.96)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd03")
+	)
+	(fp_rect
+		(start -3.95 -2.95)
+		(end 3.95 2.95)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd04")
+	)
+	(fp_rect
+		(start -4.2 -3.2)
+		(end 4.2 3.2)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd05")
+	)
+	(pad "1" thru_hole circle
+		(at -2.5 0)
+		(size 1.6 1.6)
+		(drill 0.8)
+		(layers "*.Cu" "*.Mask")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd06")
+	)
+	(pad "2" thru_hole circle
+		(at 2.5 0)
+		(size 1.6 1.6)
+		(drill 0.8)
+		(layers "*.Cu" "*.Mask")
+		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd07")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/ECQ-E.stp"
+		(offset
+			(xyz -2.5 0 0.5)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

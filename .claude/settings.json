@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python .claude/skills/kicad-sch/scripts/sch_tool.py:*)",
+      "Bash(python .claude/skills/kicad-fp/scripts/fp_tool.py:*)"
+    ]
+  }
+}
