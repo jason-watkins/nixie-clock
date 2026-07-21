@@ -26,6 +26,8 @@ fp-info-cache
 # --- Generated / fabrication outputs ---
 # Uncomment or adjust to match where you export these.
 production/
+# make_release.py output; release artifacts are reproducible from the rev tags
+fab/
 
 # --- Claude Code personal settings (team settings live in .claude/settings.json) ---
 .claude/settings.local.json

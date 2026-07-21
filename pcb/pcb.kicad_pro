@@ -682,12 +682,16 @@
     ],
     [
       "8f1be496-1c27-4235-9c2c-7add84679757",
-      "HV Supply"
+      "HV"
     ],
     [
       "687ac175-299e-4fc0-a2f4-cfde8a21ab3d",
-      "Input Power"
+      "PWR"
     ]
   ],
-  "text_variables": {}
+  "text_variables": {
+    "AUTHOR": "Jason Watkins",
+    "REV": "A",
+    "TITLE": "4 Digit Nixie Clock (IN-12)"
+  }
 }

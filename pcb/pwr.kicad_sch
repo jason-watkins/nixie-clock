@@ -4,6 +4,10 @@
 	(generator_version "9.0")
 	(uuid "4b651d8d-bbe6-4a02-aa7e-68249373666d")
 	(paper "A4")
+	(title_block
+		(title "${TITLE}")
+		(rev "${REV}")
+	)
 	(lib_symbols
 		(symbol "Connector:USB_C_Receptacle_USB2.0_16P"
 			(pin_names
