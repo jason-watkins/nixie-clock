@@ -1,15 +1,35 @@
 {
     "cSpell.words": [
+        "Coilcraft",
+        "commoned",
         "CYPD",
+        "derating",
         "excellon",
         "gerbers",
+        "Infineon",
+        "ISNK",
         "jlcpcb",
+        "JTAG",
         "kicad",
         "LCSC",
+        "Mbps",
+        "microamp",
+        "microamps",
+        "MOSFETs",
+        "multiturn",
         "Netlist",
         "NPTH",
+        "PGOOD",
         "Protel",
+        "ratiometrically",
         "respun",
-        "soldermask"
+        "soldermask",
+        "trimmable",
+        "UART",
+        "unpowered",
+        "VBUS",
+        "VCCD",
+        "VDDD",
+        "zener"
     ]
 }

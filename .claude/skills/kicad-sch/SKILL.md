@@ -48,4 +48,5 @@ unsaved changes open in KiCad — say so rather than re-running repeatedly.
   netlist-based subcommand in this repo, keyed to the schematic path.
 - kicad-cli is autodetected from PATH or `C:\Program Files\KiCad\<ver>\bin`;
   override with the `KICAD_CLI` env var.
-- `pdf` needs `pypdf` (already installed for this user's Python).
+- `pdf` needs `pypdf` and `cryptography` (both installed for this user's
+  Python); the latter decrypts AES-encrypted datasheets (e.g. Panasonic).

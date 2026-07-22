@@ -37,3 +37,17 @@ fab/
 Thumbs.db
 
 *.pyc
+
+# --- LaTeX build artifacts (docs/design_analysis/) ---
+docs/design_analysis/**/*.aux
+docs/design_analysis/**/*.log
+docs/design_analysis/**/*.out
+docs/design_analysis/**/*.toc
+docs/design_analysis/**/*.lof
+docs/design_analysis/**/*.lot
+docs/design_analysis/**/*.fls
+docs/design_analysis/**/*.fdb_latexmk
+docs/design_analysis/**/*.synctex.gz
+docs/design_analysis/**/*.bbl
+docs/design_analysis/**/*.blg
+docs/design_analysis/**/*.pdf

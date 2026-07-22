@@ -166,11 +166,11 @@ and solder resistance stay out of the measurement.
 clamped leakage spike, about 48 V worst case. A 100 V logic-level TO-220
 FET (IRL540N fits) leaves better than 2× margin. Losses total roughly
 0.15 W (conduction 40 mW, gate 73 mW, small switching loss since turn-on
-happens at zero current), no heatsink. A 10 Ω series gate resistor damps
+happens at zero current), no heat sink. A 10 Ω series gate resistor damps
 the gate loop; turn-on at zero current means the slower edge adds no loss.
 
 **Rectifier.** Reverse stress is V_out plus the turns ratio times maximum
-input: 175 + 130 = 305 V, so a 600 V part. It must be ultrafast (about
+input: 175 + 130 = 305 V, so a 600 V part. It must be ultra fast (about
 75 ns recovery); a standard-recovery rectifier at 150 kHz would dissipate
 watts. Average current is trivial. A UF4005-class axial part fills the
 slot.

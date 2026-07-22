@@ -7,3 +7,8 @@
 (rule "T201 fixed pin pitch, isolation rated by manufacturer"
   (condition "A.memberOfFootprint('T201') && B.memberOfFootprint('T201')")
   (constraint clearance (min 0.6mm)))
+
+(rule "U501 antenna and J301 shell overhang board edge by design"
+  (severity ignore)
+  (condition "A.memberOfFootprint('U501') || A.memberOfFootprint('J301')")
+  (constraint silk_clearance (min 0mm)))

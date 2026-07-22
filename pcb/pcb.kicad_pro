@@ -37,9 +37,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.8,
-          "height": 1.6,
-          "width": 1.6
+          "drill": 0.8128,
+          "height": 1.6256,
+          "width": 1.6256
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -139,7 +139,7 @@
         "min_track_width": 0.0,
         "min_via_annular_width": 0.1,
         "min_via_diameter": 0.25,
-        "solder_mask_to_copper_clearance": 0.0,
+        "solder_mask_to_copper_clearance": 0.005,
         "use_height_for_length_calcs": true
       },
       "teardrop_options": [
@@ -446,7 +446,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "same_local_global_label": "warning",
       "similar_label_and_power": "warning",
@@ -545,7 +545,7 @@
     "page_layout_descr_file": ""
   },
   "schematic": {
-    "annotate_start_num": 410,
+    "annotate_start_num": 300,
     "bom_export_filename": "${PROJECTNAME}.csv",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
@@ -687,6 +687,10 @@
     [
       "687ac175-299e-4fc0-a2f4-cfde8a21ab3d",
       "PWR"
+    ],
+    [
+      "ad59ea67-a510-4981-b009-ff11bceb93c0",
+      "MCU"
     ]
   ],
   "text_variables": {
