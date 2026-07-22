@@ -1,0 +1,125 @@
+\section{170~V converter: driving component characteristics}
+\label{sec:hv-components}
+
+The 170~V anode rail is produced by a current-mode flyback built
+around a TI LM5155 controller (\textsc{u201}) and a Coilcraft
+DA2032-AL flyback transformer (\textsc{t201}). Both are named,
+design-driving parts, so their characteristics are verified from
+datasheet before use in the converter derivation of
+\cref{sec:hv-converter}.
+
+\subsection{LM5155 flyback controller}
+\label{sec:lm5155}
+
+Source: \texttt{lm5155.pdf} (Texas Instruments, SNVSB75E, Rev.\ E,
+Aug.\ 2023). Figures apply identically to the LM5155 and LM51551
+variants unless noted.
+
+\begin{longtable}{L{4.6cm}L{3.4cm}L{5.4cm}L{1.2cm}}
+\toprule
+Parameter & Value & Conditions & Page \\
+\midrule
+\endhead
+FB reference voltage \(V_{REF}\) & 0.99 / 1.00 / 1.01~V (min/typ/max) & \(T_J=-40\) to \SI{125}{\celsius} & 7 \\
+Current-limit threshold \(V_{CLTH}\) (CS to PGND) & 93 / 100 / 107~mV (min/typ/max) & \(R_T=9.09\)~k\(\Omega\), \(V_{BIAS}=12\)~V; fixed DC threshold & 7 \\
+Peak slope-comp current \(I_{SLOPE}\) (optional, external \(R_{SL}\) only) & 22.5 / 30 / 37.5~\si{\micro\ampere} & \(R_T=220\)~k\(\Omega\); \(I_{SLOPE}=30\,\si{\micro\ampere}\times f_{RT}/f_{SYNC}\) & 7, 20 \\
+RT resistor equation & \(R_T = \dfrac{2.21\times10^{10}}{f_{RT}\,[\mathrm{Hz}]} - 955\)~\(\Omega\) & Verified against both characterized points: 220~k\(\Omega\)\(\to\)100~kHz, 9.09~k\(\Omega\)\(\to\)2.2~MHz & 16 \\
+Soft-start current \(I_{SS}\) & 9 / 10 / 11~\si{\micro\ampere} (min/typ/max) & & 7 \\
+Soft-start time, boost topology & \(t_{SS} = \dfrac{C_{SS}}{I_{SS}}\left(1-\dfrac{V_{SUPPLY}}{V_{LOAD}}\right)V_{REF}\) & No flyback-specific equation given (see note) & 16 \\
+Enable (EN) threshold, rising/falling & 0.52 / 0.49~V (typ) & Same physical pin as UVLO/SYNC (pin 12) & 6--7 \\
+UVLO/SYNC threshold, rising/falling & 1.5 / 1.45~V (typ) & Separate comparator, same pin as EN & 7 \\
+UVLO hysteresis current \(I_{UVLO}\) & 4 / 5 / 6~\si{\micro\ampere} (min/typ/max) & \(V_{UVLO}=1.6\)~V; sets external divider hysteresis & 7, 13 \\
+BIAS absolute maximum & \(-0.3\) to \SI{50}{\volt} & & 5 \\
+BIAS recommended operating & 3.5--45~V & When VCC is supplied from the internal regulator & 6, 14 \\
+VCC (internal gate-drive rail) regulation & 6.5 / 6.85 / 7~V (min/typ/max) & \(V_{BIAS}=8\)~V, no load & 6 \\
+VCC regulation, loaded & \(\geq\)6.5~V & \(V_{BIAS}=8\)~V, \(I_{VCC}=35\)~mA & 6 \\
+VCC absolute maximum & \(-0.3\) to \SI{18}{\volt}, or \(V_{BIAS}+0.3\)~V, whichever is lower & & 5 \\
+PGOOD absolute maximum & \(-0.3\) to \SI{18}{\volt} & Open-drain; sink limited to 1~mA when \(V_{PGOOD}>V_{BIAS}\) & 5 \\
+PGOOD recommended pull-up & \(\geq\)10~k\(\Omega\) & & 22 \\
+PGOOD assert condition & FB $>$ \(V_{UVTH}\) AND VCC $>$ VCC-UVLO AND UVLO/EN above threshold & 25~\si{\micro\second} deglitch & 22 \\
+PGOOD undervoltage threshold \(V_{UVTH}\) & 87 / 90 / 93\% of \(V_{REF}\) (falling) & & 7 \\
+Minimum on-time \(t_{ON(MIN)}\) & \SI{50}{\nano\second} (typ) & At \(R_T=9.09\)~k\(\Omega\) (2.2~MHz); \(\approx\)165~ns implied near 150~kHz & 7, 21 \\
+Maximum duty cycle \(D_{MAX}\) & 80--90\% (at \(R_T=9.09\)~k\(\Omega\)); 90--96\% (at \(R_T=220\)~k\(\Omega\)) & Frequency-dependent; \(\approx\)91--92\% typ interpolated near 150~kHz & 7 \\
+GATE absolute maximum (negative) & \(-1\)~V/100~ns, \(-2\)~V/50~ns transients & No explicit positive max beyond VCC rail & 5 \\
+CS absolute maximum & \(-0.3\) to \SI{0.3}{\volt} DC; \(-1\)~V/100~ns, \(-2\)~V/20~ns transients & & 5 \\
+RT, FB, SS pin absolute maximum & \(-0.3\) to \SI{3.8}{\volt} & Not intended for external drive & 5 \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Current limit has no slope compensation as designed.} The
+100~mV current-limit threshold is a fixed DC level at the CS pin; the
+datasheet's peak-current-limit equation only subtracts a
+slope-compensation term if the optional external \(R_{SL}\) resistor
+is populated, and TI recommends omitting it for accurate current
+limiting versus \(V_{IN}\). A separate, always-on slope ramp
+(\(V_{SLOPE}=40\,\text{mV}\times f_{RT}/f_{SYNC}\)) is summed only into
+the regulation (PWM/COMP) comparator, to prevent subharmonic
+oscillation --- a different comparator from the current-limit path.
+This distinction matters in \cref{sec:hv-converter}: the current-sense
+resistor should be sized against the flat 100~mV threshold, not
+against a slope-adjusted figure.
+
+\paragraph{No flyback-specific soft-start formula.} The datasheet
+gives soft-start timing equations for boost and SEPIC topologies only.
+Its own non-isolated flyback reference design (Fig.\ 10--12) wires
+FB/SS/COMP the same way as the boost case, but the boost formula
+assumes an input-to-output pass-through path that a flyback
+transformer does not provide, so a soft-start time computed from the
+boost equation is an approximation to be verified on the bench, not a
+guaranteed figure.
+
+\paragraph{EN and UVLO are distinct comparators on one pin.} Pin 12
+(``UVLO/SYNC'') carries two separate thresholds: EN (\(\approx\)0.5~V)
+gates shutdown$\leftrightarrow$standby, and UVLO
+(\(\approx\)1.5~V/1.45~V) gates standby$\leftrightarrow$run. An
+external resistor divider from the input rail to this pin, sized
+against the UVLO threshold and hysteresis current, is what sets the
+converter's input undervoltage lockout point --- not the EN threshold.
+
+\paragraph{Maximum duty cycle bounds the achievable turns ratio.} The
+frequency-dependent \(D_{MAX}\) limit (interpolated to roughly
+91--92\% typical near 150~kHz) caps how much the transformer's
+reflected voltage can dominate the switching waveform at minimum input
+voltage; \cref{sec:hv-converter} checks the design's actual duty cycle
+against this limit rather than assuming it is unconstrained.
+
+\subsection{DA2032-AL flyback transformer}
+\label{sec:da2032}
+
+Source: \texttt{da2032.pdf} (Coilcraft).
+
+\begin{longtable}{L{4.8cm}L{2.6cm}L{5.0cm}L{1.2cm}}
+\toprule
+Parameter & Value & Conditions & Page \\
+\midrule
+\endhead
+Turns ratio & 1:10 & Only configuration offered; requires the two primary windings connected in parallel & 1 \\
+Primary inductance \(L_P\), at 0~A & \SI{10.0}{\micro\henry} \(\pm10\%\) & 100~kHz, 0.1~V\textsubscript{rms}, 0~A\textsubscript{dc}; primaries in parallel & 1 \\
+Primary inductance at \(I_{pk}\) & \SI{9.0}{\micro\henry} min & At \(I_{pk}=3.0\)~A & 1 \\
+Leakage inductance, max & \SI{0.150}{\micro\henry} & Referred to primary; primaries in parallel, secondary shorted & 1 \\
+Peak primary current & \SI{3.0}{\ampere} & Rating point for the \(L_P\)-at-\(I_{pk}\) spec; no separate \(I_{sat}\) given & 1 \\
+DCR, primary (max) & \SI{0.013}{\ohm} & \SI{25}{\celsius}; primaries in parallel & 1 \\
+DCR, secondary (max) & \SI{1.60}{\ohm} & \SI{25}{\celsius} & 1 \\
+Interwinding isolation & \SI{1500}{\volt_{rms}} & 1-minute withstand & 1 \\
+Winding-to-core isolation & \SI{750}{\volt_{rms}} & 1-minute withstand & 1 \\
+Interwinding capacitance & \SI{67}{\pico\farad} & 100~kHz, 0.1~V\textsubscript{rms}, pin 3 to pin 1 & 1 \\
+Ambient/storage temperature & \(-40\) to \SI{125}{\celsius} (component); \(-40\) to \SI{80}{\celsius} (tape \& reel storage) & & 1 \\
+\bottomrule
+\end{longtable}
+
+Pin assignment: secondary on pins 1 and 12, primary windings on pins
+3--10; dot marks pin 1. No recommended operating frequency range is
+published beyond the 100~kHz condition used for the \(L_P\) and
+interwinding-capacitance measurements --- the 150~kHz operating point
+used in this design is not independently characterized in the
+datasheet, and \cref{sec:hv-converter} notes this as an extrapolation.
+No direct saturation current is published either; the datasheet's
+proxy is the ``inductance at \(I_{pk}\)'' figure (\SI{9.0}{\micro\henry}
+min at \SI{3.0}{\ampere}), which this document treats as the effective
+peak-current rating. The isolation ratings (1500~V\textsubscript{rms}
+winding-to-winding, 750~V\textsubscript{rms} winding-to-core) presume
+an isolated application; the datasheet gives no caution against this
+design's non-isolated, shared-ground use, since the windings remain
+galvanically separate regardless of how the secondary return is
+externally referenced --- the design simply forgoes the isolation the
+part is capable of providing.

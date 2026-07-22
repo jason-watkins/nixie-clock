@@ -1,0 +1,177 @@
+\section{5~V and 3.3~V converters: driving component characteristics}
+\label{sec:lv-components}
+
+The 5~V rail (for the four K155ID1 BCD decoder/drivers) and the 3.3~V
+rail (for the ESP32-S3-WROOM-1 MCU module) are each produced by a
+fixed-output synchronous buck built around one IC family: the
+AP63205WU (5~V, \textsc{u401}) and the AP63203WU (3.3~V,
+\textsc{u411}). Both are named, design-driving parts and are verified
+from datasheet here, alongside the MCU module whose supply-current
+profile sets the 3.3~V rail's load budget.
+
+\subsection{AP63205WU / AP63203WU synchronous buck converters}
+\label{sec:ap632xx}
+
+Source: \texttt{AP632XX.pdf} (Diodes Incorporated, DS41326 Rev.\ 3-2,
+Nov.\ 2024). This is a family datasheet covering AP63200, AP63201,
+AP63203, AP63205, and AP63212; the ordering-information table (p.~16)
+confirms product-version digit ``3'' is the 3.3~V fixed-output part
+(AP63203) and digit ``5'' is the 5.0~V fixed-output part (AP63205),
+both in the TSOT26 (industry TSOT-23-6) package, both switching at
+1.1~MHz. On both fixed variants the FB pin is wired directly to
+\(V_{OUT}\); the feedback divider is entirely internal, so the
+datasheet's ``\(V_{FB}\)'' accuracy specification \emph{is} the
+output-voltage accuracy specification, not a scaled reference.
+
+\begin{longtable}{L{4.6cm}L{3.2cm}L{5.2cm}L{1.2cm}}
+\toprule
+Parameter & Value & Conditions & Page \\
+\midrule
+\endhead
+Input voltage, absolute maximum & \(-0.3\) to \SI{35}{\volt} (DC); \SI{40}{\volt} (400~ms transient) & Common to family & 4 \\
+Input voltage, recommended operating & \SIrange{3.8}{32}{\volt} & \(T_A=-40\) to \SI{85}{\celsius} & 4 \\
+Output voltage, AP63203 (3.3~V) & 3.27 / 3.30 / 3.33~V (min/typ/max) & CCM, \(V_{FB}=V_{OUT}\) & 5 \\
+Output voltage, AP63205 (5~V) & 4.95 / 5.00 / 5.05~V (min/typ/max) & CCM, \(V_{FB}=V_{OUT}\) & 5 \\
+Switching frequency & \SI{1100}{\kilo\hertz} typ, \(\pm6\%\) spread-spectrum dither & Common to family & 5 \\
+Minimum on-time & \SI{80}{\nano\second} typ & Common to family & 5 \\
+Quiescent current & \SI{22}{\micro\ampere} typ & No load, non-switching, \(V_{EN}\)=open & 5 \\
+Shutdown supply current & 1 / 3~\si{\micro\ampere} (typ/max) & \(V_{EN}=0\)~V & 5 \\
+HS peak current limit & 2.5 / 2.8 / 3.1~A (min/typ/max) & Cycle-by-cycle, senses high-side FET & 5 \\
+LS valley current limit & 2.5 / 3.2 / 3.9~A (min/typ/max) & See note below & 5 \\
+EN logic-high threshold & 1.15 / 1.18 / 1.23~V (min/typ/max) & Rising; enables device, starts soft-start & 5 \\
+EN logic-low threshold & 1.05 / 1.10 / 1.15~V (min/typ/max) & Falling; disables device & 5 \\
+EN input current & 5.5~\si{\micro\ampere} typ @ \(V_{EN}=1.5\)~V; 1.5~\si{\micro\ampere} typ @ \(V_{EN}=1\)~V & Internal 1.5~\si{\micro\ampere} pull-up from internal LDO & 5, 10 \\
+Soft-start period & \SI{4}{\milli\second} typ, fixed internal & Not externally programmable & 5, 9, 11 \\
+VIN UVLO, rising / falling & 3.50 / \(\approx\)3.06~V typ & Hysteresis \SI{440}{\milli\volt} typ & 5, 11 \\
+High-side \(R_{DS(ON)}\) & \SI{125}{\milli\ohm} typ & Common to family & 5 \\
+Low-side \(R_{DS(ON)}\) & \SI{68}{\milli\ohm} typ & Common to family & 5 \\
+Recommended output capacitor & \SIrange{22}{68}{\micro\farad} ceramic, low ESR & General guidance; BOM tables use \(2\times22\)~\si{\micro\farad} for both variants & 13, 14 \\
+Recommended input capacitor & \(>\)\SI{10}{\micro\farad} ceramic & Low ESR; RMS rating \(>\) half max load current; BOM tables use \SI{10}{\micro\farad} & 13 \\
+Inductor selection equation & \(L = \dfrac{V_{OUT}(V_{IN}-V_{OUT})}{V_{IN}\,\Delta I_L\,f_{SW}}\) & \(\Delta I_L\) recommended 30--50\% of the 2~A max load & 13 \\
+Recommended inductance range & \SIrange{2.2}{10}{\micro\henry} & General guidance & 13 \\
+Recommended inductor, AP63203 (3.3~V) BOM table & \SI{3.9}{\micro\henry} & Table 2 & 13 \\
+Recommended inductor, AP63205 (5~V) BOM table & \SI{4.7}{\micro\henry} & Table 3 & 13 \\
+Inductor saturation-current margin & \(\geq\)35\% above max load current & DCR \(<100\)~m\(\Omega\) recommended for efficiency & 13 \\
+Dropout voltage & No numeric spec & Qualitative only: near-100\%-duty ``LDO mode,'' HS FET held on, LS FET pulsed periodically to refresh the BST cap & 14 \\
+Thermal shutdown & \SI{160}{\celsius} typ (EC table) & See note on inconsistency below & 5, 11, 12 \\
+\(\theta_{JA}\) (TSOT26) & \SI{89}{\celsius\per\watt} & FR-4, single layer, 2~oz Cu, minimum pad & 4 \\
+BST capacitor, recommended & \SI{100}{\nano\farad} & Ceramic, SW-to-BST & 2, 14 \\
+VSW absolute maximum & \(-1.0\) to \(V_{IN}+0.3\)~V & & 4 \\
+VEN absolute maximum & \(-0.3\) to \SI{35}{\volt} & Same as VIN; EN is a high-voltage pin & 4 \\
+\bottomrule
+\end{longtable}
+
+\paragraph{EN floating or tied to VIN are both valid always-on
+configurations,} per the datasheet (an internal 1.5~\si{\micro\ampere}
+pull-up auto-enables the part when EN floats, and EN is explicitly
+rated as a high-voltage pin safe to tie directly to VIN) --- relevant
+because both bucks in this design enable directly from their own input
+rail rather than from a sequenced logic signal.
+
+\paragraph{Thermal shutdown threshold is stated three different ways}
+across the document: the Electrical Characteristics table gives
+\SI{160}{\celsius} typ with \SI{25}{\celsius} hysteresis (implying a
+\(\approx\)\SI{135}{\celsius} restart), the narrative Thermal Shutdown
+section states \SI{150}{\celsius} shutdown / \SI{130}{\celsius}
+restart, and the Power Derating section separately recommends keeping
+\(T_J\) below \SI{125}{\celsius} for design margin. The
+production-tested table value is treated as authoritative for
+compliance; \SI{125}{\celsius} is the more conservative design target
+used in \cref{sec:5v-converter,sec:3v3-converter}.
+
+\paragraph{The ``LS valley current limit'' figure (2.5/3.2/3.9~A) is
+higher than the ``HS peak current limit'' (2.5/2.8/3.1~A),} which is
+unusual naming for a high-side peak-current-mode part: ordinarily a
+valley limit sensed on the low-side FET would be expected to trip
+\emph{below} the peak limit, not above it. The datasheet gives no
+further explanation of what the labeled ``valley'' limit protects
+against. \Cref{sec:5v-converter,sec:3v3-converter} therefore treat the
+HS peak current limit as the operative cycle-by-cycle limit for margin
+calculations, since it is both the lower figure and the one whose
+function (peak inductor current limiting) matches the part's stated
+control architecture.
+
+\paragraph{No numeric dropout spec.} When \(V_{IN}\) approaches
+\(V_{OUT}\), the part enters a qualitatively-described ``LDO mode''
+(high-side FET held on nearly continuously, low-side FET pulsed
+periodically only to refresh the bootstrap capacitor) rather than
+failing to regulate outright. Where dropout behavior matters ---
+specifically the 3.3~V rail's alternate UART-supplied input path in
+\cref{sec:3v3-converter} --- the resulting output is estimated from
+\(R_{DS(ON)}\) and inductor DCR rather than read from a table, since no
+such table exists.
+
+\subsection{ESP32-S3-WROOM-1 MCU module}
+\label{sec:esp32}
+
+Source: \texttt{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}
+(Espressif). This is a generic module datasheet covering ten-plus
+flash/PSRAM SKUs (N4/N8/N16 flash; no-PSRAM/R2/R8/R16V PSRAM options)
+under one part number; the schematic specifies the module generically
+with no flash/PSRAM suffix, so the exact installed configuration is
+not determinable from the schematic alone.
+
+\begin{longtable}{L{4.8cm}L{2.8cm}L{4.8cm}L{1.2cm}}
+\toprule
+Parameter & Value & Conditions & Page \\
+\midrule
+\endhead
+VDD33 recommended operating range & \SIrange{3.0}{3.6}{\volt}, 3.3~V typ & & 27 \\
+VDD33 absolute maximum & \(-0.3\) to \SI{3.6}{\volt} & Identical to the recommended maximum --- no extra headroom above 3.6~V & 27 \\
+External supply current capability required & \(\geq\)\SI{0.5}{\ampere} & Table 6-2, ``current delivered by external power supply'' --- Espressif's own minimum regulator sizing requirement & 27 \\
+Wi-Fi TX peak (highest of all published conditions) & \SI{355}{\milli\ampere} & 802.11b, 1~Mbps, @20.5~dBm; rated at 100\% TX duty cycle & 28 \\
+Wi-Fi TX, 802.11n HT40 MCS7 @17~dBm & \SI{285}{\milli\ampere} & & 28 \\
+Wi-Fi RX & 95 / \SI{97}{\milli\ampere} & HT20 / HT40; peripherals disabled, CPU idle & 28 \\
+Bluetooth LE TX peak & \SI{344}{\milli\ampere} & @20.0~dBm (max power) & 28 \\
+Bluetooth LE RX & \SI{93}{\milli\ampere} & & 28 \\
+Modem-sleep, lowest & \SI{13.2}{\milli\ampere} typ (18.8~mA with peripheral clocks enabled) & WAITI, dual-core idle, 40~MHz & 29 \\
+Modem-sleep, highest & \SI{91.7}{\milli\ampere} typ (107.9~mA with peripheral clocks enabled) & Dual-core, 128-bit access, 240~MHz & 29 \\
+Light-sleep & \SI{240}{\micro\ampere} typ & Wi-Fi and VDD\_SPI powered down, GPIOs Hi-Z & 30 \\
+Deep-sleep (various ULP configurations) & \SIrange{7}{190}{\micro\ampere} typ & See page for the specific ULP/RTC configuration & 30 \\
+Power off & \SI{1}{\micro\ampere} typ & EN held low & 30 \\
+EN recommended external network & \(R=10\)~k\(\Omega\), \(C=1\)~\si{\micro\farad} & Espressif reference ``Peripheral Schematics'' circuit --- matches this board's R501/C503 exactly & 41 \\
+EN reset-release threshold & \(\geq0.75\times V_{DD}\) & \(\approx\)2.475~V at \(V_{DD}=3.3\)~V & 27--28 \\
+EN reset threshold & \(\leq0.25\times V_{DD}\) & \(\approx\)0.825~V at \(V_{DD}=3.3\)~V & 27--28 \\
+EN/strapping setup and hold time & \(t_{SU}\geq0\), \(t_H\geq3\)~ms & Table 4-2 & 14 \\
+GPIO0 (boot strap) default state & Weak pull-up, high = SPI boot (normal) & Internal \(\approx\)45~k\(\Omega\) pull-up; no external pull resistor required; pulling low selects download-mode boot & 13--14, 27 \\
+ESD rating & HBM \(\pm\)2000~V, CDM \(\pm\)500~V & & 47 \\
+Flash current adder (modem-sleep, 80~Mbit/s, SPI 2-line) & \(+10\)~mA & Added atop the base modem-sleep figures when flash is accessed & 29 \\
+PSRAM current adder (light-sleep) & \(+40\) to \(+200\)~\si{\micro\ampere} & Depends on PSRAM size/interface/voltage; no adder is published for active-mode Wi-Fi TX/RX & 30 \\
+GPIO \(V_{IH}\) / \(V_{IL}\) & \(\geq0.75\times V_{DD}\) / \(\leq0.25\times V_{DD}\) & Table 6-3, \SI{25}{\celsius} & 27 \\
+GPIO \(V_{OH}\) / \(V_{OL}\) & \(\geq0.8\times V_{DD}\) / \(\leq0.1\times V_{DD}\) & High-impedance load & 27 \\
+GPIO source/sink current & 40 / \SI{28}{\milli\ampere} typ & \(V_{DD}=3.3\)~V, PAD\_DRIVER=3 & 27 \\
+GPIO internal weak pull-up/down & \SI{45}{\kilo\ohm} typ each & & 27 \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Not specified in this module datasheet.} Brown-out/POR
+threshold for VDD33 undervoltage detection, and any GPIO absolute
+maximum voltage beyond the recommended \(V_{IH}\) maximum
+(\(V_{DD}+0.3\)~V) --- both live in the ESP32-S3 chip-level datasheet,
+which this module document references but does not reproduce.
+
+\paragraph{Installed flash/PSRAM configuration is unconfirmed.} The
+current-consumption tables explicitly note that PSRAM-equipped SKUs
+draw more current than the tabulated baseline: an adder is published
+for light-sleep (\(+40\) to \(+200\)~\si{\micro\ampere}) and for
+modem-sleep with flash access (\(+10\)~mA), but \emph{no} adder is
+given for active-mode Wi-Fi TX/RX --- so if the installed module has
+PSRAM, the 285--355~mA active-mode figures above may understate real
+draw by an amount Espressif does not quantify. \Cref{sec:3v3-converter}
+treats the published figures as the design point and flags this as an
+open, unquantified margin item rather than papering over it.
+
+\paragraph{EN network matches Espressif's own reference exactly.} The
+board's populated R501 (10~k\(\Omega\)) and C503 (1~\si{\micro\farad})
+on the ESP32's EN pin are identical to the values in Espressif's own
+recommended application circuit --- confirmed, not merely
+plausible.
+
+\paragraph{The regulator must tolerate the full Wi-Fi TX transient, not
+just steady-state draw.} Espressif's own stated minimum external
+supply-current capability (\(\geq\)0.5~A) is driven directly by the
+355~mA Wi-Fi TX peak plus margin; a buck sized only for the module's
+idle/modem-sleep current (tens of mA) would brown out during a
+transmit burst. \Cref{sec:3v3-converter} sizes the 3.3~V converter
+against this transient requirement, not against an averaged current
+figure.

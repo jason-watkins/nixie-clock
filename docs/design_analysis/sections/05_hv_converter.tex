@@ -1,0 +1,957 @@
+\section{170~V flyback converter derivation}\label{sec:hv-converter}
+
+This section derives, from first principles and the component data established in
+\cref{sec:in12b,sec:in6,sec:bcd-driver,sec:lm5155,sec:da2032}, every electrical
+characteristic the 170~V flyback converter must have, and compares each derived value
+against the populated Rev-A schematic. The schematic connectivity used here was taken
+from the exported netlist of the \texttt{HV} sheet, not from prose notes; reference
+designators below refer to that sheet. Where a populated value disagrees with the
+derivation, or agrees only with thin margin, the disagreement is stated as a flag
+rather than reconciled away.
+
+Two operating points recur throughout:
+\begin{description}
+  \item[Nominal] $V_{\mathrm{BUS}} = \SI{9}{\volt}$ (the lower USB-PD contract),
+    output trimmed to \SI{170}{\volt}, tube currents as set by the populated ballasts.
+  \item[Design-max envelope] $V_{\mathrm{BUS}} = \SI{8.5}{\volt}$ (bottom of the input
+    window, worst case for primary current), output at \SI{180}{\volt} (the trim
+    ceiling recommended in \cref{sec:hv-setpoint}), and every tube simultaneously at
+    its datasheet-maximum current. This envelope is deliberately conservative; no
+    real operating condition reaches all of its corners at once.
+\end{description}
+
+\subsection{Load requirement and ballast verification}\label{sec:hv-load}
+
+\subsubsection{Digit tubes (NX1--NX4, ballasts R1--R4)}
+
+Each IN-12B anode is fed from the rail through its ballast; the selected cathode
+returns through a K155ID1 output. The ballast equation is
+\begin{align*}
+  R_A &= \frac{V_{\mathrm{rail}} - V_M - V_K}{I_K},
+\end{align*}
+with maintaining voltage $V_M = \SI{145}{\volt}$ (typical, no tabulated spread;
+\cref{sec:in12b}) and driver on-state drop $V_K$. The driver's \SI{2.5}{\volt}
+maximum is specified at \SI{7}{\milli\ampere} (\cref{sec:bcd-driver}), more than
+double the current here, so \SI{2.5}{\volt} serves as the conservative bound and
+\SI{1.0}{\volt} as the expected value at \SIrange{2.5}{3.5}{\milli\ampere}
+(assumption: saturation drop falls roughly with collector current; the true value is
+bounded below by a few hundred millivolts).
+
+At the \SI{170}{\volt} setpoint, the drop across the ballast is
+$170 - 145 - 2.5 = \SI{22.5}{\volt}$ (conservative) to \SI{24}{\volt} (expected).
+The DC cathode-current window \SIrange{2.5}{3.5}{\milli\ampere} (\cref{sec:in12b})
+then requires
+\begin{align*}
+  R_A &\in \left[\frac{\SI{22.5}{\volt}}{\SI{3.5}{\milli\ampere}},\;
+               \frac{\SI{22.5}{\volt}}{\SI{2.5}{\milli\ampere}}\right]
+       = [\SI{6.43}{\kilo\ohm},\, \SI{9.00}{\kilo\ohm}].
+\end{align*}
+The populated \SI{8.2}{\kilo\ohm} sits inside this band, toward the low-current end:
+\begin{align*}
+  I_K &= \frac{\SI{22.5}{\volt}}{\SI{8.2}{\kilo\ohm}} = \SI{2.74}{\milli\ampere}
+  \quad (V_K = \SI{2.5}{\volt}), &
+  I_K &= \frac{\SI{24}{\volt}}{\SI{8.2}{\kilo\ohm}} = \SI{2.93}{\milli\ampere}
+  \quad (V_K = \SI{1.0}{\volt}).
+\end{align*}
+Ballast dissipation is $I_K^2 R_A \approx \SI{70}{\milli\watt}$, trivial for the
+populated DIN0207 axial parts ($\approx\SI{0.6}{\watt}$ rating). At \SI{170}{\volt}
+the populated value is a match. Its behavior at a raised setpoint is deferred to
+\cref{sec:hv-setpoint}, where it becomes the principal tension of this section.
+
+The IN-12B decimal-point cathode is unconnected in this design (no driver signal
+exists for it anywhere in the schematic or BOM) and contributes zero current.
+
+\subsubsection{Colon tubes (NX5--NX6, ballasts R5--R6)}
+
+For the IN-6, the conservative maintaining figure is \SI{90}{\volt}
+(\cref{sec:in6}; the higher of the two datasheet figures is used because it
+minimizes the computed current, which is the pessimistic direction for verifying the
+lower current bound). With the permissible anode-current window
+\SIrange{0.6}{0.85}{\milli\ampere}:
+\begin{align*}
+  V_{\mathrm{drop}} &= 170 - 90 - 2.5 = \SI{77.5}{\volt}, \\
+  R_A &\in \left[\frac{\SI{77.5}{\volt}}{\SI{0.85}{\milli\ampere}},\;
+               \frac{\SI{77.5}{\volt}}{\SI{0.6}{\milli\ampere}}\right]
+       = [\SI{91.2}{\kilo\ohm},\, \SI{129}{\kilo\ohm}].
+\end{align*}
+The populated \SI{120}{\kilo\ohm} lies inside the band:
+$I = \SIrange{0.646}{0.658}{\milli\ampere}$ depending on the assumed driver drop,
+comfortably above the \SI{0.25}{\milli\ampere} minimum indication current. At
+\SI{180}{\volt} the band shifts to \SIrange{103}{146}{\kilo\ohm} and the populated
+value still falls inside it ($I = \SIrange{0.73}{0.74}{\milli\ampere}$): unlike the
+digit ballasts, the colon ballasts tolerate the whole recommended trim range.
+Match.
+
+\subsubsection{Aggregate current budget}
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Load element & Nominal (\SI{170}{\volt}) & Design-max (\SI{180}{\volt}) \\
+\midrule
+NX1--NX4 digit cathodes & $4 \times 2.93 = \SI{11.71}{\milli\ampere}$
+  & $4 \times 3.50 = \SI{14.00}{\milli\ampere}$ \\
+NX5--NX6 colon anodes & $2 \times 0.66 = \SI{1.32}{\milli\ampere}$
+  & $2 \times 0.85 = \SI{1.70}{\milli\ampere}$ \\
+Bleeder R202 (\SI{470}{\kilo\ohm}) & \SI{0.36}{\milli\ampere} & \SI{0.38}{\milli\ampere} \\
+Feedback divider ($\approx\SI{1.74}{\mega\ohm}$) & \SI{0.10}{\milli\ampere} & \SI{0.10}{\milli\ampere} \\
+\midrule
+Total $I_{\mathrm{out}}$ & \SI{13.5}{\milli\ampere} & \SI{16.2}{\milli\ampere} \\
+$P_{\mathrm{out}} = V_{\mathrm{out}} I_{\mathrm{out}}$ & \SI{2.29}{\watt} & \SI{2.91}{\watt} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The design-max column assumes every tube at its specification maximum
+simultaneously; with the populated ballasts this cannot actually occur at any single
+trim point, so \SI{2.91}{\watt} is a strict upper envelope for converter sizing.
+
+\subsection{Output setpoint, trim range, and ignition margin}\label{sec:hv-setpoint}
+
+\subsubsection{Feedback divider and trim range}
+
+The divider runs $+170\,\mathrm{V} \rightarrow R203\,(\SI{866}{\kilo\ohm})
+\rightarrow R204\,(\SI{866}{\kilo\ohm}) \rightarrow \mathrm{FB} \rightarrow
+R205\,(\SI{8.87}{\kilo\ohm}) \rightarrow RV201 \rightarrow \mathrm{GND}$, with
+RV201 (Bourns 3296W, \SI{2}{\kilo\ohm}) in rheostat connection (wiper and one end
+grounded), contributing \SIrange{0}{2}{\kilo\ohm}. With
+$V_{\mathrm{REF}} = \SI{1.00}{\volt}$ (\cref{sec:lm5155}):
+\begin{align*}
+  V_{\mathrm{out}} &= V_{\mathrm{REF}}
+    \left(1 + \frac{R_{203} + R_{204}}{R_{205} + R_{V}}\right)
+    = 1 + \frac{1732}{8.87 + R_{V}[\si{\kilo\ohm}]}\ \si{\volt},\\[2pt]
+  V_{\mathrm{out}}(R_V = 0)
+    &= 1 + \frac{1732}{8.87} = \SI{196.3}{\volt} \quad\text{(maximum)},\\
+  V_{\mathrm{out}}(R_V = \SI{2}{\kilo\ohm})
+    &= 1 + \frac{1732}{10.87} = \SI{160.3}{\volt} \quad\text{(minimum)}.
+\end{align*}
+The \SI{170}{\volt} nameplate sits at $R_V = 1732/169 - 8.87 = \SI{1.38}{\kilo\ohm}$
+(69\,\% of travel) and \SI{180}{\volt} at $R_V = \SI{0.81}{\kilo\ohm}$ (40\,\%).
+Local sensitivity at mid-range is $\mathrm{d}V/\mathrm{d}R_V =
+1732/R_B^2 \approx \SI{16.5}{\volt}$ per \si{\kilo\ohm}; the 25-turn element gives
+roughly \SI{1.3}{\volt} per turn --- adequate resolution for setting the rail to
+within about $\pm\SI{1}{\volt}$. Divider current is
+$(V_{\mathrm{out}}-1)/\SI{1.732}{\mega\ohm} \approx \SI{98}{\micro\ampere}$, large
+against FB input bias, small against the load.
+
+Static tolerance (1\,\% resistors, $\pm1\,\%$ reference) shifts the endpoints by
+roughly $\pm2.7\,\%$ worst case, but the trimmer calibrates all static error out;
+what tolerance does affect is range coverage. Even at the unfavorable corner the
+achievable maximum exceeds \SI{190}{\volt} and the achievable minimum is below
+\SI{165}{\volt}, so the range \SIrange{170}{185}{\volt} needed below is covered under
+all tolerance combinations. Post-trim setpoint uncertainty reduces to the reference
+tolerance and drift, about $\pm\SI{2}{\volt}$, plus trim granularity
+$\approx\pm\SI{0.7}{\volt}$.
+
+\subsubsection{Divider element stress}
+
+Pre-strike leakage aside, R203 and R204 split $(V_{\mathrm{out}}-1)$ evenly:
+\SI{84.5}{\volt} each at \SI{170}{\volt}, \SI{97.7}{\volt} each at the
+\SI{196.3}{\volt} trim ceiling. The populated parts are DIN0207 axial metal film,
+whose standard limiting element voltage is \SI{250}{\volt} (assumption: generic
+DIN0207 rating; not recorded in the schematic). Margin exceeds $2.5\times$ even at
+the trim ceiling, and dissipation is
+$97.7^2/\SI{866}{\kilo\ohm} = \SI{11}{\milli\watt}$. The two-resistor split is
+therefore not strictly required for voltage rating with these parts, but it keeps
+each element far from its limit and is retained. R205 and RV201 see about
+\SI{1}{\volt}. Match.
+
+\subsubsection{Ignition margin}\label{sec:hv-ignition}
+
+Before ignition a tube draws no current, so no voltage drops across ballast or
+driver and the full rail appears across the selected gap. The IN-12B ignition
+voltage is guaranteed $\le\SI{170}{\volt}$ (\cref{sec:in12b}; this verified figure
+supersedes the earlier unsourced $\sim$\SI{200}{\volt} aged-tube assumption in the
+project notes). The IN-6 strikes at $\le\SI{140}{\volt}$ and is never limiting.
+
+A setpoint of exactly \SI{170}{\volt} therefore provides \emph{zero} margin against
+a worst-case tube, and negative margin once post-trim setpoint uncertainty
+($\approx\pm\SI{2}{\volt}$) is counted. The required margin above the
+\SI{170}{\volt} guarantee is built from identifiable terms rather than asserted:
+\begin{itemize}[nosep]
+  \item post-trim setpoint uncertainty and drift: $\pm\SI{2}{\volt}$, plus trim and
+    measurement granularity $\approx\SI{1}{\volt}$;
+  \item strike-voltage growth over life (cathode sputtering, gas cleanup) and the
+    dark effect (statistical ignition delay without ambient photoionization): not
+    quantified by the IN-12B datasheet; an allowance of \SI{5}{\volt} is adopted,
+    consistent with the widely used hobbyist rule of thumb of roughly \SI{10}{\volt}
+    total margin, which this budget approximately reproduces rather than assumes;
+  \item failure mode if marginal: a digit intermittently failing to strike at cold
+    power-on in darkness --- annoying and hard to reproduce, which argues for
+    covering the unquantified terms generously.
+\end{itemize}
+Total: $\ge\SI{8}{\volt}$, rounded to \SI{10}{\volt}. The setpoint should be
+\SI{180}{\volt}, which the derived trim range reaches with \SI{16}{\volt} to spare.
+
+\textbf{Flag (principal tension of this section).} At \SI{180}{\volt} the digit
+ballast current becomes
+\begin{align*}
+  I_K = \frac{180 - 145 - V_K}{\SI{8.2}{\kilo\ohm}}
+      = \SIrange{3.96}{4.15}{\milli\ampere}
+  \quad (V_K = \SIrange{2.5}{1.0}{\volt}),
+\end{align*}
+exceeding the \SI{3.5}{\milli\ampere} DC maximum of \cref{sec:in12b}. The populated
+\SI{8.2}{\kilo\ohm} and the ignition-margin requirement are mutually inconsistent:
+either the rail stays near \SI{170}{\volt} (correct tube current, no worst-case
+ignition margin) or it moves to \SI{180}{\volt} (correct margin, over-current
+digits). The intermediate \SI{175}{\volt} gives only \SI{5}{\volt} of margin while
+already grazing the current limit ($\SIrange{3.35}{3.54}{\milli\ampere}$). The
+consistent resolution is $R1$--$R4 \rightarrow$ \SIrange{10}{11}{\kilo\ohm} with the
+rail trimmed to \SI{180}{\volt}, giving \SIrange{2.9}{3.3}{\milli\ampere} and full
+margin; the colon ballasts need no change. This is a Rev-B value change, not a
+topology change. Until then, the practical mitigation is to trim to
+\SI{175}{\volt} and accept reduced margin, on the argument that typical (not
+worst-case) IN-12B ignition sits well below \SI{170}{\volt}.
+
+\subsubsection{The datasheet's 200/250~V anode-supply figures}
+
+The IN-12B datasheet separately states a minimum anode supply of \SI{200}{\volt} and
+a recommended \SI{250}{\volt}~DC, both above this design's rail. The working
+hypothesis of \cref{sec:in12b} is that these figures serve the tube's other
+specified supply mode --- unfiltered half-wave-rectified AC --- in which the tube
+must re-ignite every mains cycle and conducts only near the crest, so the supply
+must carry substantial peak headroom above the ignition voltage merely to achieve a
+usable conduction angle and average brightness. A regulated, continuously present DC
+rail faces neither constraint: ignition happens once per power-up, and the operating
+point is fixed by the ballast. On that reading, the physically grounded DC
+requirements are exactly the ones derived above --- guaranteed strike
+($\ge V_{\mathrm{ign,max}}$ plus margin) and cathode current inside the specified
+band --- both of which a \SI{180}{\volt} rail satisfies. This interpretation is not
+confirmed by the source document, and is carried as an accepted-with-rationale
+assumption: if the \SI{200}{\volt} minimum in fact encodes an additional DC-mode
+requirement, the design is relying on the verified $\le\SI{170}{\volt}$ ignition
+line instead of it. The off-state cathode-voltage exposure of the unselected
+K155ID1 outputs at this rail voltage was analyzed and accepted in
+\cref{sec:bcd-voltage-risk}; the rail range derived here
+(\SIrange{170}{180}{\volt}) is within the envelope that acceptance was conditioned
+on.
+
+\subsection{Switching frequency and RT}\label{sec:hv-fsw}
+
+For the given \SI{150}{\kilo\hertz} target (an aesthetic-driven choice, accepted as
+input), the RT equation of \cref{sec:lm5155} gives
+\begin{align*}
+  R_T &= \frac{2.21\times10^{10}}{f_{RT}} - 955
+       = \frac{2.21\times10^{10}}{1.5\times10^{5}} - 955
+       = \SI{146.4}{\kilo\ohm}.
+\end{align*}
+The nearest E96 value is the populated $R209 = \SI{147}{\kilo\ohm}$, giving
+\begin{align*}
+  f_{RT} &= \frac{2.21\times10^{10}}{147\,000 + 955} = \SI{149.4}{\kilo\hertz}
+\end{align*}
+($-0.4\,\%$ from target; period $T = \SI{6.695}{\micro\second}$). All subsequent
+arithmetic uses \SI{149.4}{\kilo\hertz}. Match.
+
+The DA2032-AL is characterized only at a \SI{100}{\kilo\hertz} test point
+(\cref{sec:da2032}); operating it at \SI{149.4}{\kilo\hertz} is an extrapolation.
+For a DCM flyback the inductance and saturation figures translate directly, but
+core loss at the higher frequency is uncharacterized; it is carried below as an
+explicit allowance, and this extrapolation is listed as an assumption in the
+summary.
+
+\subsection{Operating point and efficiency}\label{sec:hv-op}
+
+In DCM the converter transfers a fixed packet of magnetizing energy each cycle:
+\begin{align*}
+  P_{\mathrm{in}} = \tfrac{1}{2} L_p I_{\mathrm{pk}}^2 f_{\mathrm{sw}}
+  \quad\Longrightarrow\quad
+  I_{\mathrm{pk}} = \sqrt{\frac{2 P_{\mathrm{in}}}{L_p f_{\mathrm{sw}}}},
+  \qquad
+  P_{\mathrm{in}} = \frac{P_{\mathrm{out}}}{\eta}.
+\end{align*}
+Efficiency is not assumed; it is iterated: guess $\eta$, compute $P_{\mathrm{in}}$
+and $I_{\mathrm{pk}}$, evaluate each loss mechanism, recompute $\eta$, repeat to
+convergence. The loss models and their inputs:
+\begin{description}[style=nextline]
+  \item[Primary conduction] Triangular current over $t_{\mathrm{on}}$:
+    $I_{\mathrm{rms}} = I_{\mathrm{pk}}\sqrt{D/3}$ through
+    $R_{DS(\mathrm{on})} + R_{201} + R_{\mathrm{DCR,pri}}
+     = 55 + 39 + 13 = \SI{107}{\milli\ohm}$.
+    IRL540N on-resistance is specified \SI{53}{\milli\ohm} maximum at
+    $V_{GS}=\SI{5}{\volt}$; \SI{55}{\milli\ohm} is used as a warm estimate at the
+    \SI{6.85}{\volt} gate rail (commodity-part typical figures; assumption).
+  \item[Turn-off overlap] The dominant and least certain term. The IRL540N is a
+    large TO-220 die ($Q_{GD}\approx\SI{25}{\nano\coulomb}$ typical) discharged
+    through $R211=\SI{10}{\ohm}$ plus driver resistance at a Miller plateau near
+    \SI{2}{\volt}, so the voltage-transition interval is tens to $\sim$200
+    nanoseconds depending on which capacitance-versus-voltage regime dominates. An
+    effective overlap $t_{\mathrm{ovl}} = \SI{100}{\nano\second}$ is adopted, with
+    the commutation voltage $V_{\mathrm{com}} = V_{\mathrm{BUS}} +
+    V_{\mathrm{refl}}$:
+    $E_{\mathrm{off}} \approx \tfrac{1}{2} I_{\mathrm{pk}} V_{\mathrm{com}}
+    t_{\mathrm{ovl}}$. \textbf{This estimate is uncertain by a factor of
+    $\sim$2 either way} and dominates the efficiency error bar. Turn-on is
+    near-lossless in DCM (zero current; $C_{oss}$ discharge from the post-ring
+    drain voltage contributes only a few milliwatts).
+  \item[Gate drive and controller] $P = (Q_G f_{\mathrm{sw}} + I_Q) V_{\mathrm{BUS}}$
+    with $Q_G \approx \SI{40}{\nano\coulomb}$ at the \SI{6.85}{\volt} VCC rail
+    (scaled from the \SI{10}{\volt} datasheet point; assumption) and controller
+    operating current $I_Q \le \SI{480}{\micro\ampere}$ (\ds{lm5155.pdf}{1}). Gate
+    charge is drawn through the internal VCC regulator from BIAS
+    ($=V_{\mathrm{BUS}}$), so the full input voltage is charged to this loss.
+  \item[RCD clamp] Leakage energy $\tfrac{1}{2} L_{\mathrm{lk}} I_{\mathrm{pk}}^2$
+    per cycle, dissipated in R212 with the clamp-voltage multiplier derived in
+    \cref{sec:hv-clamp}.
+  \item[Rectifier] $V_F \approx \SI{1.0}{\volt}$ (ultrafast-diode class figure at
+    $\sim$\SI{0.2}{\ampere}) times $I_{\mathrm{out}}$; recovery loss is negligible
+    because in DCM the secondary current reaches zero before the switch turns on.
+  \item[Secondary conduction] $I_{s,\mathrm{rms}}^2 \times \SI{1.60}{\ohm}$ DCR.
+  \item[Capacitor ESR] Input ($\approx\SI{30}{\milli\ohm}$ polymer bulk plus
+    ceramics) and output ($\approx\SI{5}{\ohm}$ small high-voltage electrolytic)
+    ESR estimates; both small.
+  \item[Core] Uncharacterized at this frequency; a \SI{50}{\milli\watt} allowance
+    is carried (assumption, flagged).
+\end{description}
+
+Iterating at the design-max envelope ($P_{\mathrm{out}} = \SI{2.91}{\watt}$,
+$V_{\mathrm{BUS}} = \SI{8.5}{\volt}$, $V_{\mathrm{out}} = \SI{180}{\volt}$,
+reflected voltage $V_{\mathrm{refl}} = (180+1)/10 = \SI{18.1}{\volt}$), from a seed
+of $\eta_0 = 0.85$ the loop converges in three passes to $\eta = 0.796$. The
+converged cycle:
+\begin{align*}
+  P_{\mathrm{in}} &= \frac{2.914}{0.796} = \SI{3.66}{\watt}, &
+  E_{\mathrm{cyc}} &= \frac{3.66}{149.4\times10^{3}} = \SI{24.5}{\micro\joule},\\
+  I_{\mathrm{pk}} &= \sqrt{\frac{2 \times 24.5\,\si{\micro\joule}}
+                                 {\SI{10}{\micro\henry}}} = \SI{2.21}{\ampere}, &
+  t_{\mathrm{on}} &= \frac{L_p I_{\mathrm{pk}}}{V_{\mathrm{BUS}}}
+                   = \frac{10\,\si{\micro\henry} \times 2.21}{8.5}
+                   = \SI{2.61}{\micro\second},\\
+  D &= t_{\mathrm{on}} f_{\mathrm{sw}} = 0.39, &
+  I_{\mathrm{rms,pri}} &= I_{\mathrm{pk}}\sqrt{D/3} = \SI{0.80}{\ampere}.
+\end{align*}
+Converged loss budget at this point:
+
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Mechanism & Loss \\
+\midrule
+MOSFET turn-off overlap ($t_{\mathrm{ovl}}=\SI{100}{\nano\second}$) & \SI{440}{\milli\watt} \\
+RCD clamp (R212) & \SI{88}{\milli\watt} \\
+Primary conduction (FET 35, R201 25, DCR 8) & \SI{68}{\milli\watt} \\
+Gate drive + controller & \SI{55}{\milli\watt} \\
+Core allowance (uncharacterized) & \SI{50}{\milli\watt} \\
+Capacitor ESR (input + output) & \SI{24}{\milli\watt} \\
+Rectifier D201 conduction & \SI{16}{\milli\watt} \\
+Secondary DCR & \SI{5}{\milli\watt} \\
+\midrule
+Total & \SI{746}{\milli\watt} \\
+$\eta = 2.914/(2.914+0.746)$ & $0.796$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The same procedure at the nominal point ($\SI{2.29}{\watt}$, \SI{9}{\volt},
+\SI{170}{\volt}) converges to $\eta = 0.78$, $P_{\mathrm{in}} = \SI{2.94}{\watt}$,
+$E_{\mathrm{cyc}} = \SI{19.7}{\micro\joule}$, $I_{\mathrm{pk}} = \SI{1.99}{\ampere}$,
+$I_{\mathrm{in}} = \SI{0.33}{\ampere}$ average. Nominal efficiency is slightly
+\emph{lower} than at full load because the dominant turn-off loss scales as
+$I_{\mathrm{pk}} \propto \sqrt{P}$, not $P$.
+
+Two observations. First, the prior project note assumed 85\,\%; the converged figure
+is \SIrange{78}{80}{\percent}, and the difference is almost entirely the turn-off
+overlap of a large, slowly discharged gate --- a direct consequence of the
+through-hole IRL540N plus \SI{10}{\ohm} $R211$ at \SI{150}{\kilo\hertz}. Second,
+because $t_{\mathrm{ovl}}$ carries a factor-2 uncertainty, the honest efficiency
+band is roughly \SIrange{72}{85}{\percent}; every derived quantity downstream
+(notably peak current and current-limit margin) is evaluated at the pessimistic end
+where it matters. A bench efficiency measurement would collapse this band and is
+the single most informative measurement to make on this converter.
+
+With the minimum-tolerance inductance ($L_p = \SI{9}{\micro\henry}$ at rated peak
+current, \cref{sec:da2032}), the same energy packet requires
+\begin{align*}
+  I_{\mathrm{pk}}^{(L\min)} &= \sqrt{\frac{2 \times 24.5\,\si{\micro\joule}}
+                                          {\SI{9}{\micro\henry}}}
+                             = \SI{2.33}{\ampere},
+\end{align*}
+the worst-case commanded peak used in \cref{sec:hv-cs}.
+
+\subsection{DCM verification}\label{sec:hv-dcm}
+
+DCM requires $t_{\mathrm{on}} + t_{\mathrm{dem}} < T$ with margin for the drain
+ring-down. The demagnetization time, referred through the 1:10 ratio, is
+\begin{align*}
+  t_{\mathrm{dem}} &= \frac{n L_p I_{\mathrm{pk}}}{V_{\mathrm{out}} + V_F}.
+\end{align*}
+The binding corner is the one that maximizes $t_{\mathrm{on}} + t_{\mathrm{dem}}$:
+maximum inductance ($\SI{11}{\micro\henry}$, $+10\,\%$), minimum input
+(\SI{8.5}{\volt}), design-max load. There
+\begin{align*}
+  I_{\mathrm{pk}} &= \sqrt{\frac{2\times24.5\,\si{\micro\joule}}{\SI{11}{\micro\henry}}}
+                   = \SI{2.11}{\ampere},\\
+  t_{\mathrm{on}} &= \frac{11\,\si{\micro\henry}\times 2.11}{8.5}
+                   = \SI{2.73}{\micro\second}, &
+  t_{\mathrm{dem}} &= \frac{10 \times 11\,\si{\micro\henry} \times 2.11}{181}
+                   = \SI{1.28}{\micro\second},\\
+  t_{\mathrm{on}} + t_{\mathrm{dem}} &= \SI{4.01}{\micro\second}
+    = 0.60\,T, &
+  t_{\mathrm{idle}} &= \SI{2.68}{\micro\second}.
+\end{align*}
+DCM holds with a 40\,\% idle fraction at the worst corner; at \SI{13}{\volt} input
+or lighter load the margin only grows (at the minimum trim setpoint the load the
+ballasts can draw falls faster than the demagnetization slope degrades). The duty
+cycle never exceeds 0.41, far under the controller's $\approx$0.91 maximum near
+this frequency, and $t_{\mathrm{on}} \ge \SI{2.6}{\micro\second}$ is more than an
+order of magnitude above the $\approx\SI{165}{\nano\second}$ minimum on-time
+(\cref{sec:lm5155}). Since $D < 0.5$ in DCM everywhere, no slope compensation is
+required for stability, consistent with the omission of $R_{SL}$
+(\cref{sec:hv-cs}). Verified.
+
+\subsection{Current sensing and current limit}\label{sec:hv-cs}
+
+\subsubsection{Sense resistor and limit thresholds}
+
+R201 (\SI{39}{\milli\ohm}, 1\,\%, 2512) carries the switch current to ground; the
+CS pin taps it through $R213 = \SI{100}{\ohm}$ with $C210 = \SI{470}{\pico\farad}$
+to ground. With the \SI{100}{\milli\volt} (93--107) current-limit threshold of
+\cref{sec:lm5155} and no $R_{SL}$ populated (confirmed against the netlist: only
+R213 sits between the sense node and the CS pin, and the current-limit comparator's
+threshold is then duty-independent, which is TI's own recommendation for accurate
+limiting):
+\begin{align*}
+  I_{\mathrm{lim}}^{\mathrm{typ}} &= \frac{\SI{100}{\milli\volt}}{\SI{39}{\milli\ohm}}
+    = \SI{2.56}{\ampere},\\
+  I_{\mathrm{lim}}^{\min} &= \frac{\SI{93}{\milli\volt}}{39\,\si{\milli\ohm}\times1.01}
+    = \SI{2.36}{\ampere}, &
+  I_{\mathrm{lim}}^{\max} &= \frac{\SI{107}{\milli\volt}}{39\,\si{\milli\ohm}\times0.99}
+    = \SI{2.77}{\ampere}.
+\end{align*}
+
+The sense resistor must satisfy two opposing constraints:
+\begin{align*}
+  \text{power delivery:}\quad
+    R_{S} &< \frac{\SI{93}{\milli\volt}}{I_{\mathrm{pk}}^{(L\min)}}
+          = \frac{93\,\si{\milli\volt}}{2.33\,\si{\ampere}} = \SI{39.9}{\milli\ohm},\\
+  \text{core protection:}\quad
+    R_{S} &> \frac{\SI{107}{\milli\volt}}{I_{\mathrm{sat}} - \Delta I_{\mathrm{ovs}}}
+          = \frac{107\,\si{\milli\volt}}{3.0 - 0.14\,\si{\ampere}} = \SI{37.4}{\milli\ohm},
+\end{align*}
+where $\Delta I_{\mathrm{ovs}}$ is the post-threshold overshoot estimated below.
+The admissible window is \SIrange{37.4}{39.9}{\milli\ohm}; the populated
+\SI{39}{\milli\ohm} is essentially the only standard value inside it. Match --- but
+with thin margin on both sides:
+
+\textbf{Flag (current-limit margin).} At the fully stacked pessimistic corner
+(design-max load, \SI{8.5}{\volt} input, converged $\eta$, $L_p$ at $-10\,\%$,
+threshold at minimum, R201 at $+1\,\%$) the required peak \SI{2.33}{\ampere} sits
+$1.2\,\%$ below the minimum limit \SI{2.36}{\ampere}: the converter would graze
+its cycle-by-cycle limit and the rail would sag slightly at that corner. The load
+envelope is deliberately unreachable in practice (expected-load requirement is
+\SI{2.08}{\ampere} at the same corner, a 14\,\% margin), so this is a
+documentation-grade flag rather than a fault, but it should be re-examined if the
+load ever grows (e.g.\ decimal points wired in a later revision). On the other
+side, the maximum clamped peak plus overshoot reaches
+$2.77 + 0.14 = \SI{2.91}{\ampere}$ against the \SI{3.0}{\ampere} transformer
+rating --- a 3\,\% margin, acceptable only because the \SI{3.0}{\ampere} figure is
+a soft-saturation point ($L$ already specified at \SI{9}{\micro\henry} there), not
+a cliff.
+
+\subsubsection{CS filter}
+
+$\tau = R_{213} C_{210} = 100 \times 470\,\si{\pico\farad} = \SI{47}{\nano\second}$.
+Against the controller's criteria (\ds{lm5155.pdf}{21}): the limit is valid for
+on-times above $2 R_F C_F = \SI{94}{\nano\second}$, and the operating
+$t_{\mathrm{on}} \ge \SI{2.6}{\micro\second}$ exceeds that by $28\times$; the
+off-time discharge criterion $(1-D)/f_{\mathrm{sw}} > 3 R_F C_F$ gives
+$\SI{3.9}{\micro\second} \gg \SI{141}{\nano\second}$; and both component values sit
+inside TI's recommended ranges (\SIrange{10}{200}{\ohm},
+\SIrange{100}{2000}{\pico\farad}). Functionally, \SI{47}{\nano\second} attenuates
+the leading-edge spike (gate current and $C_{oss}$ discharge returning through the
+sense resistor, duration tens of nanoseconds) while adding only
+$\Delta I_{\mathrm{delay}} = (V_{\mathrm{BUS}}/L_p)\,\tau \approx
+0.85\,\si{\ampere\per\micro\second} \times \SI{47}{\nano\second} \approx
+\SI{40}{\milli\ampere}$ of effective limit shift --- under half the threshold
+tolerance band. Combined with an assumed \SI{50}{\nano\second} comparator/driver
+delay, total overshoot past the threshold at the fastest slope
+(\SI{13}{\volt}, \SI{9}{\micro\henry}: \SI{1.44}{\ampere\per\micro\second}) is
+$\Delta I_{\mathrm{ovs}} \approx \SI{0.14}{\ampere}$, the figure used above.
+The filter is neither too slow (limit distortion) nor pointless (spike passes).
+Match.
+
+R201 dissipation is $I_{\mathrm{rms}}^2 R_S = 0.80^2 \times 0.039 =
+\SI{25}{\milli\watt}$, trivial in a 2512.
+
+\subsection{Switch (Q201) stress and losses}\label{sec:hv-switch}
+
+Drain stress is set by the clamp, not the rating-free ring:
+\begin{align*}
+  V_{DS,\mathrm{pk}} &= V_{\mathrm{BUS,max}} + V_{\mathrm{cl}} + V_{F(D202)}
+    \approx 13 + 48.6 + 0.9 \approx \SI{63}{\volt}
+\end{align*}
+(clamp voltage from \cref{sec:hv-clamp}, which is load- but not line-dependent
+because $I_{\mathrm{pk}}$ in DCM is line-independent). Against the IRL540N's
+\SI{100}{\volt} rating: 37\,\% margin, comfortable, and the part is
+avalanche-rated besides. Peak current \SIrange{2.2}{2.9}{\ampere} against
+\SI{36}{\ampere}: unstressed. The \SI{6.85}{\volt} VCC gate rail fully enhances a
+logic-level gate specified at \SI{5}{\volt}; $V_{GS}$ rating ($\pm\SI{16}{\volt}$)
+is untouched.
+
+Total switch dissipation at design-max: conduction \SI{35}{\milli\watt} + turn-off
+\SI{440}{\milli\watt} + $C_{oss}$ few \si{\milli\watt} $\approx \SI{0.48}{\watt}$.
+A free-standing vertical TO-220 at $\theta_{JA} \approx \SI{62}{\kelvin\per\watt}$
+rises $\approx\SI{30}{\kelvin}$ --- warm to the touch, thermally unremarkable.
+
+\textbf{Flag (efficiency lever, not a fault).} The turn-off overlap term is the
+single largest loss in the converter and is set almost entirely by $R211 =
+\SI{10}{\ohm}$ discharging a $Q_{GD}\approx\SI{25}{\nano\coulomb}$ gate at a
+$\approx\SI{2}{\volt}$ plateau. If Rev B wants the efficiency back, an
+anti-parallel turn-off diode across R211 (or splitting R211 into separate
+source/sink paths) would roughly halve the dominant loss at the cost of one small
+part; the present network is functional and thermally safe as populated.
+
+\subsection{Output rectifier (D201)}\label{sec:hv-rect}
+
+Reverse stress occurs during the on-time:
+\begin{align*}
+  V_R &= V_{\mathrm{out}} + n V_{\mathrm{BUS,max}}
+       = 196.3 + 10 \times 13 = \SI{326}{\volt}
+\end{align*}
+at the trim ceiling, plus secondary-side ring --- under \SI{350}{\volt} against
+the UF4005's \SI{600}{\volt}: margin $\ge 42\,\%$. Forward stress:
+$I_{F,\mathrm{avg}} = \SI{16}{\milli\ampere}$ and
+$I_{F,\mathrm{pk}} = I_{\mathrm{pk}}/n = \SI{0.22}{\ampere}$ against a
+\SI{1}{\ampere} average rating. Conduction loss $\approx V_F I_{\mathrm{out}}
+= \SI{16}{\milli\watt}$. The $\approx\SI{75}{\nano\second}$ recovery is immaterial:
+in DCM the diode current reaches zero, and the junction sweeps out, during the idle
+interval, so the switch never hard-commutates it. The generic-ultrafast class is
+exactly right for this position; a Schottky is unavailable at this voltage and
+unnecessary at this current. Match.
+
+\subsection{RCD clamp}\label{sec:hv-clamp}
+
+At turn-off the leakage inductance ($L_{\mathrm{lk}} \le \SI{0.150}{\micro\henry}$,
+\cref{sec:da2032}) carries $I_{\mathrm{pk}}$ and must be absorbed. D202 routes it
+into C209 (\SI{10}{\nano\farad}) $\parallel$ R212 (\SI{27}{\kilo\ohm}), the pair
+returned to $V_{\mathrm{BUS}}$ rather than ground --- so the capacitor stands off
+only the clamp voltage $V_{\mathrm{cl}}$ (not $V_{\mathrm{BUS}} + V_{\mathrm{cl}}$)
+and the resistor's discharge current is recycled into the input rail rather than
+dumped to ground.
+
+Per cycle, at the design-max point:
+\begin{align*}
+  E_{\mathrm{lk}} &= \tfrac{1}{2} L_{\mathrm{lk}} I_{\mathrm{pk}}^2
+    = \tfrac{1}{2}\times\SI{0.15}{\micro\henry}\times 2.21^2
+    = \SI{0.37}{\micro\joule},
+  &
+  E_{\mathrm{lk}} f_{\mathrm{sw}} &= \SI{55}{\milli\watt}.
+\end{align*}
+While D202 conducts, the transformer keeps feeding the clamp from the magnetizing
+current, so the clamp absorbs more than the bare leakage energy by the standard
+multiplier $V_{\mathrm{cl}}/(V_{\mathrm{cl}} - V_{\mathrm{refl}})$. Equating clamp
+input to R212 dissipation $V_{\mathrm{cl}}^2/R_{212}$:
+\begin{align*}
+  \frac{V_{\mathrm{cl}}^2}{R_{212}}
+    &= E_{\mathrm{lk}} f_{\mathrm{sw}}
+       \frac{V_{\mathrm{cl}}}{V_{\mathrm{cl}} - V_{\mathrm{refl}}}
+  \;\Longrightarrow\;
+  V_{\mathrm{cl}}^2 - V_{\mathrm{refl}} V_{\mathrm{cl}}
+    - E_{\mathrm{lk}} f_{\mathrm{sw}} R_{212} = 0,\\
+  V_{\mathrm{cl}} &= \frac{18.1 + \sqrt{18.1^2 + 4 \times 0.055 \times 27\,000}}{2}
+    = \SI{48.6}{\volt}.
+\end{align*}
+This is $2.7\times$ the reflected voltage --- inside the conventional
+$2$--$3\times$ band where the clamp absorbs the leakage spike without continuously
+loading the flyback interval, and it independently reproduces the prior design
+note's ``about \SI{48}{\volt} worst case'' estimate. Checks:
+\begin{itemize}[nosep]
+  \item R212 dissipation $48.6^2/27\,\si{\kilo\ohm} = \SI{88}{\milli\watt}$,
+    15\,\% of a DIN0207's \SI{0.6}{\watt}; steady \SI{49}{\volt} across it is far
+    under the element's \SI{250}{\volt}-class rating.
+  \item C209 per-cycle ripple $E_{\mathrm{lk}}/(C_{209} V_{\mathrm{cl}}) =
+    \SI{0.76}{\volt}$ (1.6\,\%), and $\tau = R_{212} C_{209} =
+    \SI{270}{\micro\second} = 40$ switching periods: the clamp is a quiet
+    quasi-DC node, as intended. Any $\ge\SI{100}{\volt}$ dielectric suffices
+    (rating not recorded in the schematic; verify at BOM release).
+  \item D202 sees reverse voltage $V_{\mathrm{BUS}} + V_{\mathrm{cl}} \approx
+    \SI{62}{\volt}$ during the on-time and carries brief \SI{2.2}{\ampere} pulses,
+    both trivial for a UF4005; its \SI{75}{\nano\second} recovery is fast on the
+    \SI{270}{\micro\second} clamp time scale.
+\end{itemize}
+The earlier prose note specified ``a fast \SI{100}{\volt} diode'' here; the
+populated part is the same \SI{600}{\volt} UF4005 as D201. A \SI{600}{\volt}
+ultrafast part strictly dominates the \SI{100}{\volt} requirement (its higher
+forward drop costs nothing measurable at \SI{55}{\milli\watt} scale), and sharing
+the line item with D201 is sound BOM practice. Deliberate substitution, verified
+adequate --- not an error. Match.
+
+\subsection{Bleeder (R202) and minimum load}\label{sec:hv-bleeder}
+
+R202 (\SI{470}{\kilo\ohm} across the rail) serves two derivable functions.
+
+\textbf{Minimum load.} The controller cannot deliver less than one minimum-width
+pulse per cycle. At \SI{13}{\volt} input and the $\approx\SI{165}{\nano\second}$
+minimum on-time:
+\begin{align*}
+  I_{\mathrm{pk}}^{\min} &= \frac{V_{\mathrm{BUS}} t_{\mathrm{on,min}}}{L_p}
+    = \frac{13 \times 165\,\si{\nano\second}}{\SI{10}{\micro\henry}}
+    = \SI{0.21}{\ampere},\\
+  P_{\min} &= \tfrac{1}{2} L_p (I_{\mathrm{pk}}^{\min})^2 f_{\mathrm{sw}}\,\eta
+    \approx \tfrac{1}{2}\times\SI{10}{\micro\henry}\times 0.046 \times
+      149.4\,\si{\kilo\hertz} \times 0.79
+    \approx \SI{27}{\milli\watt}.
+\end{align*}
+Below this load the output would creep upward (or force pulse skipping). The fixed
+preload --- bleeder $170^2/\SI{470}{\kilo\ohm} = \SI{61}{\milli\watt}$ plus divider
+\SI{17}{\milli\watt} --- totals \SI{78}{\milli\watt}, a $2.9\times$ margin over
+$P_{\min}$. The rail therefore stays regulated even before the tubes strike (during
+start-up the tubes draw nothing until the rail approaches ignition). Match.
+
+\textbf{Discharge.} Stored energy is modest,
+$\tfrac{1}{2} C_{\mathrm{out}} V^2 = \tfrac{1}{2}\times\SI{4.8}{\micro\farad}\times
+170^2 = \SI{69}{\milli\joule}$, but the node must still bleed down after
+shutdown. The tubes themselves do most of the work: they hold the rail near their
+maintaining voltages while conducting, collapsing it to $\approx\SI{148}{\volt}$
+(digit extinction) in $\sim$\SI{10}{\milli\second} and to $\approx\SI{92}{\volt}$
+(colon extinction) in $\sim$\SI{0.2}{\second}. Below that only the resistive path
+remains: $R_{202} \parallel R_{\mathrm{div}} = 470\,\si{\kilo\ohm} \parallel
+1.74\,\si{\mega\ohm} = \SI{370}{\kilo\ohm}$, so
+$\tau = 370\,\si{\kilo\ohm} \times \SI{4.8}{\micro\farad} = \SI{1.8}{\second}$:
+\begin{align*}
+  t_{92\rightarrow 60\,\mathrm{V}} = \tau \ln\frac{92}{60} = \SI{0.8}{\second},
+  \qquad
+  t_{92\rightarrow 42\,\mathrm{V}} = \tau \ln\frac{92}{42} = \SI{1.4}{\second}.
+\end{align*}
+The node is below \SI{60}{\volt} about one second after the colons go out, and
+below \SI{42}{\volt} in under three seconds total --- acceptable for a bench
+board with exposed high-voltage nodes. Dissipation \SI{61}{\milli\watt}
+(\SI{82}{\milli\watt} at the trim ceiling) and \SI{170}{\volt} standing voltage are
+both well inside the DIN0207 element's ratings. Match.
+
+\subsection{Loop compensation}\label{sec:hv-comp}
+
+\subsubsection{Plant}
+
+A peak-current-mode DCM flyback is, to first order, a controlled current source
+into $C_{\mathrm{out}} \parallel R_L$. At the nominal point $R_L =
+V_{\mathrm{out}}/I_{\mathrm{out}} = 170/\SI{13.5}{\milli\ampere} =
+\SI{12.6}{\kilo\ohm}$ and $C_{\mathrm{out}} = C204 + C205 = \SI{4.8}{\micro\farad}$.
+
+Modulator gain: the controller's PWM comparator sees COMP through its internal
+attenuation $G_{\mathrm{COMP}} = 0.142$ and compares it against the sensed current
+plus the fixed internal slope ramp of slope $S_e = \SI{40}{\milli\volt}\times
+f_{\mathrm{sw}} = \SI{5975}{\volt\per\second}$ (\ds{lm5155.pdf}{20}). Against the
+sensed on-slope $S_n = R_S V_{\mathrm{BUS}}/L_p = 0.039\times9/\SI{10}{\micro\henry}
+= \SI{35100}{\volt\per\second}$:
+\begin{align*}
+  \frac{\partial I_{\mathrm{pk}}}{\partial v_c}
+    &= \frac{G_{\mathrm{COMP}}}{R_S\,(1 + S_e/S_n)}
+     = \frac{0.142}{0.039 \times 1.17}
+     = \SI{3.11}{\ampere\per\volt}.
+\end{align*}
+Since $I_{\mathrm{out}} = \tfrac{1}{2} L_p I_{\mathrm{pk}}^2 f_{\mathrm{sw}}
+\eta / V_{\mathrm{out}}$, the plant transconductance and its output resistance
+follow:
+\begin{align*}
+  \frac{\partial I_{\mathrm{out}}}{\partial I_{\mathrm{pk}}}
+    &= \frac{2 I_{\mathrm{out}}}{I_{\mathrm{pk}}}
+     = \frac{2 \times 13.5\,\si{\milli\ampere}}{1.99}
+     = 13.6\,\si{\milli\ampere\per\ampere},\\
+  g_{ps} &= 13.6\,\si{\milli\ampere\per\ampere} \times \SI{3.11}{\ampere\per\volt}
+          = \SI{42.2}{\milli\siemens} \text{ (per volt of COMP)},
+\end{align*}
+and because $I_{\mathrm{out}} \propto 1/V_{\mathrm{out}}$ at fixed peak current,
+the converter presents its own output resistance equal to $R_L$, so the loaded
+plant sees $R_L/2$ and one dominant pole:
+\begin{align*}
+  G_0 &= g_{ps}\,\frac{R_L}{2} = 0.0422 \times 6301 = 266\ (\SI{48.5}{\decibel}),
+  &
+  f_p &= \frac{2}{2\pi R_L C_{\mathrm{out}}}
+       = \frac{2}{2\pi \times 12.6\,\si{\kilo\ohm} \times \SI{4.8}{\micro\farad}}
+       = \SI{5.3}{\hertz}.
+\end{align*}
+The DCM right-half-plane zero and the output capacitor's ESR zero
+($\approx\SI{7}{\kilo\hertz}$ at the assumed \SI{5}{\ohm}) both lie far above the
+crossover derived below and are neglected.
+
+\subsubsection{Compensator and loop}
+
+The populated network on COMP --- $R210 = \SI{10}{\kilo\ohm}$ in series with
+$C207 = \SI{100}{\nano\farad}$, all shunted by $C208 = \SI{220}{\pico\farad}$ ---
+with the \SI{2}{\milli\siemens} transconductance error amplifier
+(\ds{lm5155.pdf}{7}) forms the standard Type-II response:
+\begin{align*}
+  f_z &= \frac{1}{2\pi R_{210} C_{207}} = \SI{159}{\hertz},
+  &
+  f_{hp} &= \frac{1}{2\pi R_{210}\,\frac{C_{207}C_{208}}{C_{207}+C_{208}}}
+          = \SI{72.5}{\kilo\hertz},
+\end{align*}
+with integrator behavior below $f_z$ (the amplifier's
+$g_m R_O = 2\,\si{\milli\siemens} \times 10\,\si{\mega\ohm} = \SI{86}{\decibel}$
+DC gain, \ds{lm5155.pdf}{21}, makes static regulation error negligible). The divider contributes
+$H = V_{\mathrm{REF}}/V_{\mathrm{out}} = 1/170$.
+
+Solving $|T(f)| = 1$ for the product of divider, compensator, and plant
+(numerically, with all three break frequencies in place) gives
+\begin{align*}
+  f_c &\approx \SI{210}{\hertz} \approx \frac{f_{\mathrm{sw}}}{700},\\
+  \varphi_m &= 180^\circ - \arctan\frac{f_c}{f_p} - 90^\circ
+    + \arctan\frac{f_c}{f_z} - \arctan\frac{f_c}{f_{hp}}
+    = 180 - 88.5 - 90 + 52.4 - 0.2 \approx 54^\circ.
+\end{align*}
+The zero sits at $0.77 f_c$ --- the textbook placement --- and the
+high-frequency pole is $345\times$ above crossover, where it scrubs switching
+ripple off COMP without costing phase. Gain margin is effectively unbounded (the
+phase never approaches $-180^\circ$ until far past $f_{hp}$, where loop gain is
+tens of dB down). A \SI{210}{\hertz} bandwidth is slow by SMPS standards but
+entirely adequate here: the load is quasi-static (no multiplexing --- each tube has
+a dedicated driver, so digit changes move milliamps at seconds cadence), and the
+input rail is pre-regulated USB-PD. Match: the populated network is a coherent,
+correctly placed design. The modulator constants ($G_{\mathrm{COMP}}$, $S_e$,
+$g_m$) are datasheet typicals without tolerance bands, so a bench transient or
+Bode check remains worthwhile, but nothing in the derivation flags it as at-risk.
+
+\subsection{Soft start}\label{sec:hv-ss}
+
+The datasheet's soft-start formulas cover boost and SEPIC only; the boost formula
+assumes an input-to-output pass-through path a flyback lacks, so neither is
+force-fit here. From the pin's fundamental behavior (\cref{sec:lm5155}) --- C206 is
+charged by $I_{SS} = \SI{10}{\micro\ampere}$, and the error amplifier regulates FB
+to the lower of $V_{SS}$ and $V_{\mathrm{REF}}$ --- the reference-ramp time is
+\begin{align*}
+  t_{SS} &= \frac{C_{206}\, V_{\mathrm{REF}}}{I_{SS}}
+          = \frac{47\,\si{\nano\farad} \times 1.00}{\SI{10}{\micro\ampere}}
+          = \SI{4.7}{\milli\second}
+  \qquad (\SIrange{4.3}{5.2}{\milli\second} \text{ over } I_{SS}
+  \text{ tolerance}).
+\end{align*}
+The output cannot follow that ramp: tracking it would demand
+$C_{\mathrm{out}}\,\mathrm{d}V/\mathrm{d}t \approx \SI{170}{\milli\ampere}$ of
+output current, an order of magnitude beyond the converter's capability. The
+actual rise is power-limited at the current limit. Energy balance:
+\begin{align*}
+  t_{\mathrm{rise}} &\approx
+  \frac{\tfrac{1}{2} C_{\mathrm{out}} V_{\mathrm{out}}^2}
+       {\tfrac{1}{2} L_p I_{\mathrm{lim}}^2 f_{\mathrm{sw}}\,\eta}
+  = \frac{\SI{69}{\milli\joule}}{\SI{3.9}{\watt}}
+  \approx \SI{18}{\milli\second},
+\end{align*}
+so the converter runs at its cycle-by-cycle limit for roughly
+\SI{13}{\milli\second} ($\sim$2000 cycles) after the SS ramp completes, and the
+rail reaches its setpoint \SIrange{20}{30}{\milli\second} after enable (the low
+end of the range treats the early, deep-CCM interval optimistically). The tubes,
+drawing nothing until strike, do not slow this. Two qualifications:
+\begin{itemize}[nosep]
+  \item This is an approximation built from the SS pin mechanism plus an energy
+    balance, not a datasheet formula; the early portion of the charge (output far
+    below the reflected voltage, incomplete demagnetization) transfers somewhat
+    less than the DCM-limit power. \textbf{Flagged for bench verification} (scope
+    the rail and the CS pin at power-up).
+  \item Sustained current limiting during start-up is benign specifically because
+    the populated LM5155 has no hiccup overload protection --- that feature exists
+    only in the LM51551 variant (\ds{lm5155.pdf}{22}). If the hiccup variant were
+    ever substituted, its 64-cycle fault counter (armed during soft start) would
+    trip long before the rail arrived, and C206 would need to grow to
+    $\gtrsim\SI{470}{\nano\farad}$ so that the commanded ramp, not the current
+    limit, paces the start. With the LM5155 as populated, \SI{47}{\nano\farad} is
+    adequate. Match, with the substitution caveat recorded.
+\end{itemize}
+
+\subsection{Input UVLO}\label{sec:hv-uvlo}
+
+R207 (\SI{143}{\kilo\ohm}) and R208 (\SI{32.4}{\kilo\ohm}) divide
+$V_{\mathrm{BUS}}$ onto the UVLO/SYNC pin (thresholds \SI{1.5}{\volt} rising /
+\SI{1.45}{\volt} falling; \SI{5}{\micro\ampere} hysteresis current sourced from the
+pin while enabled; \cref{sec:lm5155}):
+\begin{align*}
+  V_{\mathrm{on}} &= 1.5 \times \frac{143 + 32.4}{32.4} = 1.5 \times 5.414
+                  = \SI{8.12}{\volt},\\
+  V_{\mathrm{off}} &= \left(1.45 - I_{\mathrm{hys}}
+      (R_{207}\!\parallel\!R_{208})\right)\times 5.414
+    = (1.45 - 5\,\si{\micro\ampere}\times 26.4\,\si{\kilo\ohm}) \times 5.414
+    = \SI{7.14}{\volt},
+\end{align*}
+with $V_{\mathrm{off}}$ spanning \SIrange{6.99}{7.28}{\volt} over the
+\SIrange{4}{6}{\micro\ampere} hysteresis-current range: about \SI{1}{\volt} of
+hysteresis. The rising threshold lands on the intended $\approx\SI{8.1}{\volt}$
+enable point, \SI{0.38}{\volt} below the \SI{8.5}{\volt} minimum operating input
+(and below a sagging \SI{9}{\volt} USB-PD contract at its $-5\,\%$ limit,
+\SI{8.55}{\volt}), so the converter is guaranteed enabled across the specified
+window and disabled before the input falls into duty-cycle-starved territory.
+Match.
+
+The same pin carries the separate, lower EN comparator
+($\approx$\SI{0.52}{\volt} rising). Through this divider that corresponds to
+$V_{\mathrm{BUS}} = 0.52 \times 5.414 = \SI{2.8}{\volt}$: on any monotonic input
+ramp EN is satisfied \SI{5.3}{\volt} before UVLO releases, so the single populated
+divider serves both comparators and no separate EN network is needed. Verified.
+
+\subsection{Controller housekeeping (BIAS, VCC, PGOOD)}\label{sec:hv-house}
+
+BIAS ties to $V_{\mathrm{BUS}}$ (\SIrange{8.5}{13}{\volt}), inside the
+\SIrange{3.5}{45}{\volt} recommended range with a $3.5\times$ margin to the
+\SI{50}{\volt} absolute maximum. C201 (\SI{2.2}{\micro\farad}) is the VCC
+regulator's output capacitor, inside the datasheet's
+\SIrange{1}{4.7}{\micro\farad} recommendation (\ds{lm5155.pdf}{14}); C211 (\SI{1}{\micro\farad}) is
+local BIAS decoupling. Match.
+
+PGOOD is pulled up by R206 (\SI{100}{\kilo\ohm}) to the +3V3 logic rail. Against
+the pin's own ratings (\cref{sec:lm5155}): \SI{3.3}{\volt} is far under the
+\SI{18}{\volt} absolute maximum (and under $V_{\mathrm{BIAS}}+\SI{0.3}{\volt}$,
+relevant because of the pin's internal diode to BIAS, \ds{lm5155.pdf}{22}); asserted-low sink current
+is $3.3/\SI{100}{\kilo\ohm}=\SI{33}{\micro\ampere}$, well under the
+\SI{1}{\milli\ampere} limit; and \SI{100}{\kilo\ohm} satisfies the
+$\ge\SI{10}{\kilo\ohm}$ recommendation. Which upstream rail PGOOD should report to
+is an MCU-integration decision outside this section's scope; the pin-level
+electrical check passes. Match.
+
+\subsection{Input and output capacitance}\label{sec:hv-caps}
+
+\subsubsection{Input}
+
+Roles, per standard flyback practice: C202 (\SI{100}{\micro\farad}, radial
+polarized --- the repository's KEMET A759 polymer datasheet is presumed to
+correspond to this part; assumption, as the schematic records no series or rating)
+is the bulk reservoir for the pulsed primary current; C203
+(\SI{4.7}{\micro\farad} ceramic) closes the high-frequency primary loop; C211
+serves the BIAS pin as above. The primary draws triangular pulses of RMS
+\SI{0.80}{\ampere} against a \SI{0.43}{\ampere} DC average, leaving
+$\sqrt{0.80^2 - 0.43^2} = \SI{0.67}{\ampere}$ RMS of ripple in the capacitor bank.
+A polymer part absorbs this trivially (multi-ampere ripple ratings at
+milliohm ESR); \textbf{if C202 is instead a general-purpose aluminum electrolytic,
+its \SI{150}{\kilo\hertz} ripple rating (typically \SIrange{0.3}{0.5}{\ampere}
+for a small \SI{100}{\micro\farad} can) becomes marginal even with the ceramic
+sharing current --- confirm the part series at BOM release.} Bus ripple:
+\begin{align*}
+  \Delta V \approx
+  \frac{(I_{\mathrm{pk}}/2 - I_{\mathrm{in}})\,t_{\mathrm{on}}}{C_{\mathrm{in}}}
+  + I_{\mathrm{pk}}\,\mathrm{ESR}
+  \approx \frac{\SI{1.8}{\micro\coulomb}}{\SI{105}{\micro\farad}} + 2.2\times0.03
+  \approx \SI{85}{\milli\volt}\ \text{pk--pk},
+\end{align*}
+unobjectionable on a USB-PD input.
+
+\subsubsection{Output}
+
+$C_{\mathrm{out}} = C204\,(\SI{4.7}{\micro\farad}\ \text{polarized radial}) +
+C205\,(\SI{100}{\nano\farad}\ \text{ECQ-E film})$. Requirement check: the load is
+constant-current tubes behind large ballasts, so the rail needs neither hold-up
+nor transient reservoir --- only switching-ripple control. Capacitive ripple per
+cycle:
+\begin{align*}
+  \Delta V_{\mathrm{cap}} &=
+  \frac{I_{\mathrm{out}}\,(T - t_{\mathrm{dem}})}{C_{\mathrm{out}}}
+  = \frac{16.2\,\si{\milli\ampere} \times 5.5\,\si{\micro\second}}
+         {\SI{4.8}{\micro\farad}}
+  = \SI{19}{\milli\volt},
+\end{align*}
+dwarfed by the ESR step $I_{s,\mathrm{pk}}\times\mathrm{ESR} \approx 0.22 \times 5
+\approx \SI{1.1}{\volt}$ pk--pk ($0.6\,\%$ of the rail) at the assumed
+\SI{5}{\ohm} ESR of a small high-voltage electrolytic, with the film part shunting
+the fast edges. Through an \SI{8.2}{\kilo\ohm} ballast this modulates tube current
+by $\sim$\SI{0.13}{\milli\ampere} at \SI{150}{\kilo\hertz} --- optically
+invisible. The small capacitance is thus sufficient, and beneficially so: it is
+what keeps the stored energy at \SI{69}{\milli\joule}, the start-up time at
+\SI{20}{\milli\second} (\cref{sec:hv-ss}), and the bleed-down inside seconds
+(\cref{sec:hv-bleeder}).
+
+\textbf{Flag (voltage rating).} The schematic records neither dielectric nor
+voltage rating for C204, and the reference designator alone cannot distinguish a
+\SI{200}{\volt} from a \SI{250}{\volt} part. The derived trim ceiling is
+\SI{196.3}{\volt}: a \SI{200}{\volt} electrolytic would retain 2\,\% headroom at
+full trim --- unacceptable for an electrolytic's surge behavior --- while a
+standard \SI{250}{\volt} part (available as \SI{4.7}{\micro\farad} in the
+populated 8\,mm can size) keeps $\ge$21\,\%. Polymer types (the input-side A759
+series) do not exist at this voltage, so C204 must be a conventional aluminum
+electrolytic rated \SI{250}{\volt}; C205's ECQ-E film series is \SI{250}{\volt}
+by default. Confirm both ratings at BOM release.
+
+\subsection{Summary}\label{sec:hv-summary}
+
+Assumptions carried through this section: driver on-drop
+\SIrange{1.0}{2.5}{\volt} at operating currents (spec point is
+\SI{7}{\milli\ampere}); IRL540N commodity-typical figures ($R_{DS(\mathrm{on})}$,
+$Q_G$, $Q_{GD}$); turn-off overlap \SI{100}{\nano\second} $\pm2\times$; core-loss
+allowance \SI{50}{\milli\watt} (DA2032 uncharacterized at
+\SI{149.4}{\kilo\hertz}); output-capacitor ESR \SI{5}{\ohm}; input bulk assumed
+polymer; comparator delay \SI{50}{\nano\second}. Each appears at its point of use
+above.
+
+\begin{longtable}{@{}p{0.26\textwidth}p{0.30\textwidth}p{0.22\textwidth}p{0.14\textwidth}@{}}
+\toprule
+Parameter & Derived requirement & Populated & Verdict \\
+\midrule
+\endfirsthead
+\toprule
+Parameter & Derived requirement & Populated & Verdict \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Digit ballast R1--R4 & \SIrange{6.4}{9.0}{\kilo\ohm} at \SI{170}{\volt};
+  \SIrange{9.3}{13}{\kilo\ohm} at \SI{180}{\volt} & \SI{8.2}{\kilo\ohm}
+  & Match at \SI{170}{\volt}; \textbf{flagged} at \SI{180}{\volt} \\
+Colon ballast R5--R6 & \SIrange{91}{129}{\kilo\ohm} (\SI{170}{\volt});
+  \SIrange{103}{146}{\kilo\ohm} (\SI{180}{\volt}) & \SI{120}{\kilo\ohm} & Match \\
+Output setpoint & \SI{180}{\volt} (\SI{10}{\volt} ignition margin) &
+  \SI{170}{\volt} nameplate; trim \SIrange{160.3}{196.3}{\volt}
+  & \textbf{Flagged tension} (see \cref{sec:hv-ignition}) \\
+Trim range & must span \SIrange{170}{185}{\volt} & \SIrange{160.3}{196.3}{\volt}
+  & Match \\
+R203/R204 element stress & $<$\SI{250}{\volt} each & \SI{97.7}{\volt} max each
+  (DIN0207) & Match \\
+$R_T$ & \SI{146.4}{\kilo\ohm} for \SI{150}{\kilo\hertz} & \SI{147}{\kilo\ohm}
+  $\rightarrow$ \SI{149.4}{\kilo\hertz} & Match \\
+$P_{\mathrm{out}}$ & \SI{2.29}{\watt} nom / \SI{2.91}{\watt} envelope & --- & Derived \\
+Efficiency & converged 0.78 nom / 0.80 envelope (band 0.72--0.85) &
+  prior note assumed 0.85 & \textbf{Flagged} (lower than assumed) \\
+$I_{\mathrm{pk}}$ & \SI{1.99}{\ampere} nom; \SI{2.21}{\ampere} envelope;
+  \SI{2.33}{\ampere} at $L_{\min}$ & --- & Derived \\
+DCM & $t_{\mathrm{on}}+t_{\mathrm{dem}} \le 0.60\,T$ worst corner & --- &
+  Verified \\
+Duty / on-time & $D \le 0.41$ vs 0.91 max; $t_{\mathrm{on}} \ge
+  \SI{2.6}{\micro\second}$ vs \SI{165}{\nano\second} min & --- & Verified \\
+Sense resistor R201 & window \SIrange{37.4}{39.9}{\milli\ohm} &
+  \SI{39}{\milli\ohm} & Match, \textbf{thin margins flagged} \\
+Current limit vs.\ need & $I_{\mathrm{lim}}^{\min}=\SI{2.36}{\ampere}$ vs
+  \SI{2.33}{\ampere} required (1\,\%) & --- & \textbf{Flagged margin} \\
+Clamped peak vs.\ saturation & $\le\SI{2.91}{\ampere}$ vs \SI{3.0}{\ampere}
+  rating (3\,\%) & --- & \textbf{Flagged margin} \\
+CS filter R213/C210 & \SIrange{30}{100}{\nano\second}; datasheet ranges &
+  $\tau=\SI{47}{\nano\second}$ & Match \\
+Q201 $V_{DS}$ & $\le\SI{63}{\volt}$ incl.\ clamp & \SI{100}{\volt} rating
+  & Match (37\,\%) \\
+Q201 dissipation & \SI{0.48}{\watt}, $\Delta T \approx \SI{30}{\kelvin}$ &
+  TO-220, no sink & Match; R211 flagged as efficiency lever \\
+D201 stress & $V_R < \SI{350}{\volt}$; \SI{16}{\milli\ampere} avg &
+  UF4005 (\SI{600}{\volt}, \SI{1}{\ampere}) & Match \\
+Clamp voltage & $V_{\mathrm{cl}} = \SI{48.6}{\volt}$ ($2.7\times$ reflected) &
+  \SI{27}{\kilo\ohm}/\SI{10}{\nano\farad} & Match \\
+D202 (snubber diode) & fast, $\ge\SI{100}{\volt}$ & UF4005 (\SI{600}{\volt})
+  & Match (deliberate commonality) \\
+R212 dissipation & \SI{88}{\milli\watt} & DIN0207 ($\approx\SI{0.6}{\watt}$)
+  & Match \\
+Bleeder R202 & preload $\ge\SI{27}{\milli\watt}$; discharge $<$ few s &
+  \SI{470}{\kilo\ohm}: \SI{78}{\milli\watt}, $<\SI{3}{\second}$ to
+  \SI{42}{\volt} & Match \\
+Compensation & zero near $f_c$; $\varphi_m \ge 45^\circ$ &
+  $f_c \approx \SI{210}{\hertz}$, $\varphi_m \approx 54^\circ$,
+  $f_z = \SI{159}{\hertz}$ & Match \\
+Soft start C206 & ramp \SI{4.7}{\milli\second}; rail rise
+  \SIrange{20}{30}{\milli\second} (current-limited) & \SI{47}{\nano\farad} &
+  Match; \textbf{approximation, bench-verify} \\
+UVLO R207/R208 & enable $\approx\SI{8.1}{\volt}$, below \SI{8.5}{\volt} min input
+  & on \SI{8.12}{\volt} / off \SI{7.14}{\volt} & Match \\
+EN vs UVLO & single divider must satisfy EN first & EN at
+  \SI{2.8}{\volt} $\ll$ \SI{8.12}{\volt} & Verified \\
+PGOOD pull-up R206 & $\ge\SI{10}{\kilo\ohm}$, $\le\SI{18}{\volt}$,
+  $\le\SI{1}{\milli\ampere}$ & \SI{100}{\kilo\ohm} to +3V3
+  (\SI{33}{\micro\ampere}) & Match \\
+VCC capacitor C201 & \SIrange{1}{4.7}{\micro\farad} & \SI{2.2}{\micro\farad}
+  & Match \\
+Input bulk C202 & $\ge\SI{0.67}{\ampere}$ ripple capability &
+  \SI{100}{\micro\farad} radial (series unrecorded) &
+  Match if polymer; \textbf{confirm series} \\
+Output caps C204/C205 & ripple met by \SI{4.8}{\micro\farad}; rating
+  $\ge\SI{250}{\volt}$ (trim ceiling \SI{196.3}{\volt}) &
+  \SI{4.7}{\micro\farad} + \SI{100}{\nano\farad} (ratings unrecorded) &
+  Sizing match; \textbf{rating flagged, confirm} \\
+DA2032 at \SI{149.4}{\kilo\hertz} & characterized only at \SI{100}{\kilo\hertz}
+  & --- & \textbf{Assumption flagged} \\
+\end{longtable}
+
+Open items, in decreasing order of consequence: the ballast/trim-point tension of
+\cref{sec:hv-ignition} (a Rev-B value change); confirmation of C204's
+\SI{250}{\volt} rating and C202's series; bench measurement of efficiency (which
+also resolves the turn-off-loss estimate and, through it, the true current-limit
+margin); and bench verification of the start-up profile.

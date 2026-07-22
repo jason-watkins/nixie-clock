@@ -1,0 +1,102 @@
+\section{BCD decoder/driver characteristics}
+\label{sec:bcd-driver}
+
+Each IN-12B digit tube (\textsc{nx1}--\textsc{nx4}) is paired
+one-to-one with a K155ID1 BCD decoder/driver
+(\textsc{u1}--\textsc{u4}), a Soviet-made functional clone of the
+Texas Instruments SN74141. Each of the driver's ten outputs is an
+open-collector transistor wired directly to one cathode of its tube;
+the selected (lit) output sinks current, pulling that cathode low,
+while the other nine sit in a high-impedance off state. There is no
+interposing high-voltage buffer transistor between driver and tube in
+this design --- the driver's own output stage must tolerate whatever
+voltage an unselected cathode presents.
+
+\paragraph{Substitution.} No datasheet for the K155ID1 itself could be
+located in \texttt{docs/datasheets/}. By explicit decision recorded
+for this document, the K155ID1 is treated as electrically equivalent
+to a generic TI SN74141, and the figures below are transcribed from
+that part's datasheet (\texttt{SN74141\_TI.pdf}, Texas Instruments,
+originally published 1972, revised 1983) instead. Every value in this
+section is therefore a documented substitution, not a verified
+characteristic of the part actually populated on the board.
+
+\begin{longtable}{L{4.4cm}L{2.0cm}L{2.6cm}L{4.0cm}L{1.2cm}}
+\toprule
+Parameter & Value & Category & Conditions & Page \\
+\midrule
+\endhead
+Supply voltage \(V_{CC}\) & \SI{7}{\volt} & Abs.\ max & w.r.t.\ network ground & 2 \\
+Input voltage & \SI{5.5}{\volt} & Abs.\ max & & 2 \\
+Current into any output (off-state) & \SI{2}{\milli\ampere} & Abs.\ max & & 2 \\
+Operating free-air temperature & \SIrange{0}{70}{\celsius} & Abs.\ max & & 2 \\
+Storage temperature & \SIrange{-65}{150}{\celsius} & Abs.\ max & & 2 \\
+Supply voltage \(V_{CC}\), Min/Nom/Max & 4.75~/~5~/~5.25~V & Rec.\ operating & & 2 \\
+\textbf{Off-state output voltage} & \textbf{\SI{60}{\volt} max} & \textbf{Rec.\ operating} & & \textbf{2} \\
+\(V_{IH}\), high-level input voltage & \SI{2}{\volt} min & Electrical char.\ & & 2 \\
+\(V_{IL}\), low-level input voltage & \SI{0.8}{\volt} max & Electrical char.\ & & 2 \\
+\(V_{IK}\), input clamp voltage & \SI{-1.5}{\volt} max & Electrical char.\ & \(V_{CC}=\)min, \(I_I=-5\)~mA & 2 \\
+\(V_{O(on)}\), on-state output voltage & \SI{2.5}{\volt} max & Electrical char.\ & \(V_{CC}=\)min, \(I_O=7\)~mA & 2 \\
+\textbf{\(V_{O(off)}\), off-state output voltage, counts 0--9} & \textbf{\SI{60}{\volt} min} & \textbf{Electrical char.\ (guaranteed)} & \(V_{CC}=\)max, \(I_O=0.5\)~mA & \textbf{2} \\
+\(I_{O(off)}\), off-state reverse current & \SI{50}{\micro\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_O=55\)~V, \(T_A=55\)\si{\celsius} & 2 \\
+\(I_{O(off)}\), off-state reverse current, counts 10--15 & 5 (typ) / 15 (max) \si{\micro\ampere} & Electrical char.\ & \(V_O=30\)~V, \(T_A=70\)\si{\celsius} & 2 \\
+\(I_I\), input current at max input voltage & \SI{1}{\milli\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=5.5\)~V & 2 \\
+\(I_{IH}\), A input & \SI{40}{\micro\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=2.4\)~V & 2 \\
+\(I_{IH}\), B/C/D input & \SI{80}{\micro\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=2.4\)~V & 2 \\
+\(I_{IL}\), A input & \SI{-1.6}{\milli\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=0.4\)~V & 2 \\
+\(I_{IL}\), B/C/D input & \SI{-3.2}{\milli\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=0.4\)~V & 2 \\
+\(I_{CC}\), supply current & 16 (typ) / 25 (max) \si{\milli\ampere} & Electrical char.\ & \(V_{CC}=\)max, inputs grounded, outputs open & 2 \\
+\bottomrule
+\end{longtable}
+
+Pin mapping (16-pin DIP): BCD inputs A, B, C, D on pins 3, 6, 7, 4;
+\(V_{CC}\) on pin 5, ground on pin 12; decimal outputs 0--9 on pins
+16, 15, 8, 9, 13, 14, 11, 10, 1, 2 respectively. Not specified in this
+datasheet: package thermal resistance, maximum junction temperature,
+ESD rating, and propagation delay.
+
+\subsection{The off-state voltage question}
+\label{sec:bcd-voltage-risk}
+
+The datasheet's Absolute Maximum Ratings table gives no distinct
+off-state output voltage limit --- it bounds only off-state output
+\emph{current} (\SI{2}{\milli\ampere}). The only off-state voltage
+figure anywhere in the datasheet is \SI{60}{\volt}, and it is a
+\emph{guaranteed operating} point (Recommended Operating Conditions,
+and corroborated by the \(V_{O(off)}\) electrical-characteristics row,
+which promises no breakdown up to \SI{60}{\volt} under a
+\SI{0.5}{\milli\ampere} test load) rather than a stated destructive
+limit; the datasheet does not say what happens above it, only that
+correct operation is guaranteed up to it. Two separate leakage-current
+test points exist below that ceiling (\SI{50}{\micro\ampere} max at
+\(V_O=\SI{55}{\volt}\), and \SI{5}{}/\SI{15}{\micro\ampere}
+typ/max at \(V_O=\SI{30}{\volt}\) with all ten outputs off) and should
+not be mistaken for the guaranteed standoff voltage itself.
+
+This board's anode rail runs \SIrange{160}{196}{\volt}
+(\cref{sec:hv-converter}), and with no buffer transistor between
+driver and tube, an unselected cathode is exposed to something on the
+order of the tube's maintaining voltage up to the full rail voltage
+--- \SIrange{145}{196}{\volt} by the figures in \cref{sec:tubes} ---
+2.5--3.3$\times$ the datasheet's guaranteed \SI{60}{\volt} standoff.
+
+This is treated in this document as an accepted, community-validated
+condition rather than an unresolved defect: direct cathode drive from
+a 7441/74141/K155ID1-class open-collector decoder, run well above its
+guaranteed off-state rating, is the standard topology used across
+essentially all amateur IN-12/IN-14-class Nixie clocks, with a long
+track record of field reliability at rail voltages in this same range.
+Two effects plausibly explain the margin, neither confirmed from a
+cited source: guaranteed datasheet minimums are worst-case
+production-lot figures, not the actual breakdown point of any given
+part, which in practice typically exceeds the guarantee by a wide
+margin; and an unselected cathode inside a lit tube is not necessarily
+pulled to the full anode potential the way a simple resistive
+off-state model would suggest, since it floats within the tube's own
+glow-discharge field rather than being driven there by an external
+low-impedance source. This document records the substitution and the
+margin explicitly rather than silently assuming the outputs are
+safe: it is a documented, precedent-based judgment call, not a
+datasheet guarantee, and it remains open pending a datasheet for the
+actual populated part (K155ID1) that might state a higher verified
+rating.

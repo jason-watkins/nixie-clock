@@ -1,0 +1,574 @@
+\section{3.3~V converter derivation}\label{sec:3v3-converter}
+
+This section derives the required characteristics of the 3.3~V rail and verifies the
+populated Rev-A implementation: U411 (AP63203WU, \cref{sec:ap632xx}) with L411
+(\SI{4.7}{\micro\henry}), C411 (\SI{10}{\micro\farad} input), C412 (\SI{100}{\nano\farad}
+BST), and C413/C414 ($2\times\SI{22}{\micro\farad}$ output). The exported netlist confirms
+the \texttt{+3V3} net contains exactly: the converter output components (L411, C413,
+C414), the ESP32-S3-WROOM-1 module's supply pin (U501 pin 2) with its local decoupling
+C501/C502, U411's FB pin (tied to the output, as on all fixed variants), and five
+resistive sources feeding other nets --- R206 (LM5155 PGOOD pull-up), R501 (ESP32 EN
+network), R502/R503 (UART activity-LED feeds), and R411 (rail indicator LED). The
+converter is the same IC family, footprint set, and support-component topology as the 5~V
+rail of \cref{sec:5v-converter}, and the generic buck method established there ---
+selection equations, mode-boundary logic, transient bound, RMS estimates --- is applied
+here without re-derivation. What is genuinely different on this rail, and where this
+section spends its effort, is threefold: the load is large and transient-heavy (Wi-Fi TX
+bursts, not static logic current), the converter's input is a two-diode OR of
+$V_{\mathrm{BUS}}$ and an externally supplied UART-header voltage rather than a direct
+rail connection, and the rail sources a status pull-up (PGOOD) whose behavior must be
+consistent with the rail's own sequencing.
+
+\subsection{Load budget}\label{sec:3v3-load}
+
+The dominant load is the MCU module. From \cref{sec:esp32}: the worst published sustained
+condition is Wi-Fi TX at \SI{355}{\milli\ampere} (802.11b, \SI{20.5}{dBm}, rated at
+100\,\% TX duty cycle --- a sustained worst case, not an instantaneous spike atop a
+sustained figure), and Espressif's own regulator-sizing requirement is an external supply
+capable of $\geq\SI{0.5}{\ampere}$. Typical operation sits far lower: modem-sleep spans
+\SIrange{13.2}{91.7}{\milli\ampere} depending on CPU state and clock, with a
+\SI{10}{\milli\ampere} adder during flash access; light- and deep-sleep are in the
+\si{\micro\ampere} range. The remaining loads are checked for negligibility rather than
+derived at length:
+
+\begin{itemize}
+\item \emph{BCD drive lines.} Sixteen GPIOs drive the four K155ID1s' BCD inputs. A TTL
+input driven high draws $I_{IH} \leq \SI{40}{\micro\ampere}$ (A input) or
+\SI{80}{\micro\ampere} (B/C/D inputs) from the driving pin (\cref{sec:bcd-driver}); a
+line driven low \emph{sinks} current sourced from the drivers' 5~V rail and adds nothing
+to VDD33. Worst case, all sixteen lines high:
+\begin{align*}
+  I_{\mathrm{BCD}} &= 4 \times (40 + 3\times80)\,\si{\micro\ampere}
+    = \SI{1.12}{\milli\ampere},
+\end{align*}
+0.3\,\% of the Wi-Fi figure. Negligible, as expected.
+\item \emph{Indicator LEDs.} R411 (\SI{1.5}{\kilo\ohm}) feeds D413, the rail's power
+indicator, continuously; R502/R503 (\SI{1.5}{\kilo\ohm} each) feed D501/D502, activity
+LEDs whose cathodes sit on the RXD0/TXD0 nets and which conduct only while the
+corresponding UART line is driven low (the UART idle state is high, so idle draw is
+zero). \emph{Assumption:} LED forward voltage $\approx\SI{2.0}{\volt}$ (generic 0805
+part, color unrecorded). Then
+\begin{align*}
+  I_{\mathrm{D413}} &= \frac{3.3-2.0}{\SI{1.5}{\kilo\ohm}} = \SI{0.87}{\milli\ampere}
+    \quad\text{(continuous)}, \\
+  I_{\mathrm{D501,D502}} &\approx \frac{3.3-2.0-0.1}{\SI{1.5}{\kilo\ohm}}
+    = \SI{0.8}{\milli\ampere} \quad\text{(per line, while low).}
+\end{align*}
+(D413's value field reads ``RX,'' evidently copied from the activity LEDs; electrically
+it is the rail indicator --- a cosmetic schematic-field inconsistency, flagged for BOM
+hygiene only.)
+\item \emph{Pull-ups.} R206 (PGOOD) contributes at most \SI{33}{\micro\ampere} and only
+during power-not-good windows; R501 (EN) conducts only transiently. Both are quantified
+in \cref{sec:3v3-house}.
+\end{itemize}
+
+The design totals are therefore
+\begin{align*}
+  I_{\mathrm{load,max}} &= 355 + 1.12 + 0.87 + 2\times0.8 + 0.03
+    \approx \SI{359}{\milli\ampere} \approx \SI{0.36}{\ampere},\\
+  P_{\mathrm{out,max}} &= 3.3 \times 0.359 = \SI{1.19}{\watt},
+\end{align*}
+the sustained worst case, with Espressif's $\geq\SI{0.5}{\ampere}$ capability requirement adopted as the
+converter-sizing floor (margin checks below are run at both \SI{0.36}{\ampere} and
+\SI{0.5}{\ampere}). Against the AP63203's \SI{2}{\ampere} rating the capability
+requirement is met $4\times$ over. For the UART-powered scenario of
+\cref{sec:3v3-diodeor} --- an MCU in download/console mode, radio off --- the applicable
+draw is the modem-sleep band plus flash access and LEDs: roughly
+\SIrange{30}{100}{\milli\ampere}, with \SI{50}{\milli\ampere} carried as the nominal
+estimate. One open item is inherited from \cref{sec:esp32} and not resolvable here:
+if the installed module SKU has PSRAM, active-mode draw may exceed the tabulated
+\SI{355}{\milli\ampere} by an amount Espressif does not quantify. The $4\times$ headroom
+between the \SI{0.5}{\ampere} requirement and the \SI{2}{\ampere} part absorbs any
+plausible adder, but the published figures remain the design point.
+
+\subsection{Operating point and conduction mode}\label{sec:3v3-op}
+
+Unlike U401, whose IN/EN tie directly to $V_{\mathrm{BUS}}$, U411's IN and EN share a
+common node fed through Schottky diode D411 from $V_{\mathrm{BUS}}$ (the OR topology
+itself is treated in \cref{sec:3v3-diodeor}; this subsection covers the normal,
+$V_{\mathrm{BUS}}$-fed case). \emph{Assumption} (generic SOD-123 Schottky, no part
+number recorded): $V_F \approx \SI{0.3}{\volt}$ at \SI{50}{\milli\ampere},
+\SI{0.4}{\volt} at \SIrange{200}{300}{\milli\ampere}, \SI{0.45}{\volt} at
+\SI{0.5}{\ampere}; reverse leakage $\leq\SI{100}{\micro\ampere}$ warm at \SI{13}{\volt}.
+The converter's input node then spans
+\begin{align*}
+  V_N^{\min} &= 8.5 - 0.4 = \SI{8.1}{\volt} \quad\text{(full load, minimum bus)}, \\
+  V_N^{\max} &= 13 - 0.2 \approx \SI{12.8}{\volt} \quad\text{(light load, maximum bus)},
+\end{align*}
+inside the \SIrange{3.8}{32}{\volt} recommended range with the same style of margin as
+the 5~V rail; EN\,=\,IN is a sanctioned always-on configuration, and both pins' absolute
+maximum is \SI{35}{\volt} (\cref{sec:ap632xx}) --- a $2.7\times$ margin over
+$V_N^{\max}$. The ideal duty cycle spans
+\begin{align*}
+  D_{\min} &= \frac{3.3}{12.8} = 0.258, &
+  D_{\max} &= \frac{3.3}{8.1} = 0.407,
+\end{align*}
+never crossing 0.5, so even the internal slope compensation is unstressed. Conduction
+corrections ($I R_{DS(\mathrm{on})} \approx \SI{45}{\milli\volt}$ at full load, 1.4\,\%
+of $V_{OUT}$) are ignored as in \cref{sec:5v-op}.
+
+\paragraph{Conduction mode.} With the populated \SI{4.7}{\micro\henry} at
+$f_{SW}=\SI{1.1}{\mega\hertz}$, the fixed-frequency ripple current is
+\begin{align*}
+  \Delta I_L \big|_{\SI{12.8}{\volt}} &=
+    \frac{3.3\,(12.8-3.3)}{12.8 \times \SI{4.7}{\micro\henry} \times \SI{1.1}{\mega\hertz}}
+    = \frac{31.35}{66.2} = \SI{0.474}{\ampere}, \\
+  \Delta I_L \big|_{\SI{8.1}{\volt}} &=
+    \frac{3.3\,(8.1-3.3)}{8.1 \times \SI{4.7}{\micro\henry} \times \SI{1.1}{\mega\hertz}}
+    = \frac{15.84}{41.9} = \SI{0.378}{\ampere},
+\end{align*}
+so the CCM boundary ($\Delta I_L/2$) is \SIrange{189}{237}{\milli\ampere} across the
+input window. Where the 5~V rail's load sits permanently below its boundary, this rail
+\emph{crosses} it in operation: modem-sleep currents (\SIrange{13}{92}{\milli\ampere})
+sit in PFM, and a Wi-Fi TX burst at \SI{355}{\milli\ampere} sits in CCM. The part
+manages the PFM/PWM transition automatically and continuously --- the mechanism, its
+\SI{450}{\milli\ampere} PFM peak-current clamp, and the zero-cross blocking are as
+described in \cref{sec:5v-op} --- so the crossing imposes no component choice; its one
+real consequence, transient droop at the mode transition, is bounded in
+\cref{sec:3v3-cout}. The datasheet's typical-efficiency curve for
+$V_{IN}=\SI{12}{\volt}$, $V_{OUT}=\SI{3.3}{\volt}$ reads approximately 87--90\,\% over
+the \SIrange{50}{500}{\milli\ampere} span (\ds{AP632XX.pdf}{2}); $\eta=0.85$ is carried
+as the conservative figure, matching \cref{sec:5v-op}. Average input current at full
+load is then
+\begin{align*}
+  I_{IN} &= \frac{P_{\mathrm{out,max}}}{\eta\,V_N^{\min}}
+          = \frac{1.19}{0.85 \times 8.1} = \SI{0.17}{\ampere}
+  \quad (\SI{0.24}{\ampere}\ \text{at the \SI{0.5}{\ampere} capability point}),
+\end{align*}
+drawn from $V_{\mathrm{BUS}}$ through D411 --- the largest of the three logic-rail
+loads on the bus budget, and the diode adds $I_{IN} V_F \approx \SI{70}{\milli\watt}$
+(\SI{96}{\milli\watt} at the capability point) of series loss, about 5\,\% of
+throughput at minimum bus voltage.
+
+\subsection{Minimum on-time}\label{sec:3v3-ontime}
+
+The binding corner is $V_N^{\max}=\SI{12.8}{\volt}$. At the $+6\,\%$ spread-spectrum
+extreme ($f_{SW}=\SI{1.166}{\mega\hertz}$):
+\begin{align*}
+  t_{\mathrm{on}} &= \frac{D_{\min}}{f_{SW}}
+    = \frac{0.258}{\SI{1.166}{\mega\hertz}} = \SI{221}{\nano\second}
+    \quad\text{vs.}\quad t_{\mathrm{on,min}} = \SI{80}{\nano\second}
+    \;\;(\cref{sec:ap632xx}),
+\end{align*}
+a $2.8\times$ margin; the PFM pulse on-time, $L\times\SI{0.45}{\ampere}/(V_N-V_{OUT}) =
+\SI{223}{\nano\second}$ at the same corner, is the same figure. The margin is thinner
+than the 5~V rail's $3.3$--$4.1\times$ (\cref{sec:5v-ontime}) because a 3.3~V output
+yields a smaller duty cycle at the same input, but for the constraint to bind the input
+would need $V_N = 3.3/(t_{\mathrm{on,min}} f_{SW}) \approx \SI{35}{\volt}$ --- the
+absolute-maximum rating itself, unreachable from a 13~V bus. Match.
+
+\subsection{Inductor}\label{sec:3v3-inductor}
+
+The datasheet selection equation with its prescribed ripple band ($\Delta I_L$ =
+30--50\,\% of the \SI{2}{\ampere} rating, i.e.\ \SIrange{0.6}{1.0}{\ampere};
+\cref{sec:ap632xx}), at the maximum-ripple corner $V_N=\SI{12.8}{\volt}$:
+\begin{align*}
+  L\big|_{\Delta I_L = \SI{1.0}{\ampere}} &=
+    \frac{3.3\,(12.8-3.3)}{12.8 \times 1.0 \times \SI{1.1}{\mega\hertz}}
+    = \SI{2.23}{\micro\henry},
+  &
+  L\big|_{\Delta I_L = \SI{0.6}{\ampere}} &=
+    \frac{31.35}{12.8 \times 0.6 \times \SI{1.1}{\mega\hertz}} = \SI{3.71}{\micro\henry},
+\end{align*}
+and \SIrange{1.78}{2.96}{\micro\henry} at \SI{8.1}{\volt}. The datasheet's own Table-2
+BOM value for the AP63203 is \SI{3.9}{\micro\henry} (\cref{sec:ap632xx}). The populated
+value is \SI{4.7}{\micro\henry} --- the \emph{AP63205's} Table-3 value, the same part
+and footprint as the 5~V rail's L401. Unlike the 5~V rail, then, this converter is not
+the reference BOM applied verbatim: the inductor deviates from the variant-specific
+recommendation, evidently to share one line item across both rails. The consequences
+all fall in the benign direction. Ripple is \SI{0.474}{\ampere} (23.7\,\% of
+\SI{2}{\ampere}) at \SI{12.8}{\volt} and \SI{0.378}{\ampere} (18.9\,\%) at
+\SI{8.1}{\volt} --- below the 30--50\,\% band, which lowers the CCM peak, lowers the
+output ripple, and improves light-load efficiency (the datasheet's own endorsement of
+larger inductance, apt for a clock that idles at modem-sleep currents for essentially
+its whole life). The value remains inside the general \SIrange{2.2}{10}{\micro\henry}
+recommendation. The cost is a slightly slower current slew into a load step, which the
+transient check of \cref{sec:3v3-cout} absorbs with wide margin. Verdict: acceptable ---
+a deliberate cross-rail reuse, noted as a deviation from the per-variant BOM table
+rather than a mismatch.
+
+\paragraph{Saturation current.} The peak inductor current in normal operation is
+\begin{align*}
+  I_{\mathrm{pk}} &= I_{\mathrm{load,max}} + \frac{\Delta I_L}{2}
+    = 0.359 + 0.237 = \SI{0.60}{\ampere}
+  \quad (\SI{0.74}{\ampere}\ \text{at \SI{0.5}{\ampere}}),
+\end{align*}
+against the datasheet's $\geq$35\,\% rule: $1.35 \times 0.359 = \SI{0.48}{\ampere}$
+($1.35 \times 0.5 = \SI{0.68}{\ampere}$ at the capability point). Under the same
+stated assumption as \cref{sec:5v-inductor} --- $I_{\mathrm{sat}} \geq \SI{3.0}{\ampere}$,
+DCR $\leq\SI{50}{\milli\ohm}$ for a commodity 6045-class \SI{4.7}{\micro\henry} shielded
+part --- the rating exceeds the worst normal peak by $\approx 5\times$ (against a real,
+sub-ampere operating peak this time, not a PFM clamp), and covers the
+\SI{3.1}{\ampere} maximum fault peak at or near hard saturation with hiccup protection
+bounding dwell, exactly as argued there. Match under the stated assumption; the actual
+part's rating is a confirm-at-BOM item shared with L401.
+
+\subsection{Current-limit margin}\label{sec:3v3-ilim}
+
+Against the \SI{2.5}{\ampere} minimum HS peak limit (\cref{sec:ap632xx}):
+\begin{align*}
+  \frac{I_{\mathrm{lim}}^{\min}}{I_{\mathrm{pk}}} &= \frac{2.5}{0.60} = 4.2\times
+  \quad\text{(worst sustained load)}, \\
+  \frac{I_{\mathrm{lim}}^{\min}}{I_{\mathrm{pk}}}\bigg|_{\SI{0.5}{\ampere}}
+    &= \frac{2.5}{0.74} = 3.4\times
+  \quad\text{(capability point)}.
+\end{align*}
+This is the check that was pro-forma on the 5~V rail and is meaningful here: the
+operating peak is a quarter of the limit rather than a fiftieth, but $3.4\times$ at the
+full Espressif sizing point is still comfortable, and start-up adds no interaction ---
+the \SI{4}{\milli\second} internal soft-start charges the output-node capacitance
+(\SI{66}{\micro\farad} nominal including the module-local C502) at
+\begin{align*}
+  I_{\mathrm{chg}} &= \SI{66}{\micro\farad} \times
+    \frac{\SI{3.3}{\volt}}{\SI{4}{\milli\second}} = \SI{54}{\milli\ampere},
+\end{align*}
+which even summed with the full load leaves $6\times$ under the minimum limit. A shorted
+rail lands in hiccup mode, as on the 5~V rail. Match.
+
+\subsection{Output capacitance, transient response, and rail accuracy}\label{sec:3v3-cout}
+
+The populated $2\times\SI{22}{\micro\farad}$ (C413/C414) equals the family BOM example
+and the \SIrange{22}{68}{\micro\farad} recommendation (\cref{sec:ap632xx}). The same
+capacitor assumptions as \cref{sec:5v-cout} are carried --- X5R/X7R ceramics, effective
+ESR \SI{2.5}{\milli\ohm} paralleled --- with DC-bias derating milder at 3.3~V:
+\emph{assume} $\geq 70\,\%$ retention, i.e.\ effective buck-local
+$C_{\mathrm{out}} \geq \SI{30.8}{\micro\farad}$. C501
+(\SI{100}{\nano\farad}) and C502 (\SI{22}{\micro\farad}) sit on the same net at the
+module: the netlist does not label intent, but their values and placement match standard
+practice for a second, load-local decoupling stage at a high-transient-current device,
+and they are treated as that --- C502 adds $\approx\SI{15}{\micro\farad}$ effective
+bulk at the module's pins beyond the converter's own capacitors.
+
+\paragraph{Load-release overshoot.} The datasheet's transient bound applied in
+\cref{sec:5v-cout}, at the worst CCM peak and \SI{50}{\milli\volt} permitted overshoot:
+\begin{align*}
+  C_{\mathrm{out}} &> \frac{L\,I_{\mathrm{pk}}^2}{(\Delta V + V_{OUT})^2 - V_{OUT}^2}
+    = \frac{\SI{4.7}{\micro\henry} \times 0.60^2\,\si{\square\ampere}}
+           {3.35^2 - 3.30^2\ \si{\square\volt}}
+    = \frac{\SI{1.67}{\micro\joule}}{\SI{0.3325}{\square\volt}}
+    = \SI{5.0}{\micro\farad}
+\end{align*}
+(\SI{7.7}{\micro\farad} at the \SI{0.74}{\ampere} capability-point peak) --- met
+$6.1\times$ over by the derated buck-local capacitance alone, $4\times$ at the
+capability point. The energy argument run forward gives the hard ceiling: dumping the
+full \SI{0.60}{\ampere} inductor current into \SI{30.8}{\micro\farad} raises the rail by
+only $\sqrt{3.3^2 + L I^2/C} - 3.3 \approx \SI{8}{\milli\volt}$. This matters more here
+than on the 5~V rail because the ESP32's absolute maximum equals its recommended
+maximum, \SI{3.6}{\volt}, with no headroom above it (\cref{sec:esp32}): even so, worst
+regulation maximum plus worst overshoot, $3.33 + 0.008 \approx \SI{3.34}{\volt}$,
+leaves \SI{260}{\milli\volt} to the ceiling. Match.
+
+\paragraph{Load-step droop (Wi-Fi TX burst onset).} The bounding step is
+idle-to-TX, $\Delta I = \SI{0.355}{\ampere}$. Two mechanisms stack. The inductor's
+physical slew limit, worst at minimum input,
+\begin{align*}
+  \frac{dI_L}{dt} &= \frac{V_N - V_{OUT}}{L} = \frac{8.1-3.3}{\SI{4.7}{\micro\henry}}
+    = \SI{1.02}{\ampere\per\micro\second}
+  &&\Rightarrow&
+  t_{\mathrm{slew}} &= \frac{0.355}{1.02} = \SI{0.35}{\micro\second},
+\end{align*}
+costs charge $\tfrac{1}{2}\,\Delta I\, t_{\mathrm{slew}} = \SI{62}{\nano\coulomb}$,
+i.e.\ \SI{2}{\milli\volt} on \SI{30.8}{\micro\farad} --- negligible; the
+\SI{4.7}{\micro\henry} reuse costs nothing measurable here. The dominant term is
+control-loop and PFM$\to$PWM transition latency, for which the datasheet publishes no
+bandwidth. \emph{Assumption:} the loop commands full inductor current within
+\SI{5}{\micro\second} ($\approx$5~switching periods), a conservative figure for an
+internally compensated \SI{1.1}{\mega\hertz} peak-current-mode buck. Then
+\begin{align*}
+  \Delta V_{\mathrm{droop}} &\approx \frac{\Delta I \cdot t_{\mathrm{resp}}}{C_{\mathrm{out}}}
+      + \Delta I \cdot \mathrm{ESR}
+    = \frac{0.355 \times \SI{5}{\micro\second}}{\SI{30.8}{\micro\farad}} + 0.355\times\SI{2.5}{\milli\ohm}
+    \approx 58 + 1 \approx \SI{59}{\milli\volt}.
+\end{align*}
+Stacked on the worst regulation minimum: $3.27 - 0.059 = \SI{3.21}{\volt}$, a
+\SI{210}{\milli\volt} margin over the ESP32's \SI{3.0}{\volt} floor. The conclusion is
+robust to the assumption: even tripling the assumed latency to \SI{15}{\micro\second}
+(\SI{173}{\milli\volt} droop) keeps the rail at \SI{3.10}{\volt}, still in
+specification, and C502's placement at the module supplies the first microseconds
+locally. Match.
+
+\paragraph{Ripple and accuracy stack.} CCM ripple at full load,
+$\Delta I_L/(8 f_{SW} C) + \Delta I_L\,\mathrm{ESR} \approx 1.8 + 1.2 \approx
+\SI{3}{\milli\volt}$; PFM ripple at idle, bounded by one
+\SI{450}{\milli\ampere}-peak pulse's charge (method of \cref{sec:5v-cout};
+$Q = \SI{243}{\nano\coulomb}$ at the \SI{8.1}{\volt} corner) at
+$Q/C + I_{\mathrm{pk}}\,\mathrm{ESR} \approx 7.9 + 1.1 \approx \SI{9}{\milli\volt}$
+pk-pk. The full stack against the load's window:
+\begin{align*}
+  V_{\mathrm{rail}} &\in [\,3.27 - 0.009,\; 3.33 + 0.009\,]
+    = [\,\SI{3.26}{\volt},\ \SI{3.34}{\volt}\,]
+  \quad\text{vs.}\quad \text{VDD33} \in [\,\SI{3.0}{\volt},\ \SI{3.6}{\volt}\,],
+\end{align*}
+$\approx\SI{260}{\milli\volt}$ of margin on both sides (\cref{sec:esp32}), and the
+transient droop above consumes under a third of the low-side margin. Match.
+
+\subsection{Input capacitance}\label{sec:3v3-cin}
+
+C411 (\SI{10}{\micro\farad} ceramic) on the OR node equals the family BOM example
+against the ``greater than \SI{10}{\micro\farad}'' prose (\cref{sec:ap632xx}), the same
+precision-not-flag status as C401. The buck's input RMS ripple current at the worst
+point ($D$ nearest 0.5, i.e.\ $V_N = \SI{8.1}{\volt}$):
+\begin{align*}
+  I_{\mathrm{RMS}} &\approx I_{\mathrm{out}}\sqrt{D(1-D)}
+    = 0.359\sqrt{0.407\times0.593} = \SI{0.18}{\ampere},
+\end{align*}
+equal to the half-of-max-load guidance figure and trivially inside any ceramic
+\SI{10}{\micro\farad}'s ampere-class rating. Input ripple voltage,
+$I_{\mathrm{out}}D(1-D)/(f_{SW}C) \approx \SI{8}{\milli\volt}$ nominal
+($\approx\SI{13}{\milli\volt}$ after DC-bias derating at the 12.8~V corner), is
+absorbed at the node --- and, usefully, the buck's pulsed input current circulates
+between C411 and the IC, so D411 carries the smoothed average
+(\SI{0.24}{\ampere} worst) rather than the switching pulses. As with C401, the
+schematic does not record the voltage rating: on a node reaching \SI{12.8}{\volt} it
+must be $\geq\SI{16}{\volt}$, \SI{25}{\volt} preferred for derating headroom ---
+confirm at BOM finalization. C412 (\SI{100}{\nano\farad}, SW-to-BST) matches the
+recommended bootstrap value. Match throughout.
+
+\subsection{Diode-OR input path and UART-powered operation}\label{sec:3v3-diodeor}
+
+The OR node (C411, U411 IN/EN) is fed by two SOD-123 Schottky diodes: D411, anode on
+$V_{\mathrm{BUS}}$, and D412, anode on \texttt{VCC\_UART} --- pin~3 of J501, the 6-pin
+UART header (1/2 GND, 3 VCC, 4 RXD0, 5 TXD0, 6 unconnected). The netlist confirms
+\texttt{VCC\_UART} touches exactly these two points; it reaches nothing else on the
+board. The node therefore follows whichever source is higher, less one forward drop,
+with the other diode reverse-biased --- a protective OR, not a sum. Both directions are
+worked through below; common USB-UART adapters (FTDI/CP2102-class) ship configured for
+either \SI{3.3}{\volt} or \SI{5}{\volt} on their VCC pin, often jumper-selectable, so
+both sub-cases of the UART-powered scenario are treated.
+
+\paragraph{Normal operation ($V_{\mathrm{BUS}}$ present).} The node sits at
+\SIrange{8.1}{12.8}{\volt}, so D412's cathode is \SIrange{3}{13}{\volt} above any
+adapter VCC (\SIrange{0}{5}{\volt}): D412 is reverse-biased and no forward path exists
+from this board's power onto an attached adapter's VCC pin. The only residual coupling
+is D412's reverse leakage --- \si{\micro\ampere}-class under the stated Schottky
+assumption --- sourced \emph{into} the adapter's own regulated output, which is
+inconsequential. Plainly: the board cannot back-power a UART adapter's VCC pin. (For
+completeness on the same header: the activity-LED feeds R502/R503 can source
+$\lesssim\SI{1}{\milli\ampere}$, series-limited by \SI{1.5}{\kilo\ohm}, into an
+\emph{unpowered} adapter's data pins through their ESD structures --- a negligible
+stress, noted only so the ``no backfeed'' statement is scoped to the VCC pin
+precisely.)
+
+\paragraph{UART-only operation, adapter set to 3.3~V.} With
+$V_{\mathrm{BUS}}$ absent, D411 is reverse-biased (blocking the node from back-feeding
+the bus; its \si{\micro\ampere} leakage cannot lift the bus net against the flyback's
+UVLO divider) and D412 conducts. The load is the download/console-mode estimate of
+\cref{sec:3v3-load}, $\approx\SI{50}{\milli\ampere}$; in any pass-through mode the
+buck's input current equals its output current, so $V_F(\mathrm{D412}) \approx
+\SI{0.3}{\volt}$ and
+\begin{align*}
+  V_N &= 3.30 - 0.30 = \SI{3.0}{\volt}.
+\end{align*}
+This fails before regulation is even in question: the AP63203's VIN UVLO thresholds are
+\SI{3.50}{\volt} rising, $\approx\SI{3.06}{\volt}$ falling (\cref{sec:ap632xx}), so at
+\SI{3.0}{\volt} the converter never enables and the +3V3 rail stays at zero. No
+tolerance rescues it --- even the friendliest corner (adapter at $+5\,\%$,
+\SI{3.47}{\volt}; $V_F$ at its \SI{0.25}{\volt} floor) reaches only
+\SI{3.22}{\volt}, still below the rising threshold, and the recommended operating
+minimum is \SI{3.8}{\volt} regardless. The counterfactual is also checked so the
+conclusion does not rest on the UVLO figure alone: \emph{were} the part running, it
+would be in the qualitative LDO mode of \cref{sec:ap632xx} (no numeric dropout spec
+exists), with the HS FET nearly always on and the output estimated through the
+resistive path:
+\begin{align*}
+  V_{OUT} &\approx V_N - I\,(R_{DS(\mathrm{on}),HS} + \mathrm{DCR})
+    = 3.00 - 0.05\,(0.125 + 0.050) = \SI{2.99}{\volt}
+\end{align*}
+at \SI{50}{\milli\ampere} (\SI{2.98}{\volt} at \SI{100}{\milli\ampere}) --- below the
+ESP32's \SI{3.0}{\volt} recommended minimum by \SIrange{10}{20}{\milli\volt}
+(negative margin) and \SI{280}{\milli\volt} below the regulation minimum. The
+\SI{3.3}{\volt} adapter configuration therefore fails both ways: the realistic outcome
+is a dead rail, and even the most favorable counterfactual is out of specification.
+Flagged: incompatible.
+
+\paragraph{UART-only operation, adapter set to 5~V.} At the
+\SI{50}{\milli\ampere} programming load, $I_{IN} \approx \SI{40}{\milli\ampere}$
+($\eta\approx0.88$ at this light load and low ratio), $V_F \approx \SI{0.3}{\volt}$:
+\begin{align*}
+  V_N &= 5.0 - 0.3 = \SI{4.7}{\volt},
+\end{align*}
+above the \SI{3.50}{\volt} rising UVLO and the \SI{3.8}{\volt} recommended minimum,
+with $D = 3.3/4.7 = 0.70$ --- deep inside the part's near-100\,\% duty capability, so
+the buck regulates normally at \SIrange{3.27}{3.33}{\volt}, identical to bus-powered
+operation. The margin survives every stacked tolerance: a USB-derived
+``\SI{5}{\volt}'' sagging to \SI{4.5}{\volt} still yields $V_N \approx
+\SI{4.1}{\volt} > \SI{3.8}{\volt}$, and even firmware that lights the radio on UART
+power ($I_{IN} \approx \SI{0.30}{\ampere}$, $V_F \approx \SI{0.4}{\volt}$, $V_N
+\approx \SI{4.6}{\volt}$) stays regulated --- the limit in that corner is the
+adapter's own current capability, not this converter. The \SI{5}{\volt} setting is
+therefore not merely the safer choice; it is the \emph{only} working one. The
+intuitive pairing --- ``3.3~V board, 3.3~V adapter'' --- is exactly backwards here,
+because the rail is regulated on-board and the regulator needs UVLO clearance and
+headroom above its own output.
+
+\paragraph{Conclusion and user-guide requirement.} This board's UART header requires
+the adapter's VCC set or wired to \SI{5}{\volt}; a \SI{3.3}{\volt}-VCC adapter leaves
+the board dead when USB-C power is absent. This is an operational requirement for the
+hardware user guide's flashing/console procedure, stated there as: \emph{use an
+adapter supplying \SI{5}{\volt} on VCC with \SI{3.3}{\volt} logic levels on TXD/RXD}
+--- the second clause because the data pins connect directly to ESP32 GPIOs whose
+recommended input maximum is $V_{DD}+\SI{0.3}{\volt}$ (\cref{sec:esp32}); many
+FTDI-style cables offer precisely this 5~V-VCC/3.3~V-I/O combination. Attaching or
+detaching the adapter while USB-C power is present is safe in either order: the OR
+simply follows the higher source, which is always $V_{\mathrm{BUS}}$.
+
+\paragraph{Component ratings on the OR node.} Across all scenarios the node spans
+\SIrange{0}{12.8}{\volt}: U411's IN/EN absolute maximum of \SI{35}{\volt}
+(\cref{sec:ap632xx}) is met $2.7\times$ over, and C411's required $\geq\SI{16}{\volt}$
+rating is the confirm-at-BOM item of \cref{sec:3v3-cin}. D411 sees at most
+$\approx\SI{5}{\volt}$ reverse (5~V adapter, bus absent) and \SI{0.24}{\ampere}
+forward average (\SI{96}{\milli\watt} --- inside a SOD-123's typical
+\SIrange{400}{500}{\milli\watt} envelope, under the stated assumption of an
+$I_F\geq\SI{0.5}{\ampere}$-class part). D412 is the binding case: it blocks the full
+node voltage, up to \SI{12.8}{\volt}, whenever the bus is up and no adapter drives
+VCC, so the part must be rated $V_R \geq \SI{16}{\volt}$ (\SI{20}{\volt}-plus is the
+commodity floor for SOD-123 Schottkys, but the schematic records no part number) ---
+confirm at BOM finalization alongside the inductor and capacitor ratings.
+
+\subsection{Pull-up loads, soft start, and dissipation}\label{sec:3v3-house}
+
+\paragraph{PGOOD pull-up (R206).} The LM5155's open-drain PGOOD pin is pulled up by
+R206 (\SI{100}{\kilo\ohm}) to this rail, with ESP32 GPIO15 --- an input, contributing
+only leakage --- reading the same node. The pin-level checks (sink current
+\SI{33}{\micro\ampere} vs.\ the \SI{1}{\milli\ampere} limit,
+$\SI{100}{\kilo\ohm} \geq \SI{10}{\kilo\ohm}$ recommended, voltage ratings) were
+completed in \cref{sec:hv-house} and stand. What remains for this rail is the load
+contribution and its polarity. The pin releases to high impedance when the flyback's
+output is good and its VCC and UVLO conditions are met, and pulls low otherwise
+(\ds{lm5155.pdf}{22}) --- i.e.\ the pull-up conducts its
+$3.3/\SI{100}{\kilo\ohm} = \SI{33}{\micro\ampere}$ only during start-up and fault
+windows, and essentially nothing (GPIO leakage, \si{\nano\ampere}) in normal operation.
+Either way it is four decades under the design load: negligible. GPIO15 accordingly
+reads high for power-good --- a coherent arrangement, since the signal's only consumer
+is powered by the same rail that supplies the pull-up, so the signal is valid exactly
+when there is something running to read it.
+
+\paragraph{EN pull-up (R501).} The R501/C503 network is Espressif's reference circuit
+verbatim (\cref{sec:esp32}). Steady-state current into the EN input is leakage-level;
+R501 conducts measurably only while charging C503 at power-up or while the reset
+button holds EN low --- \SI{330}{\micro\ampere} peak, decaying with
+$\tau = \SI{10}{\milli\second}$, or held during a button press. Zero contribution to
+the steady-state budget; negligible.
+
+\paragraph{Soft start and dissipation.} Soft start is the fixed internal
+\SI{4}{\milli\second} ramp; the inrush interaction was dismissed in
+\cref{sec:3v3-ilim}. Converter dissipation at the conservative $\eta=0.85$:
+\begin{align*}
+  P_{\mathrm{diss}} &= P_{\mathrm{out,max}}\left(\frac{1}{\eta}-1\right)
+    = 1.19 \times 0.176 = \SI{0.21}{\watt}, &
+  \Delta T &= \theta_{JA}P_{\mathrm{diss}} = 89 \times 0.21 \approx \SI{19}{\kelvin},
+\end{align*}
+rising to \SI{0.29}{\watt} and $\Delta T \approx \SI{26}{\kelvin}$ at the
+\SI{0.5}{\ampere} capability point --- $T_J \leq \SI{66}{\celsius}$ at a
+\SI{40}{\celsius} ambient, far below the \SI{125}{\celsius} design target
+(\cref{sec:ap632xx}). Wi-Fi TX at 100\,\% duty is already the sustained rating, so no
+duty-cycle relief is needed to make this conclusion. Add D411's \SI{96}{\milli\watt}
+and the thermal picture on this rail remains untroubled.
+
+\subsection{Summary}\label{sec:3v3-summary}
+
+Assumptions carried through this section: generic SOD-123 Schottky forward drops
+\SIrange{0.3}{0.45}{\volt} over \SIrange{50}{500}{\milli\ampere} with
+\si{\micro\ampere}-class leakage; inductor $I_{\mathrm{sat}}\geq\SI{3.0}{\ampere}$ and
+DCR $\leq\SI{50}{\milli\ohm}$ (6045-class, shared with L401); output ceramics retaining
+$\geq70\,\%$ at 3.3~V bias, effective ESR \SI{2.5}{\milli\ohm}; converter efficiency
+0.85 (floor under the datasheet's $\approx$87--90\,\% curve); control-loop response to
+a load step within \SI{5}{\micro\second} (conclusion shown robust to $3\times$ that);
+LED forward voltage \SI{2.0}{\volt}; download-mode MCU draw
+$\approx\SI{50}{\milli\ampere}$ (bounded at \SI{100}{\milli\ampere}). Each appears at
+its point of use above.
+
+\begin{longtable}{@{}p{0.26\textwidth}p{0.30\textwidth}p{0.22\textwidth}p{0.14\textwidth}@{}}
+\toprule
+Parameter & Derived requirement & Populated & Verdict \\
+\midrule
+\endfirsthead
+\toprule
+Parameter & Derived requirement & Populated & Verdict \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Load current & \SI{355}{\milli\ampere} MCU $+$ $\leq$\SI{4}{\milli\ampere}
+  housekeeping $\approx$ \SI{0.36}{\ampere} sustained; capability
+  $\geq\SI{0.5}{\ampere}$ (Espressif) & \SI{2}{\ampere}-rated AP63203 &
+  Match ($4\times$) \\
+Rail vs.\ MCU window & VDD33 \SIrange{3.0}{3.6}{\volt}; abs max $=$ rec max &
+  \SIrange{3.26}{3.34}{\volt} incl.\ ripple & Match
+  ($\approx\SI{260}{\milli\volt}$ both sides) \\
+Input window (normal) & inside \SIrange{3.8}{32}{\volt} recommended & OR node
+  \SIrange{8.1}{12.8}{\volt} ($V_{\mathrm{BUS}}-V_F$) & Match \\
+Duty cycle & 0.258--0.407; never crosses 0.5 & --- & Verified \\
+Conduction mode & CCM boundary \SIrange{189}{237}{\milli\ampere}: PFM at idle,
+  CCM in TX bursts; automatic transition & --- & Verified (benign) \\
+Minimum on-time & \SI{221}{\nano\second} vs.\ \SI{80}{\nano\second}; binds only
+  at $V_N\approx\SI{35}{\volt}$ & --- & Match ($2.8\times$) \\
+Inductance L411 & Eq.\ window \SIrange{2.2}{3.7}{\micro\henry}; Table-2 BOM
+  \SI{3.9}{\micro\henry} & \SI{4.7}{\micro\henry} (5~V rail's part reused) &
+  Acceptable deviation (ripple 19--24\,\%, benign) \\
+Inductor $I_{\mathrm{sat}}$ & $\geq\SI{0.68}{\ampere}$ (rule at
+  \SI{0.5}{\ampere} point); fault $\leq\SI{3.1}{\ampere}$ & 6045-class, rating
+  unrecorded (assumed $\geq\SI{3}{\ampere}$) & Match under assumption;
+  \textbf{confirm part} \\
+Current-limit margin & peak \SI{0.60}{\ampere} (\SI{0.74}{\ampere} at
+  capability point) vs.\ \SI{2.5}{\ampere} min & --- & Match ($\geq3.4\times$) \\
+Output capacitance C413/C414 & $\geq\SI{5.0}{\micro\farad}$ transient bound;
+  \SIrange{22}{68}{\micro\farad} recommended & $2\times\SI{22}{\micro\farad}$
+  ($+$ C502 at module) & Match \\
+TX-burst droop & $\lesssim\SI{59}{\milli\volt}$ vs.\ \SI{270}{\milli\volt}
+  budget to \SI{3.0}{\volt}; robust to $3\times$ latency & --- & Match \\
+Output ripple & $\leq\SI{9}{\milli\volt}$ pk-pk PFM / $\approx\SI{3}{\milli\volt}$
+  CCM & --- & Derived; $\ll$ margins \\
+Input capacitor C411 & $\geq\SI{10}{\micro\farad}$; RMS $\geq\SI{0.18}{\ampere}$;
+  $\geq\SI{16}{\volt}$ rating & \SI{10}{\micro\farad} (= BOM example; rating
+  unrecorded) & Match; \textbf{confirm rating} \\
+BST capacitor C412 & \SI{100}{\nano\farad} SW-to-BST & \SI{100}{\nano\farad} &
+  Match \\
+Backfeed to adapter VCC & none permissible & D412 orientation blocks; leakage
+  \si{\micro\ampere}-class & Verified (none) \\
+UART power, \SI{3.3}{\volt} adapter & node \SI{3.0}{\volt} $<$
+  \SI{3.50}{\volt} UVLO $\Rightarrow$ rail dead; counterfactual LDO output
+  \SI{2.98}{\volt}, below MCU minimum & --- & \textbf{Flagged: incompatible} \\
+UART power, \SI{5}{\volt} adapter & node \SIrange{4.1}{4.7}{\volt}; normal
+  regulation & --- & Match; \textbf{required configuration} (user-guide item,
+  with 3.3~V logic levels) \\
+D412 reverse rating & $\geq\SI{16}{\volt}$ (blocks \SI{12.8}{\volt}) & generic
+  Schottky, part unrecorded & Match under assumption; \textbf{confirm part} \\
+D411 forward path & $I_F$ avg $\leq\SI{0.24}{\ampere}$, \SI{96}{\milli\watt} &
+  generic SOD-123 Schottky & Match under assumption \\
+PGOOD pull-up R206 & load \SI{33}{\micro\ampere}, not-good windows only
+  (high-Z when good) & \SI{100}{\kilo\ohm}; pin checks in \cref{sec:hv-house} &
+  Match; negligible \\
+EN pull-up R501 & transient only (\SI{330}{\micro\ampere} pk,
+  $\tau=\SI{10}{\milli\second}$) & \SI{10}{\kilo\ohm} (= Espressif reference) &
+  Match; negligible \\
+Indicator LEDs R411/R502/R503 & \SI{0.87}{\milli\ampere} continuous $+$
+  $\leq\SI{1.6}{\milli\ampere}$ UART activity & \SI{1.5}{\kilo\ohm} each
+  (D413 value field mislabeled ``RX'') & Negligible; fix label \\
+Module decoupling C501/C502 & load-local second stage at a burst load &
+  \SI{100}{\nano\farad} $+$ \SI{22}{\micro\farad} & Match (role inferred) \\
+Soft start / inrush & \SI{54}{\milli\ampere} charging $+$ load $\ll$ limit &
+  internal \SI{4}{\milli\second} & Match \\
+Converter dissipation & $\leq\SI{0.29}{\watt}$, $\Delta T \leq \SI{26}{\kelvin}$
+  vs.\ \SI{125}{\celsius} target & TSOT26,
+  $\theta_{JA}=89$~\si{\celsius\per\watt} & Match (large margin) \\
+PSRAM active-mode adder & unquantified above \SI{355}{\milli\ampere}
+  (\cref{sec:esp32}) & module SKU unrecorded & Open item (absorbed by
+  $4\times$ headroom) \\
+\end{longtable}
+
+Three findings distinguish this rail from its 5~V sibling. First, the inductor is a
+deliberate deviation from the variant-specific reference BOM (\SI{4.7}{\micro\henry}
+where Table~2 lists \SI{3.9}{\micro\henry}) --- acceptable, with every consequence
+benign at this rail's loads. Second, and operationally most significant: the UART
+header's diode-OR feed works \emph{only} with a \SI{5}{\volt}-VCC adapter; a
+\SI{3.3}{\volt}-VCC adapter cannot lift the buck's input past its own UVLO and leaves
+the board dead when USB-C power is absent. That requirement (5~V VCC, 3.3~V logic
+levels) belongs in the user guide's flashing procedure as a hard prerequisite, not a
+footnote. Third, the transient checks that were pro-forma on the 5~V rail are real here
+but all pass with room: worst droop uses under a third of the low-side voltage margin,
+and the current-limit margin at Espressif's full \SI{0.5}{\ampere} sizing point is
+$3.4\times$. The confirm-at-BOM items --- inductor saturation rating, C411 voltage
+rating, D412 reverse rating --- are unrecorded ratings on generic parts, the same
+status as their counterparts in \cref{sec:5v-converter}, plus one cosmetic fix (D413's
+value field) and one inherited open item (the PSRAM active-mode current adder).

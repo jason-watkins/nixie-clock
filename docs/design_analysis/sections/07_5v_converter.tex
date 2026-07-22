@@ -1,0 +1,369 @@
+\section{5~V converter derivation}\label{sec:5v-converter}
+
+This section derives the required characteristics of the 5~V rail and verifies the
+populated Rev-A implementation: U401 (AP63205WU, \cref{sec:ap632xx}) with L401
+(\SI{4.7}{\micro\henry}), C401 (\SI{10}{\micro\farad} input), C402 (\SI{100}{\nano\farad}
+BST), and C403/C404 ($2\times\SI{22}{\micro\farad}$ output). The exported netlist confirms
+the \texttt{+5V} net contains exactly: the converter output components (L401, C403, C404),
+the four K155ID1 $V_{CC}$ pins (U1--U4, pin 5), their per-package bypass capacitors
+C1--C4 (\SI{100}{\nano\farad} each), and the power-indicator branch R401
+(\SI{5.1}{\kilo\ohm}) feeding D401 to ground --- nothing else. The rail powers the BCD
+decoder/drivers and its own indicator LED alone; it has no connection to the MCU or any
+other subsystem. This is a
+far lighter design point than the flyback of \cref{sec:hv-converter}: a fixed-output
+integrated buck, a static logic load two decades below the converter's rating, and no
+external compensation, sensing, or clamp networks to verify. The derivation is
+correspondingly shorter; where a margin is simply large, it is reported as large and left
+alone.
+
+\subsection{Load budget}\label{sec:5v-load}
+
+Each K155ID1 draws $I_{CC} = 16$~mA typical, \SI{25}{\milli\ampere} maximum
+(\cref{sec:bcd-driver}; specified at $V_{CC}=$ max, inputs grounded, outputs open). The
+cathode current sunk by the selected output does \emph{not} add to this: the driver output
+is an open-collector TTL stage sinking current that arrives from the 170~V rail through
+the tube, into the output pin, and out the ground pin --- it never passes through
+$V_{CC}$. The rail load is therefore the four packages' logic supply current only:
+\begin{align*}
+  I_{\mathrm{load,typ}} &= 4 \times \SI{16}{\milli\ampere} = \SI{64}{\milli\ampere}, &
+  I_{\mathrm{load,max}} &= 4 \times \SI{25}{\milli\ampere} = \SI{100}{\milli\ampere},
+\end{align*}
+\begin{align*}
+  P_{\mathrm{out,typ}} &= 5 \times 0.064 = \SI{0.32}{\watt}, &
+  P_{\mathrm{out,max}} &= 5 \times 0.100 = \SI{0.50}{\watt}.
+\end{align*}
+Bipolar TTL supply current is set by the internal bias networks, not by output state, so
+this load is essentially static: it does not change with which digit is lit, and the only
+input transitions are the once-per-second (and slower) BCD updates. There is no transient
+load profile to size against --- the DC maximum is the whole story. The
+\SI{100}{\nano\farad} per-package bypass capacitors C1--C4 are the standard one-per-TTL-package
+practice, generously adequate at these switching rates, and contribute no DC load.
+
+One further branch loads the rail continuously: the power-indicator LED D401, fed
+through R401 (\SI{5.1}{\kilo\ohm}). \emph{Assumption:} forward voltage
+$\approx\SI{2.0}{\volt}$ (generic 0805 part, color unrecorded; the value field reads
+``+5V,'' a functional label rather than a part choice). Then
+\begin{align*}
+  I_{\mathrm{D401}} &= \frac{5-2.0}{\SI{5.1}{\kilo\ohm}} = \SI{0.59}{\milli\ampere}
+    \quad\text{(continuous, non-switching)},
+\end{align*}
+raising the rail totals to \SI{65}{\milli\ampere} typical / \SI{101}{\milli\ampere}
+maximum. The increment is 0.6\,\% of the driver load --- below the rounding of every
+downstream figure and well inside the $\eta=0.85$ conservatism --- so the derivations
+that follow carry the driver-only \SI{100}{\milli\ampere} bound unchanged.
+
+\subsection{Operating point and conduction mode}\label{sec:5v-op}
+
+The input is $V_{\mathrm{BUS}}$, the USB-PD-negotiated rail (9 or \SI{12}{\volt} nominal
+contracts; analysis window \SIrange{8.5}{13}{\volt}), tied directly to both IN and EN with
+no series element. The window sits deep inside the AP63205's recommended
+\SIrange{3.8}{32}{\volt} operating range (\cref{sec:ap632xx}), with \SI{22}{\volt} to the
+\SI{35}{\volt} absolute maximum. The ideal buck duty cycle $D = V_{OUT}/V_{IN}$ spans
+\begin{align*}
+  D_{\min} &= \frac{5}{13} = 0.385 \quad (V_{IN}=\SI{13}{\volt}), &
+  D_{\max} &= \frac{5}{8.5} = 0.588 \quad (V_{IN}=\SI{8.5}{\volt}).
+\end{align*}
+Conduction-loss corrections to $D$ are of order $I_{\mathrm{load}} R_{DS(\mathrm{on})}
+\approx \SI{13}{\milli\volt}$ against a 5~V output --- below 0.3\,\% --- and are ignored
+throughout. Because $D_{\max} > 0.5$ at the bottom of the window, slope compensation is
+required for a peak-current-mode part; the AP63205 integrates it internally and no
+external action exists to take (\ds{AP632XX.pdf}{9}). Dropout is not remotely in play:
+minimum headroom is $8.5 - 5 = \SI{3.5}{\volt}$, so the near-100\%-duty ``LDO mode''
+described qualitatively in \cref{sec:ap632xx} is never entered on this rail.
+
+\paragraph{Conduction mode.} With the populated $L = \SI{4.7}{\micro\henry}$ at
+$f_{SW} = \SI{1.1}{\mega\hertz}$, the inductor ripple current in fixed-frequency
+operation would be
+\begin{align*}
+  \Delta I_L \big|_{\SI{8.5}{\volt}} &=
+    \frac{5\,(8.5-5)}{8.5 \times \SI{4.7}{\micro\henry} \times \SI{1.1}{\mega\hertz}}
+    = \frac{17.5}{43.9} = \SI{0.398}{\ampere}, \\
+  \Delta I_L \big|_{\SI{13}{\volt}} &=
+    \frac{5\,(13-5)}{13 \times \SI{4.7}{\micro\henry} \times \SI{1.1}{\mega\hertz}}
+    = \frac{40}{67.2} = \SI{0.595}{\ampere},
+\end{align*}
+so the CCM boundary load ($\Delta I_L/2$) is \SIrange{199}{298}{\milli\ampere} across the
+input window. The actual load, \SIrange{64}{100}{\milli\ampere}, sits below the boundary
+at every corner: the converter does not run continuous fixed-frequency PWM here. This is
+not the design concern it was for the flyback, where DCM was a \emph{designed-in}
+requirement that the compensation, current limit, and transformer reset all depended on
+(\cref{sec:hv-dcm}). In the AP63205 the light-load behavior is an automatic, internally
+managed PFM mode: the COMP node is clamped at a floor corresponding to a
+\SI{450}{\milli\ampere} peak inductor current, zero-cross detection on the low-side FET
+blocks reverse current, and the part skips cycles as the load falls, maintaining
+regulation continuously through the transition (\ds{AP632XX.pdf}{10}). No component
+choice in this design selects or depends on the mode; it is reported here as an operating
+fact, not verified as a requirement.
+
+The PFM operating point follows directly from the \SI{450}{\milli\ampere} clamp.
+Each pulse ramps the inductor to $I_{\mathrm{pk}} = \SI{0.45}{\ampere}$ and back to zero:
+\begin{align*}
+  t_{\mathrm{on}} &= \frac{L\,I_{\mathrm{pk}}}{V_{IN}-V_{OUT}}
+    = \frac{\SI{2.115}{\micro\volt\second}}{\SI{8}{\volt}} = \SI{264}{\nano\second}
+    \;\; (V_{IN}=\SI{13}{\volt}); \quad
+    \frac{\SI{2.115}{\micro\volt\second}}{\SI{3.5}{\volt}} = \SI{604}{\nano\second}
+    \;\; (V_{IN}=\SI{8.5}{\volt}), \\
+  t_{\mathrm{dem}} &= \frac{L\,I_{\mathrm{pk}}}{V_{OUT}}
+    = \frac{\SI{2.115}{\micro\volt\second}}{\SI{5}{\volt}} = \SI{423}{\nano\second}
+    \quad (\text{both corners}),
+\end{align*}
+delivering charge $Q = \tfrac{1}{2} I_{\mathrm{pk}} (t_{\mathrm{on}}+t_{\mathrm{dem}})
+= \SI{155}{\nano\coulomb}$ (\SI{13}{\volt}) to \SI{231}{\nano\coulomb}
+(\SI{8.5}{\volt}) per pulse. The average pulse repetition rate needed to support the load
+is $f_p = I_{\mathrm{load}}/Q$:
+\begin{align*}
+  f_p &= \frac{0.100}{155\,\si{\nano\coulomb}} \approx \SI{650}{\kilo\hertz}
+    \;\;(\SI{100}{\milli\ampere}, \SI{13}{\volt})
+  &&\text{down to}&
+  f_p &= \frac{0.064}{231\,\si{\nano\coulomb}} \approx \SI{277}{\kilo\hertz}
+    \;\;(\SI{64}{\milli\ampere}, \SI{8.5}{\volt}),
+\end{align*}
+i.e., roughly a quarter to two-thirds of the nominal clock, well above audibility and an
+idealized average (real skipping is bursty). The datasheet's typical-efficiency curve
+($V_{IN}=\SI{12}{\volt}$, $V_{OUT}=\SI{5}{\volt}$) reads approximately 88--90\,\% in the
+60--100~mA region (\ds{AP632XX.pdf}{2}); $\eta = 0.85$ is carried below as a conservative
+figure. Average input current is then at most
+\begin{align*}
+  I_{IN} &= \frac{P_{\mathrm{out,max}}}{\eta\,V_{IN}}
+          = \frac{0.50}{0.85 \times 8.5} = \SI{69}{\milli\ampere},
+\end{align*}
+a negligible increment on the $V_{\mathrm{BUS}}$ budget next to the flyback's draw.
+
+\subsection{Minimum on-time}\label{sec:5v-ontime}
+
+For a buck the on-time shrinks as $V_{IN}$ rises, so the binding corner is
+$V_{IN}=\SI{13}{\volt}$ --- the opposite corner from the flyback's. In hypothetical
+fixed-frequency operation at the +6\,\% spread-spectrum extreme
+($f_{SW} = \SI{1.166}{\mega\hertz}$):
+\begin{align*}
+  t_{\mathrm{on}} &= \frac{D_{\min}}{f_{SW}}
+    = \frac{0.385}{\SI{1.166}{\mega\hertz}} = \SI{330}{\nano\second}
+    \quad\text{vs.}\quad t_{\mathrm{on,min}} = \SI{80}{\nano\second}
+    \;\;(\cref{sec:ap632xx}),
+\end{align*}
+a $4.1\times$ margin. In the PFM mode actually occupied, the shortest pulse is the
+\SI{264}{\nano\second} on-time computed above --- still $3.3\times$ the minimum. For the
+constraint ever to bind at this output voltage, the input would need
+$D = t_{\mathrm{on,min}} f_{SW} = 0.093$, i.e.\ $V_{IN} = 5/0.093 \approx \SI{54}{\volt}$,
+beyond even the \SI{35}{\volt} absolute maximum. Minimum on-time cannot constrain a 5~V
+output anywhere in this part's operating space. Match, no further analysis warranted.
+
+\subsection{Inductor}\label{sec:5v-inductor}
+
+The datasheet's selection equation (\cref{sec:ap632xx}) with its prescribed ripple target
+--- $\Delta I_L$ equal to 30--50\,\% of the \emph{2~A rated} load, i.e.\
+\SIrange{0.6}{1.0}{\ampere}; the reference is the part's rating, not this application's
+100~mA --- gives, at the maximum-ripple corner $V_{IN}=\SI{13}{\volt}$:
+\begin{align*}
+  L\big|_{\Delta I_L = \SI{1.0}{\ampere}} &=
+    \frac{5\,(13-5)}{13 \times 1.0 \times \SI{1.1}{\mega\hertz}} = \SI{2.80}{\micro\henry},
+  &
+  L\big|_{\Delta I_L = \SI{0.6}{\ampere}} &=
+    \frac{40}{13 \times 0.6 \times \SI{1.1}{\mega\hertz}} = \SI{4.66}{\micro\henry},
+\end{align*}
+and \SIrange{1.87}{3.12}{\micro\henry} at \SI{8.5}{\volt}. The populated
+\SI{4.7}{\micro\henry} sits at the large-inductance edge of the 13~V window (ripple
+29.8\,\% of 2~A at \SI{13}{\volt}, 19.9\,\% at \SI{8.5}{\volt} --- at or slightly below
+the band's 30\,\% floor, the benign direction, which the datasheet itself endorses:
+``use a larger inductance for improved efficiency under light load,'' precisely this
+rail's condition). More directly: \SI{4.7}{\micro\henry} is the datasheet's own Table-3
+BOM value for the AP63205 5~V output (\cref{sec:ap632xx}), and the surrounding parts ---
+\SI{10}{\micro\farad} input, $2\times\SI{22}{\micro\farad}$ output,
+\SI{100}{\nano\farad} BST --- reproduce that table line for line. The populated design is
+the manufacturer's reference BOM applied verbatim, not an independent coincidence.
+It also sits inside the general \SIrange{2.2}{10}{\micro\henry} recommended range. Match.
+
+\paragraph{Saturation current.} The schematic records only the footprint
+(\texttt{L\_APV\_ANR6045}, a $6.0\times6.0\times\SI{4.5}{\milli\metre}$ shielded power
+inductor), not a part number, so the rating is checked against the class, with the
+assumption stated: \emph{assume} $I_{\mathrm{sat}} \geq \SI{3.0}{\ampere}$ and DCR
+$\leq \SI{50}{\milli\ohm}$, typical of \SI{4.7}{\micro\henry} parts in this size class
+(commodity 6045-package \SI{4.7}{\micro\henry} shielded inductors commonly rate
+3.5--5~A saturation, 20--50~m$\Omega$ DCR). Against the datasheet's application rule
+($\geq$35\,\% above maximum load: $1.35 \times 0.100 = \SI{135}{\milli\ampere}$) the
+assumed rating is $>20\times$; against the largest current the inductor ever carries in
+normal operation --- the \SI{450}{\milli\ampere} PFM peak clamp --- it is $\approx 7\times$;
+and it covers even the worst-case fault current, the \SI{3.1}{\ampere} maximum HS peak
+limit, at or near its hard-saturation rating, with the converter's hiccup protection
+(current-limit events for 2~ms force a 16~ms shutdown, \ds{AP632XX.pdf}{11}) bounding any
+fault dwell time. The DCR assumption satisfies the $<\SI{100}{\milli\ohm}$ efficiency
+guidance. Match under the stated assumption; the actual part's saturation rating should
+be confirmed when the BOM is finalized, the same status as the unrecorded capacitor
+series in \cref{sec:hv-caps}.
+
+\subsection{Current-limit margin}\label{sec:5v-ilim}
+
+The operative cycle-by-cycle limit is the HS peak current limit, \SI{2.5}{\ampere}
+minimum (\cref{sec:ap632xx}, which also records why the higher ``LS valley'' figure is
+not used). The largest peak inductor current the control loop commands at this load is
+the \SI{450}{\milli\ampere} PFM clamp:
+\begin{align*}
+  \frac{I_{\mathrm{lim}}^{\min}}{I_{\mathrm{pk}}} &= \frac{2.5}{0.45} = 5.6\times.
+\end{align*}
+Even if the load quadrupled and the converter re-entered CCM, the peak
+($I_{\mathrm{load}} + \Delta I_L/2 \approx \SI{0.7}{\ampere}$ at \SI{400}{\milli\ampere}
+load) would still leave $>3.5\times$. The current limit exists on this rail purely as
+fault protection --- a shorted +5~V net lands in hiccup mode rather than anything
+thermal --- and no operating condition approaches it. Large margin; nothing further to
+derive.
+
+\subsection{Output capacitance and rail accuracy}\label{sec:5v-cout}
+
+The populated $2\times\SI{22}{\micro\farad}$ (C403/C404) equals the datasheet BOM example
+and its \SI{44}{\micro\farad} nominal total sits inside the \SIrange{22}{68}{\micro\farad}
+recommendation (\cref{sec:ap632xx}). Assumption: the parts are X5R/X7R ceramics rated
+$\geq \SI{10}{\volt}$, retaining $\geq 60\,\%$ of nominal capacitance at 5~V DC bias ---
+effective $C_{\mathrm{out}} \geq \SI{26}{\micro\farad}$, still above the recommendation's
+floor. The datasheet's load-transient sizing bound (\ds{AP632XX.pdf}{14}), with a
+permitted overshoot $\Delta V = \SI{50}{\milli\volt}$ and the worst CCM-formula peak:
+\begin{align*}
+  C_{\mathrm{out}} &> \frac{L\left(I_{\mathrm{out}}+\Delta I_L/2\right)^2}
+                          {(\Delta V + V_{OUT})^2 - V_{OUT}^2}
+    = \frac{\SI{4.7}{\micro\henry} \times (0.100+0.298)^2\,\si{\square\ampere}}{5.05^2 - 5^2\ \si{\square\volt}}
+    = \frac{\SI{0.744}{\micro\joule}}{\SI{0.503}{\square\volt}}
+    = \SI{1.5}{\micro\farad},
+\end{align*}
+met with $17\times$ margin even after derating --- unsurprising, since the load has no
+transient profile to speak of. Output ripple in the occupied PFM mode is bounded by one
+pulse's full charge dumped into the (derated) capacitance plus the ESR step:
+\begin{align*}
+  \Delta V_{\mathrm{ripple}} &\lesssim \frac{Q_{\max}}{C_{\mathrm{out}}}
+      + I_{\mathrm{pk}}\,\mathrm{ESR}
+    = \frac{\SI{231}{\nano\coulomb}}{\SI{26}{\micro\farad}}
+      + 0.45 \times \SI{2.5}{\milli\ohm}
+    \approx 8.9 + 1.1 \approx \SI{10}{\milli\volt}\ \text{pk-pk},
+\end{align*}
+(assumed effective ESR \SI{2.5}{\milli\ohm} for two paralleled ceramics; the
+fixed-frequency ripple, $\Delta I_L/(8 f_{SW} C) + \Delta I_L\,\mathrm{ESR} \approx
+\SI{4}{\milli\volt}$, is smaller still). Stacking the worst case against the load's
+requirement: the AP63205 regulates to \SIrange{4.95}{5.05}{\volt} over conditions
+(\cref{sec:ap632xx}), and $4.95 - 0.010 = \SI{4.94}{\volt}$ /
+$5.05 + 0.010 = \SI{5.06}{\volt}$ sit inside the K155ID1's recommended
+\SIrange{4.75}{5.25}{\volt} supply window (\cref{sec:bcd-driver}) with
+$\approx\SI{190}{\milli\volt}$ margin on both sides. Match.
+
+\subsection{Input capacitance}\label{sec:5v-cin}
+
+The populated C401 (\SI{10}{\micro\farad} ceramic) equals the datasheet's BOM-table
+example; the accompanying prose asks for ``greater than \SI{10}{\micro\farad}''
+(\cref{sec:ap632xx}), so the population meets the manufacturer's own example rather than
+strictly exceeding the prose figure --- noted for precision, not flagged, because the
+requirement scales with load and this rail runs at 1/20th of the part's rating. The
+buck's input RMS ripple current at the worst point ($D$ nearest 0.5, i.e.\
+$V_{IN}=\SI{8.5}{\volt}$):
+\begin{align*}
+  I_{\mathrm{RMS}} &\approx I_{\mathrm{out}}\sqrt{D(1-D)}
+    = 0.100\sqrt{0.588 \times 0.412} = \SI{49}{\milli\ampere},
+\end{align*}
+against the guidance that the capacitor's RMS rating exceed half the maximum load
+(\SI{50}{\milli\ampere} for this application; ampere-class for any ceramic
+\SI{10}{\micro\farad}) --- margin of order $50\times$. Input ripple voltage at nominal
+capacitance is $I_{\mathrm{out}} D(1-D)/(f_{SW} C) \approx \SI{2}{\milli\volt}$, still
+$\approx\SI{3}{\milli\volt}$ after DC-bias derating at 13~V. The one thing the schematic
+does not record is the capacitor's voltage rating: on a 13~V rail it must be
+$\geq\SI{16}{\volt}$, and \SI{25}{\volt} is preferred for bias-derating headroom ---
+confirm at BOM finalization, same status as the inductor rating above. C402
+(\SI{100}{\nano\farad}, SW-to-BST) matches the recommended bootstrap value exactly.
+Match throughout.
+
+\subsection{Soft start, enable, and dissipation}\label{sec:5v-ss}
+
+Soft start is the fixed internal \SI{4}{\milli\second} ramp, not externally programmable
+(\cref{sec:ap632xx}); there is no component to verify. Start-up charging current is
+correspondingly trivial:
+\begin{align*}
+  I_{\mathrm{chg}} &= C_{\mathrm{out}}\frac{dV}{dt}
+    = \SI{44}{\micro\farad} \times \frac{\SI{5}{\volt}}{\SI{4}{\milli\second}}
+    = \SI{55}{\milli\ampere},
+\end{align*}
+which, even summed with the full \SI{100}{\milli\ampere} load, stays a factor of 16 below
+the minimum current limit --- no inrush interaction with the limit or with hiccup mode.
+EN tied directly to $V_{\mathrm{BUS}}$ is one of the two sanctioned always-on
+configurations (\cref{sec:ap632xx}): the converter starts as soon as the upstream load
+switch presents $V_{\mathrm{BUS}}$, with the drivers' 5~V arriving about
+\SI{4}{\milli\second} later, and no sequencing constraint exists among this rail, the
+3.3~V rail, or the flyback at this level. Cross-rail power-up ordering, to the extent it
+matters at all, is a system-level topic taken up after the individual rails are
+established, not a property of this converter.
+
+Dissipation, using the conservative $\eta = 0.85$ from \cref{sec:5v-op}:
+\begin{align*}
+  P_{\mathrm{diss}} &= P_{\mathrm{out,max}}\left(\frac{1}{\eta}-1\right)
+    = 0.50 \times 0.176 = \SI{88}{\milli\watt}, &
+  \Delta T &= \theta_{JA} P_{\mathrm{diss}} = 89 \times 0.088 \approx \SI{8}{\kelvin},
+\end{align*}
+so $T_J \approx \SI{48}{\celsius}$ at a \SI{40}{\celsius} ambient --- far below the
+\SI{125}{\celsius} design target adopted in \cref{sec:ap632xx}. No thermal management
+beyond the footprint's own copper is required.
+
+\subsection{Summary}\label{sec:5v-summary}
+
+Assumptions carried through this section: inductor $I_{\mathrm{sat}} \geq \SI{3.0}{\ampere}$
+and DCR $\leq \SI{50}{\milli\ohm}$ (generic 6045-class part, no part number recorded);
+output ceramics retain $\geq 60\,\%$ capacitance at 5~V bias with effective ESR
+\SI{2.5}{\milli\ohm}; converter efficiency 0.85 (conservative floor under the datasheet's
+$\approx$0.88--0.90 typical curve); indicator-LED forward voltage \SI{2.0}{\volt};
+PFM pulses idealized as clean
+\SI{450}{\milli\ampere}-peak triangles for the ripple and pulse-rate estimates. Each
+appears at its point of use above.
+
+\begin{longtable}{@{}p{0.26\textwidth}p{0.30\textwidth}p{0.22\textwidth}p{0.14\textwidth}@{}}
+\toprule
+Parameter & Derived requirement & Populated & Verdict \\
+\midrule
+\endfirsthead
+\toprule
+Parameter & Derived requirement & Populated & Verdict \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Load current & $4\times I_{CC}$ (64/100~mA) $+$ D401 indicator
+  (\SI{0.59}{\milli\ampere} via R401): \SI{65}{\milli\ampere} typ /
+  \SI{101}{\milli\ampere} max, static & --- & Derived \\
+Input window & inside \SIrange{3.8}{32}{\volt} recommended &
+  $V_{\mathrm{BUS}}$ \SIrange{8.5}{13}{\volt}, direct & Match (large margin) \\
+Duty cycle & 0.385--0.588; internal slope compensation covers $D>0.5$ & --- &
+  Verified \\
+Conduction mode & load $<$ CCM boundary (\SIrange{199}{298}{\milli\ampere})
+  $\rightarrow$ automatic PFM; regulation maintained & --- & Verified (benign) \\
+Minimum on-time & \SI{264}{\nano\second} (PFM) / \SI{330}{\nano\second} (PWM,
+  $+6\%$ dither) vs.\ \SI{80}{\nano\second} & --- & Match ($\geq 3.3\times$) \\
+Inductance L401 & Eq.-7 window \SIrange{2.8}{4.7}{\micro\henry} at \SI{13}{\volt};
+  datasheet 5~V BOM value \SI{4.7}{\micro\henry} & \SI{4.7}{\micro\henry}
+  & Match (reference BOM followed) \\
+Inductor $I_{\mathrm{sat}}$ & $\geq\SI{0.45}{\ampere}$ normal;
+  $\geq\SI{3.1}{\ampere}$ covers fault peak & 6045-class, rating unrecorded
+  (assumed $\geq\SI{3}{\ampere}$) & Match under assumption; \textbf{confirm part} \\
+Current-limit margin & peak $\leq\SI{0.45}{\ampere}$ vs.\ \SI{2.5}{\ampere} min
+  limit & --- & Large margin ($5.6\times$) \\
+Output capacitance C403/C404 & \SIrange{22}{68}{\micro\farad}
+  ($\geq\SI{1.5}{\micro\farad}$ transient bound) & $2\times\SI{22}{\micro\farad}$
+  (= BOM example) & Match \\
+Output ripple & $\lesssim\SI{10}{\milli\volt}$ pk-pk (PFM worst case) & --- &
+  Derived; $\ll$ load tolerance \\
+Rail accuracy at load & K155ID1 requires \SIrange{4.75}{5.25}{\volt} &
+  \SIrange{4.94}{5.06}{\volt} incl.\ ripple & Match ($\approx\SI{190}{\milli\volt}$
+  both sides) \\
+Input capacitor C401 & $\geq\SI{10}{\micro\farad}$ ceramic; RMS
+  $\geq\SI{49}{\milli\ampere}$ & \SI{10}{\micro\farad} (= BOM example; rating
+  unrecorded) & Match; \textbf{confirm $\geq$16~V rating} \\
+BST capacitor C402 & \SI{100}{\nano\farad} SW-to-BST & \SI{100}{\nano\farad} &
+  Match \\
+Soft start & \SI{4}{\milli\second} fixed internal; inrush
+  $\leq\SI{155}{\milli\ampere}$ & internal, no component & Match \\
+EN configuration & EN\,=\,VIN valid always-on & EN tied to $V_{\mathrm{BUS}}$ &
+  Match \\
+Converter dissipation & \SI{88}{\milli\watt}, $\Delta T \approx \SI{8}{\kelvin}$
+  vs.\ \SI{125}{\celsius} target & TSOT26, $\theta_{JA}=89$~\si{\celsius\per\watt} &
+  Match (large margin) \\
+Bypass C1--C4 & \SI{100}{\nano\farad} per TTL package, standard practice &
+  \SI{100}{\nano\farad} $\times 4$ & Match \\
+\end{longtable}
+
+No populated value is flagged as a mismatch. The two open items are both unrecorded
+ratings rather than wrong values: the actual L401 part's saturation current and the C401
+voltage rating ($\geq\SI{16}{\volt}$ on a 13~V rail), both to be confirmed when the BOM
+is finalized. The rail otherwise reduces to the manufacturer's reference design operating
+at one-twentieth of its rating into a static load --- every margin is wide, and the
+section's only substantive finding is the (benign, automatic) PFM operating mode.

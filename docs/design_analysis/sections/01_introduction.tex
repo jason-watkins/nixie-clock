@@ -1,0 +1,54 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The board exists to drive six cold-cathode gas-discharge indicator
+tubes from a USB-C Power Delivery source: four IN-12B numeric tubes
+forming a HH:MM digit display, and two IN-6 tubes forming a colon
+separator between the hour and minute pairs. Each numeric tube is
+paired one-to-one with a K155ID1 BCD decoder/driver, which
+selects one of ten cathodes per digit under control of an MCU. Every
+other subsystem on the board --- the 170~V anode supply, the 5~V rail
+for the decoder/drivers, the 3.3~V rail for the MCU, and the USB-PD
+front end that supplies all three --- exists only to put a stable,
+correctly proportioned high voltage across these tubes and to switch
+it through these driver chips. The tubes and drivers are therefore the
+correct starting point for a design analysis: their datasheet ratings
+set the requirements that every upstream converter stage must satisfy,
+rather than the other way around.
+
+This document derives those requirements first (\cref{sec:tubes,sec:bcd-driver}),
+then works backward through the 170~V flyback converter that meets
+them (\cref{sec:hv-components,sec:hv-converter}), the 5~V rail that
+powers the decoder/drivers and the 3.3~V rail that powers the MCU
+(\cref{sec:lv-components,sec:5v-converter,sec:3v3-converter}), and
+finally the USB-PD input stage sized to supply all three downstream
+converters.
+
+\paragraph{Method.} Every parameter attributed to a named,
+design-driving component --- a Nixie tube, the BCD decoder/driver, the
+flyback controller, the flyback transformer --- is transcribed from a
+datasheet on file in \texttt{docs/datasheets/} and cited by filename
+and page. Where a datasheet gives a range, a tolerance, or a specific
+test condition, that context is preserved rather than collapsed to a
+single number, because the converter design in
+\cref{sec:hv-converter} depends on knowing which figures are
+guaranteed worst cases and which are typical or test-condition values.
+\texttt{docs/datasheets/} is the boundary of that treatment: a part
+gets a cited, traceable figure if and only if its datasheet lives
+there, and everything else --- resistors, capacitors, standard diodes,
+and any other component the design doesn't hinge on --- is sized to
+ordinary engineering practice instead. Package and hand-soldering
+constraints enter only where a single critical part is available in
+one specific package (for example, the flyback transformer or the
+load-switch dual MOSFET); otherwise the analysis stays at the
+schematic level.
+
+\paragraph{A note on the BCD driver substitution.} No datasheet for
+the K155ID1 itself --- a Soviet-made functional clone of the Texas
+Instruments SN74141 --- could be located. By explicit decision, this
+document treats the K155ID1 as electrically equivalent to a generic
+TI SN74141 and cites that datasheet in its place
+(\cref{sec:bcd-driver}). This is a documented substitution, not a
+verified characteristic of the part actually populated on the board,
+and it is flagged again at the point where it matters most: the
+driver's off-state output voltage rating.
