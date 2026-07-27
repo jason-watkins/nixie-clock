@@ -4148,6 +4148,12 @@
 		(uuid "b0c91e0c-612a-401f-af41-4f5d9a03f932")
 	)
 	(junction
+		(at 101.6 50.8)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b4a0fb29-e2e3-42fa-a5b6-b908c995f9d5")
+	)
+	(junction
 		(at 39.37 137.16)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4269,7 +4275,7 @@
 	)
 	(wire
 		(pts
-			(xy 109.22 50.8) (xy 130.81 50.8)
+			(xy 101.6 50.8) (xy 130.81 50.8)
 		)
 		(stroke
 			(width 0)
@@ -4559,6 +4565,16 @@
 	)
 	(wire
 		(pts
+			(xy 92.71 41.91) (xy 101.6 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7828125b-56f1-4369-9e84-06836fbef23e")
+	)
+	(wire
+		(pts
 			(xy 261.62 44.45) (xy 248.92 44.45)
 		)
 		(stroke
@@ -4616,6 +4632,16 @@
 			(type default)
 		)
 		(uuid "8d0d16d6-2a2b-4f08-87d7-dec31c2dd426")
+	)
+	(wire
+		(pts
+			(xy 101.6 41.91) (xy 101.6 50.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9518f231-445b-4847-add0-de6121b8ce52")
 	)
 	(wire
 		(pts
@@ -6674,7 +6700,7 @@
 	)
 	(symbol
 		(lib_id "Switch:SW_Push")
-		(at 104.14 50.8 0)
+		(at 96.52 50.8 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6682,7 +6708,7 @@
 		(dnp no)
 		(uuid "23aa16d5-82de-42c6-941b-7c7d19ef23f4")
 		(property "Reference" "SW1"
-			(at 104.14 46.736 0)
+			(at 96.52 46.736 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6690,7 +6716,7 @@
 			)
 		)
 		(property "Value" "Boot"
-			(at 104.14 45.72 0)
+			(at 96.52 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6699,7 +6725,7 @@
 			)
 		)
 		(property "Footprint" "nixie_clock:SW_Panasonic_EVQ_4.9x4.9mm"
-			(at 104.14 45.72 0)
+			(at 96.52 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6708,7 +6734,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 104.14 45.72 0)
+			(at 96.52 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6717,7 +6743,7 @@
 			)
 		)
 		(property "Description" "Push button switch, generic, two pins"
-			(at 104.14 50.8 0)
+			(at 96.52 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6726,7 +6752,7 @@
 			)
 		)
 		(property "MFG Part No" "EVQ-PT9A15"
-			(at 104.14 50.8 0)
+			(at 96.52 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6735,7 +6761,7 @@
 			)
 		)
 		(property "LCSC" ""
-			(at 104.14 50.8 0)
+			(at 96.52 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8207,6 +8233,93 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 92.71 38.1 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "60eaec70-ef24-4c98-aacf-f3ea9630315d")
+		(property "Reference" "R12"
+			(at 94.234 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "10k"
+			(at 94.234 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 94.488 38.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 92.71 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 92.71 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG Part No" "0402WGF1002TCE"
+			(at 92.71 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25744"
+			(at 92.71 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7c1efa62-4995-4b42-a3d9-27c37e632910")
+		)
+		(pin "2"
+			(uuid "3a1e394d-bc3c-4e00-8b10-45b3c07b2681")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/0a78e122-cae8-43c8-ae5e-350b0dd676ce"
+					(reference "R12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 254 101.6 0)
 		(unit 1)
@@ -8934,6 +9047,72 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/0a78e122-cae8-43c8-ae5e-350b0dd676ce"
 					(reference "R6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 92.71 34.29 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7f70d8bf-255b-473f-8780-582ce529e6d0")
+		(property "Reference" "#PWR03"
+			(at 92.71 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 92.71 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 92.71 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 92.71 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 92.71 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e8b3875d-30cb-4408-8ce4-84b19bf40f41")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/0a78e122-cae8-43c8-ae5e-350b0dd676ce"
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -11099,7 +11278,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 99.06 50.8 0)
+		(at 91.44 50.8 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11108,7 +11287,7 @@
 		(fields_autoplaced yes)
 		(uuid "d5fe9871-b46d-495c-b5b7-c0f1cae180bd")
 		(property "Reference" "#PWR0509"
-			(at 99.06 57.15 0)
+			(at 91.44 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11117,7 +11296,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 99.06 55.88 0)
+			(at 91.44 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11126,7 +11305,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 99.06 50.8 0)
+			(at 91.44 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11135,7 +11314,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 99.06 50.8 0)
+			(at 91.44 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11144,7 +11323,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 99.06 50.8 0)
+			(at 91.44 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11153,7 +11332,7 @@
 			)
 		)
 		(property "MFG Part No" ""
-			(at 99.06 50.8 0)
+			(at 91.44 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11162,7 +11341,7 @@
 			)
 		)
 		(property "LCSC" ""
-			(at 99.06 50.8 0)
+			(at 91.44 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)

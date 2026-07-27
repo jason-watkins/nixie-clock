@@ -4274,7 +4274,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "10k"
 			(at 183.134 91.44 0)
 			(effects
 				(font
@@ -4310,7 +4310,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG Part No" "0402WGF1003TCE"
+		(property "MFG Part No" "0402WGF1002TCE"
 			(at 181.61 90.17 0)
 			(effects
 				(font
@@ -4319,7 +4319,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25741"
+		(property "LCSC" "C25744"
 			(at 181.61 90.17 0)
 			(effects
 				(font
