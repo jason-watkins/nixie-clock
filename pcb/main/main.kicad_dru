@@ -1,0 +1,14 @@
+(version 1)
+
+(rule "J101 internal NPTH geometry per JAE drawing"
+  (condition "A.memberOfFootprint('J101') && B.memberOfFootprint('J101')")
+  (constraint edge_clearance (min 0.2mm)))
+
+(rule "U153 antenna and J101 shell overhang board edge by design"
+  (severity ignore)
+  (condition "A.memberOfFootprint('U153') || A.memberOfFootprint('J101')")
+  (constraint silk_clearance (min 0mm)))
+
+(rule "Ground probe pads tie solid to the plane, being probe points rather than solder joints"
+  (condition "A.memberOfFootprint('TP122') || A.memberOfFootprint('TP132') || A.memberOfFootprint('TP151')")
+  (constraint zone_connection solid))

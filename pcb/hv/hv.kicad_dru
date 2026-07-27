@@ -1,0 +1,5 @@
+(version 1)
+
+(rule "T1 fixed pin pitch, isolation rated by manufacturer"
+  (condition "A.memberOfFootprint('T1') && B.memberOfFootprint('T1')")
+  (constraint clearance (min 0.6mm)))

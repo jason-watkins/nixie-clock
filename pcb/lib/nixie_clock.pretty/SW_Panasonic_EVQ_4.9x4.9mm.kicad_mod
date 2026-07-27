@@ -190,7 +190,7 @@
 		(layers "F.Cu" "F.Mask")
 		(roundrect_rratio 0.25)
 	)
-	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/EVQPT9A15.stp"
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/EVQPT9A15.stp"
 		(offset
 			(xyz 0 0 0)
 		)

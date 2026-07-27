@@ -325,7 +325,7 @@
 		(uuid "ba6b4e16-6e28-45b8-8793-315d94f542d2")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/DSS0012B.stp"
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/DSS0012B.stp"
 		(offset
 			(xyz 0 0 0)
 		)

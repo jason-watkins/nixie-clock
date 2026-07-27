@@ -75,7 +75,7 @@
 		(uuid "af405dc3-73a4-4eb0-8d9f-5c34f86fbd07")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/ECQ-E.stp"
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/ECQ-E.stp"
 		(offset
 			(xyz -2.5 0 0.5)
 		)

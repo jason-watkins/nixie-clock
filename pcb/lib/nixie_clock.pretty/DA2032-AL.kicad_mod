@@ -197,7 +197,7 @@
 		(uuid "d3728ae6-a6d7-4b2f-b010-8f67fb9fd001")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/DA2032-AL.STEP"
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/DA2032-AL.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

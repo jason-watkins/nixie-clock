@@ -124,7 +124,7 @@
 		(uuid "b1506ec4-84b5-4fc0-9eaf-6d45f97fbe0c")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/lib/nixie_clock.3dshapes/C317.step"
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/C317.step"
 		(offset
 			(xyz -1.9 1.27 1.6)
 		)
