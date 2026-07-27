@@ -109,11 +109,9 @@ converter-sizing floor (margin checks below are run at both \SI{0.36}{\ampere} a
 \cref{sec:3v3-diodeor} (an MCU in download/console mode, radio off), the applicable
 draw is the modem-sleep band plus flash access: roughly
 \SIrange{30}{100}{\milli\ampere}, with \SI{50}{\milli\ampere} carried as the nominal
-estimate. If the module SKU eventually selected has PSRAM, active-mode draw may exceed
-the tabulated \SI{355}{\milli\ampere} by an amount Espressif does not quantify
-(\cref{sec:esp32}); the headroom between the \SI{0.5}{\ampere} requirement
-and the converter's capability absorbs any plausible adder, and the published figures
-remain the design point.
+estimate. Both figures are published maxima for the module variant
+\cref{sec:esp32} specifies, so nothing in this budget is carried as an
+unquantified adder.
 
 \subsection{Operating point}\label{sec:3v3-input}
 
@@ -796,9 +794,6 @@ Soft start / inrush & $\leq\SI{1}{\ampere}$ start-up limit & internal
 \hline
 Converter dissipation & --- & $\leq\SI{0.29}{\watt}$, $\Delta T \leq
   \SI{18}{\kelvin}$ (VQFN, $\theta_{JA}=63$~\si{\celsius\per\watt}) \\
-\hline
-PSRAM active-mode adder & unquantified (\cref{sec:esp32}) & open margin item;
-  absorbed by the capability headroom \\
 \hline
 \end{longtable}
 }

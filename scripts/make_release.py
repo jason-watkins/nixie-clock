@@ -1,33 +1,44 @@
 #!/usr/bin/env python3
 """Produce fabrication outputs (gerbers, drill, BOM, pick-and-place) for
-this KiCad project.
+the KiCad board projects in this repository.
+
+The design is several independently fabricated boards, one KiCad project
+each, discovered as pcb/<name>/<name>.kicad_pro. Each board carries its
+own revision and is released on its own schedule.
 
 A release requires a clean git tree, passing ERC and DRC, and a revision
 with no existing release tag. The revision is the project text variable
 REV (Board Setup -> Text Variables); title blocks and silkscreen render it
-as ${REV}. A release exports to fab/rev<REV>/ and tags HEAD as rev<REV>.
-If that tag exists at another commit, the release fails: bump REV, commit,
-rerun. Rerunning at the tagged commit rebuilds the same release.
+as ${REV}. A release exports to fab/<name>/rev<REV>/ and tags HEAD as
+<name>-rev<REV>. If that tag exists at another commit, the release fails:
+bump REV, commit, rerun. Rerunning at the tagged commit rebuilds the same
+release.
 
-The design-analysis LaTeX document (docs/design_analysis/) shows the same
-REV in its title block, read from a small generated file
-(docs/design_analysis/revision.tex) rather than hand-maintained. A release
-fails if that file doesn't match the current REV; run --sync-doc-rev to
-regenerate it, commit, and rerun. Between releases the document keeps
-showing the previous REV, which is expected -- it becomes current again
-the next time a release is cut. The document separately stamps its own
-compile date via LaTeX's \\today, independent of this script.
+The design-analysis LaTeX document (docs/design_analysis/) covers all the
+boards at once, so it records every board's revision. Those come from a
+small generated file (docs/design_analysis/revision.tex) rather than being
+hand-maintained: one \\Rev<Name> macro per board, plus \\DesignRev, which
+collapses to a bare revision letter while the boards agree and expands to
+a per-board list once they diverge. A release fails if that file does not
+match the current revisions of every board -- not only the one being
+released -- so the document can never describe a board it has fallen
+behind. Run --sync-doc-rev to regenerate it, commit, and rerun. Between
+releases the document keeps showing the previous revisions, which is
+expected. The document separately stamps its own compile date via LaTeX's
+\\today, independent of this script.
 
 Usage:
     python scripts/make_release.py --check         # evaluate all gates, write nothing
-    python scripts/make_release.py                 # release (default profile: jlcpcb)
+    python scripts/make_release.py                 # release every board
+    python scripts/make_release.py main            # release one board
+    python scripts/make_release.py main hv         # release a subset
     python scripts/make_release.py --no-tag         # export only; repeatable test runs
-    python scripts/make_release.py --sync-doc-rev  # regenerate revision.tex from REV, exit
+    python scripts/make_release.py --sync-doc-rev  # regenerate revision.tex, exit
 
 Output tree:
-    fab/rev<REV>/
+    fab/<name>/rev<REV>/
         gerbers/                         gerber and drill files
-        <project>-rev<REV>-gerbers.zip   upload this to the fab
+        <name>-rev<REV>-gerbers.zip      upload this to the fab
         bom.csv                          assembly BOM, fab column format
         positions.csv                    pick-and-place, fab column format
         erc.rpt, drc.rpt                 reports from the release checks
@@ -204,37 +215,61 @@ def run(cmd: list[str], cwd: Path | None = None, ok_codes: tuple[int, ...] = (0,
 
 @dataclass(frozen=True)
 class Project:
-    """KiCad project files plus the git root."""
+    """One board's KiCad project files plus the git root."""
     root: Path        # git repository root
+    name: str         # board name, from the project directory
     pro: Path         # .kicad_pro
     pcb: Path         # .kicad_pcb
     sch: Path         # root .kicad_sch
 
 
-def find_project() -> Project:
-    """Locate the single KiCad project: exactly one .kicad_pro under the
-    git root, with .kicad_pcb and .kicad_sch siblings."""
+def find_boards(wanted: list[str] | None = None) -> list[Project]:
+    """Discover board projects as pcb/<name>/<name>.kicad_pro.
+
+    Requiring the project to be named after its directory is what keeps
+    this from picking up the reference schematics under docs/, or a
+    superseded project left at the top of pcb/. Names must be alphabetic
+    so they can form LaTeX macro names in revision.tex.
+
+    With `wanted` given, return those boards in that order; otherwise
+    every board found, alphabetically."""
     root = Path(run(["git", "rev-parse", "--show-toplevel"]).stdout.strip())
-    candidates = [p for p in root.rglob("*.kicad_pro") if "fab" not in p.parts]
-    if len(candidates) != 1:
-        names = ", ".join(str(p.relative_to(root)) for p in candidates) or "none"
-        raise ReleaseError(f"expected exactly one .kicad_pro in the repo, found: {names}")
-    pro = candidates[0]
-    pcb, sch = pro.with_suffix(".kicad_pcb"), pro.with_suffix(".kicad_sch")
-    for f in (pcb, sch):
-        if not f.is_file():
-            raise ReleaseError(f"project file missing: {f}")
-    return Project(root=root, pro=pro, pcb=pcb, sch=sch)
+    found: dict[str, Project] = {}
+    for pro in sorted((root / "pcb").glob("*/*.kicad_pro")):
+        name = pro.parent.name
+        if pro.stem != name:
+            continue
+        if not name.isalpha():
+            raise ReleaseError(
+                f"board directory {name!r} is not alphabetic; revision.tex "
+                f"derives a LaTeX macro name from it"
+            )
+        pcb, sch = pro.with_suffix(".kicad_pcb"), pro.with_suffix(".kicad_sch")
+        for f in (pcb, sch):
+            if not f.is_file():
+                raise ReleaseError(f"project file missing: {f}")
+        found[name] = Project(root=root, name=name, pro=pro, pcb=pcb, sch=sch)
+    if not found:
+        raise ReleaseError("no board projects found; expected pcb/<name>/<name>.kicad_pro")
+    if wanted is None:
+        return list(found.values())
+    unknown = [n for n in wanted if n not in found]
+    if unknown:
+        raise ReleaseError(
+            f"unknown board(s): {', '.join(unknown)}; "
+            f"available: {', '.join(sorted(found))}"
+        )
+    return [found[n] for n in wanted]
 
 
 # --------------------------------------------------------------------------
 # Release gates.  Each returns None on success or raises ReleaseError.
 # --------------------------------------------------------------------------
 
-def gate_git_clean(project: Project) -> None:
+def gate_git_clean(root: Path) -> None:
     """Require a clean working tree so the release is reproducible from a
-    commit."""
-    status = run(["git", "status", "--porcelain"], cwd=project.root).stdout
+    commit. Repo-wide, so it is checked once rather than per board."""
+    status = run(["git", "status", "--porcelain"], cwd=root).stdout
     if status.strip():
         listing = "\n".join(status.splitlines()[:10])
         raise ReleaseError("working tree is not clean; commit or stash first:\n" + listing)
@@ -246,49 +281,75 @@ def read_rev(project: Project) -> str:
     rev = text_vars.get("REV", "").strip()
     if not rev:
         raise ReleaseError(
-            "project text variable 'REV' is not set.\n"
+            f"text variable 'REV' is not set on board {project.name!r}.\n"
             "Define it in Board Setup -> Text Variables (e.g. REV = A); the\n"
             "silkscreen and title blocks should reference it as ${REV}."
         )
     if not rev.replace(".", "").isalnum():
-        raise ReleaseError(f"REV {rev!r} contains characters unsuitable for a tag name")
+        raise ReleaseError(
+            f"board {project.name!r}: REV {rev!r} contains characters "
+            f"unsuitable for a tag name"
+        )
     return rev
+
+
+def read_revs(boards: list[Project]) -> dict[str, str]:
+    """Every board's REV, keyed by board name."""
+    return {b.name: read_rev(b) for b in boards}
 
 
 DOC_REVISION_FILE = Path("docs/design_analysis/revision.tex")
 
 
-def _doc_revision_content(rev: str) -> str:
-    return (
-        "% Generated by scripts/make_release.py --sync-doc-rev -- do not hand-edit.\n"
-        f"\\newcommand{{\\DesignRev}}{{{rev}}}\n"
-    )
+def _doc_revision_content(revs: dict[str, str]) -> str:
+    """One \\Rev<Name> macro per board, plus \\DesignRev for the title block.
+
+    \\DesignRev is the bare revision while every board agrees, and a
+    per-board list once they diverge, so the common case reads as
+    "Rev B" rather than as a catalogue."""
+    lines = ["% Generated by scripts/make_release.py --sync-doc-rev -- do not hand-edit.\n"]
+    for name, rev in sorted(revs.items()):
+        lines.append(f"\\newcommand{{\\Rev{name.capitalize()}}}{{{rev}}}\n")
+    distinct = set(revs.values())
+    combined = (distinct.pop() if len(distinct) == 1
+                else " / ".join(f"{n}~{r}" for n, r in sorted(revs.items())))
+    lines.append(f"\\newcommand{{\\DesignRev}}{{{combined}}}\n")
+    return "".join(lines)
 
 
-def gate_doc_revision(project: Project, rev: str) -> None:
-    """The design-analysis document's revision macro must match REV.
+def gate_doc_revision(root: Path, revs: dict[str, str]) -> None:
+    """The design-analysis document's revision macros must match every
+    board, not just the one being released: the document describes all of
+    them, so it is stale the moment any board moves ahead of it.
 
     This is a content check, not a git-dirty check: a stale file can be
-    fully committed if REV was bumped without re-running --sync-doc-rev."""
-    path = project.root / DOC_REVISION_FILE
+    fully committed if a REV was bumped without re-running --sync-doc-rev."""
+    path = root / DOC_REVISION_FILE
     actual = path.read_text(encoding="utf-8") if path.is_file() else None
-    if actual != _doc_revision_content(rev):
+    if actual != _doc_revision_content(revs):
+        listing = ", ".join(f"{n}={r}" for n, r in sorted(revs.items()))
         raise ReleaseError(
-            f"{DOC_REVISION_FILE} does not match REV={rev}.\n"
+            f"{DOC_REVISION_FILE} does not match the current revisions ({listing}).\n"
             "Run: python scripts/make_release.py --sync-doc-rev, then commit, then rerun."
         )
 
 
-def sync_doc_rev(project: Project, rev: str) -> Path:
-    """Regenerate the design-analysis document's revision macro from REV."""
-    path = project.root / DOC_REVISION_FILE
-    path.write_text(_doc_revision_content(rev), encoding="utf-8")
+def sync_doc_rev(root: Path, revs: dict[str, str]) -> Path:
+    """Regenerate the design-analysis document's revision macros."""
+    path = root / DOC_REVISION_FILE
+    path.write_text(_doc_revision_content(revs), encoding="utf-8")
     return path
 
 
+def release_tag(project: Project, rev: str) -> str:
+    """Tags are per board, so boards can be respun independently."""
+    return f"{project.name}-rev{rev}"
+
+
 def gate_ledger(project: Project, rev: str) -> None:
-    """Fail if this revision was already released from a different commit."""
-    tag = f"rev{rev}"
+    """Fail if this board's revision was already released from a different
+    commit."""
+    tag = release_tag(project, rev)
     probe = run(["git", "rev-parse", "-q", "--verify", f"refs/tags/{tag}^{{commit}}"],
                 cwd=project.root, ok_codes=(0, 1))
     if probe.returncode == 1:
@@ -296,7 +357,7 @@ def gate_ledger(project: Project, rev: str) -> None:
     tagged, head = probe.stdout.strip(), run(["git", "rev-parse", "HEAD"], cwd=project.root).stdout.strip()
     if tagged != head:
         raise ReleaseError(
-            f"rev {rev} was already released (tag {tag} -> {tagged[:10]}).\n"
+            f"{project.name} rev {rev} was already released (tag {tag} -> {tagged[:10]}).\n"
             f"Bump REV in Board Setup -> Text Variables, commit, and rerun."
         )
     # Tag points at HEAD: rebuilding the same release is fine.
@@ -442,12 +503,13 @@ def make_zip(gerber_dir: Path, zip_path: Path) -> None:
 
 
 def create_tag(project: Project, rev: str, profile: FabProfile) -> None:
-    tag = f"rev{rev}"
+    tag = release_tag(project, rev)
     exists = run(["git", "rev-parse", "-q", "--verify", f"refs/tags/{tag}"],
                  cwd=project.root, ok_codes=(0, 1))
     if exists.returncode == 0:
         return  # tag already points at HEAD (same-commit rebuild)
-    run(["git", "tag", "-a", tag, "-m", f"Fab release rev {rev} ({profile.name})"],
+    run(["git", "tag", "-a", tag, "-m",
+         f"Fab release {project.name} rev {rev} ({profile.name})"],
         cwd=project.root)
 
 
@@ -455,41 +517,57 @@ def create_tag(project: Project, rev: str, profile: FabProfile) -> None:
 # Entry points
 # --------------------------------------------------------------------------
 
-def preflight(kicad_cli: str, project: Project) -> bool:
+def _report(label: str, check, note: str = "") -> bool:
+    try:
+        check()
+        print(f"  [pass] {label}{note}")
+        return True
+    except ReleaseError as err:
+        print(f"  [FAIL] {label}: {err}")
+        return False
+
+
+def preflight(kicad_cli: str, boards: list[Project], all_boards: list[Project]) -> bool:
     """Run every gate and print each result; return overall pass/fail.
 
-    A release stops at the first failure; preflight reports all of them."""
-    passed = True
-    rev = None
+    A release stops at the first failure; preflight reports all of them.
+    The repo-wide gates are evaluated once. The document-revision gate
+    reads every board, not just the ones being released."""
+    root = all_boards[0].root
+    passed = _report("git tree clean", lambda: gate_git_clean(root))
+    try:
+        revs = read_revs(all_boards)
+        passed &= _report("doc rev in sync", lambda: gate_doc_revision(root, revs))
+    except ReleaseError as err:
+        passed = False
+        print(f"  [FAIL] doc rev in sync: {err}")
+
     with tempfile.TemporaryDirectory() as tmp:
-        checks = [
-            ("git tree clean", lambda: gate_git_clean(project)),
-            ("REV defined", lambda: read_rev(project)),
-            ("doc rev in sync", lambda: gate_doc_revision(project, read_rev(project))),
-            ("rev unspent", lambda: gate_ledger(project, read_rev(project))),
-            ("ERC clean", lambda: gate_erc(kicad_cli, project, Path(tmp) / "erc.rpt")),
-            ("DRC clean", lambda: gate_drc(kicad_cli, project, Path(tmp) / "drc.rpt")),
-        ]
-        for label, check in checks:
+        for board in boards:
             try:
-                result = check()
-                rev = result or rev
-                print(f"  [pass] {label}" + (f"  (REV = {rev})" if label == "REV defined" else ""))
+                rev = read_rev(board)
             except ReleaseError as err:
                 passed = False
-                print(f"  [FAIL] {label}: {err}")
+                print(f"\n{board.name}:\n  [FAIL] REV defined: {err}")
+                continue
+            print(f"\n{board.name} (REV = {rev}):")
+            passed &= _report("rev unspent", lambda b=board, r=rev: gate_ledger(b, r))
+            passed &= _report("ERC clean", lambda b=board:
+                              gate_erc(kicad_cli, b, Path(tmp) / f"{b.name}-erc.rpt"))
+            passed &= _report("DRC clean", lambda b=board:
+                              gate_drc(kicad_cli, b, Path(tmp) / f"{b.name}-drc.rpt"))
     print("\npreflight: " + ("ready to release" if passed else "not ready; fix the items above"))
     return passed
 
 
 def release(kicad_cli: str, project: Project, profile: FabProfile,
-            tag: bool = True) -> None:
-    rev = read_rev(project)
-    gate_doc_revision(project, rev)
-    gate_git_clean(project)
+            revs: dict[str, str], tag: bool = True) -> None:
+    rev = revs[project.name]
+    gate_doc_revision(project.root, revs)
+    gate_git_clean(project.root)
     gate_ledger(project, rev)
 
-    out_dir = project.root / "fab" / f"rev{rev}"
+    out_dir = project.root / "fab" / project.name / f"rev{rev}"
     gerber_dir = out_dir / "gerbers"
     if out_dir.exists():
         shutil.rmtree(out_dir)  # same-commit re-release: rebuild from scratch
@@ -518,20 +596,21 @@ def release(kicad_cli: str, project: Project, profile: FabProfile,
         (
             "zip",
             lambda: make_zip(
-                gerber_dir, out_dir / f"{project.pro.stem}-rev{rev}-gerbers.zip"
+                gerber_dir, out_dir / f"{project.name}-rev{rev}-gerbers.zip"
             ),
         ),
     ]
     if tag:
-        steps.append((f"git tag rev{rev}", lambda: create_tag(project, rev, profile)))
+        steps.append((f"git tag {release_tag(project, rev)}",
+                      lambda: create_tag(project, rev, profile)))
     total = len(steps)
     for i, (label, step) in enumerate(steps, start=1):
         print(f"  [{i}/{total}] {label}")
         step()
 
     tag_note = "" if tag else "  (no tag created)"
-    print(f"\nreleased rev {rev} -> {out_dir}{tag_note}\n")
-    print(profile.upload_notes)
+    print(f"\nreleased {project.name} rev {rev} -> "
+          f"{out_dir.relative_to(project.root)}{tag_note}")
 
 
 def main() -> int:
@@ -539,6 +618,8 @@ def main() -> int:
         description="Produce fab outputs (gerbers/BOM/placement) with revision checks.",
         epilog="--check reports every unmet release condition at once.",
     )
+    parser.add_argument("boards", nargs="*", metavar="BOARD",
+                        help="board name(s) to act on (default: every board)")
     parser.add_argument("--profile", default="jlcpcb", choices=sorted(PROFILES),
                         help="fab house output format (default: %(default)s)")
     parser.add_argument("--check", action="store_true",
@@ -552,16 +633,28 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        project = find_project()
+        all_boards = find_boards()
+        boards = find_boards(args.boards) if args.boards else all_boards
+        root = all_boards[0].root
+
+        # revision.tex always covers every board, whatever subset is released.
         if args.sync_doc_rev:
-            rev = read_rev(project)
-            path = sync_doc_rev(project, rev)
-            print(f"wrote {path.relative_to(project.root)} (DesignRev = {rev})")
+            revs = read_revs(all_boards)
+            path = sync_doc_rev(root, revs)
+            listing = ", ".join(f"{n}={r}" for n, r in sorted(revs.items()))
+            print(f"wrote {path.relative_to(root)} ({listing})")
             return 0
+
         kicad_cli = find_kicad_cli(args.kicad_cli)
         if args.check:
-            return 0 if preflight(kicad_cli, project) else 1
-        release(kicad_cli, project, PROFILES[args.profile], tag=not args.no_tag)
+            return 0 if preflight(kicad_cli, boards, all_boards) else 1
+
+        revs = read_revs(all_boards)
+        for board in boards:
+            print(f"\n{board.name}:")
+            release(kicad_cli, board, PROFILES[args.profile], revs,
+                    tag=not args.no_tag)
+        print("\n" + PROFILES[args.profile].upload_notes)
         return 0
     except ReleaseError as err:
         print(f"\nrelease blocked: {err}", file=sys.stderr)

@@ -42,12 +42,13 @@ R503 & Outbound series resistor \\
 \label{sec:esp32}
 
 Source: \texttt{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}
-(Espressif). This is a generic module datasheet covering ten-plus
-flash/PSRAM SKUs (N4/N8/N16 flash; no-PSRAM/R2/R8/R16V PSRAM options)
-under one part number. The module is adopted here without committing
-to a flash/PSRAM SKU; the figures below are the published baselines,
-with the SKU-dependent adders recorded where Espressif publishes
-them.
+(Espressif). This is a generic module datasheet covering ten-plus SKUs
+under one part number, differing in flash size and in whether the
+module carries PSRAM. \textbf{A variant without PSRAM is required}: the
+octal-interface options place their data bus on GPIO35 through GPIO37,
+three pins this design needs as general-purpose outputs. Flash size is
+unconstrained. Every figure below is the published baseline for a
+module so specified.
 
 {\footnotesize
 \begin{longtable}{|L{4.3cm}|c|c|c|c|L{3.0cm}|c|}
@@ -111,8 +112,6 @@ ESD rating, CDM & & & \num{500} & \si{\volt} & $\pm$, either polarity & 47 \\
 \hline
 Flash current adder (modem-sleep, 80~Mbit/s, SPI 2-line) & & \num{10} & & \si{\milli\ampere} & & 29 \\
 \hline
-PSRAM current adder (light-sleep) & \num{40} & & \num{200} & \si{\micro\ampere} & Depends on PSRAM size/interface/voltage & 30 \\
-\hline
 GPIO \(V_{IH}\) & \(0.75\times V_{DD}\) & & & & \SI{25}{\celsius} & 27 \\
 \hline
 GPIO \(V_{IL}\) & & & \(0.25\times V_{DD}\) & & \SI{25}{\celsius} & 27 \\
@@ -146,17 +145,6 @@ own absolute maximum, so a pin driven above roughly \SI{3.6}{\volt} forward-bias
 its clamp structure into the supply rail. This governs every external
 interface the module presents and is the requirement
 \cref{sec:esp32-uart} exists to satisfy.
-
-\paragraph{PSRAM current adders are incompletely published.} The
-current-consumption tables note that PSRAM-equipped SKUs draw more
-than the tabulated baseline: an adder is published for light-sleep
-(\(+40\) to \(+200\)~\si{\micro\ampere}) and for modem-sleep with
-flash access (\(+10\)~mA), but \emph{no} adder is given for
-active-mode Wi-Fi TX/RX, so a PSRAM-equipped SKU may exceed the
-285--355~mA active-mode figures above by an amount Espressif does not
-quantify. \Cref{sec:3v3-converter} treats the published figures as the
-design point and carries the active-mode adder as an open margin
-item.
 
 \paragraph{The regulator must tolerate the full Wi-Fi TX transient,
 not just steady-state draw.} Espressif's stated minimum external

@@ -3717,6 +3717,12 @@
 		(uuid "89d2ddbc-bb9a-4564-979a-429891cfa323")
 	)
 	(junction
+		(at 82.55 118.11)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8a306264-3617-493d-b14f-333ce2981697")
+	)
+	(junction
 		(at 99.06 35.56)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3833,6 +3839,16 @@
 	(no_connect
 		(at 97.79 110.49)
 		(uuid "ef02c2f0-3abf-46e9-aca9-8c7fd77835db")
+	)
+	(wire
+		(pts
+			(xy 86.36 118.11) (xy 82.55 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0868f96c-5723-4bd7-a133-94e9a316f110")
 	)
 	(wire
 		(pts
@@ -4785,7 +4801,7 @@
 		)
 	)
 	(global_label "PD_{INT}"
-		(shape input)
+		(shape output)
 		(at 189.23 87.63 0)
 		(fields_autoplaced yes)
 		(effects
@@ -7067,6 +7083,91 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
 					(reference "#PWR0234")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 86.36 118.11 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "80c810a4-bfde-49fb-9ab7-08005bf1593c")
+		(property "Reference" "#FLG01"
+			(at 86.36 120.015 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 86.36 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 86.36 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 86.36 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 86.36 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 86.36 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 86.36 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4918b3c5-7566-4053-9a03-590b2eff7fc1")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
+					(reference "#FLG01")
 					(unit 1)
 				)
 			)

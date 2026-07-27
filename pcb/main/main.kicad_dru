@@ -12,3 +12,11 @@
 (rule "Ground probe pads tie solid to the plane, being probe points rather than solder joints"
   (condition "A.memberOfFootprint('TP122') || A.memberOfFootprint('TP132') || A.memberOfFootprint('TP151')")
   (constraint zone_connection solid))
+
+(rule "U121 land pattern spacing is fixed by TI RNM0015A"
+  (condition "A.memberOfFootprint('U121') && B.memberOfFootprint('U121')")
+  (constraint clearance (min 0.15mm)))
+
+(rule "U102 ground pads tie solid; a 0.25 mm UQFN pad cannot carry two spokes"
+  (condition "A.memberOfFootprint('U102')")
+  (constraint zone_connection solid))

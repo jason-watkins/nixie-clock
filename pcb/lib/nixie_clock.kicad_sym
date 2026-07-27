@@ -3648,7 +3648,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "TI TPS63070 buck-boost converter, 2 A switch current, VIN 2 to 16 V, VOUT 2.5 to 9 V, VQFN-15 2.5x3 mm; pin layout mirrors datasheet typical application. Terminals 12/13 (VIN) and 7/8 (VOUT) are each internally common and share a single land; pin 8 is typed passive so ERC accepts it alongside power output pin 7. Pinout is common to TPS63070, TPS630701 and TPS630702"
+		(property "Description" "TI TPS63070 buck-boost converter, 2 A switch current, VIN 2 to 16 V, VOUT 2.5 to 9 V, VQFN-15 2.5x3 mm; pin layout mirrors datasheet typical application. Terminals 12/13 (VIN) and 7/8 (VOUT) are each internally common and share a single land; pin 8 is typed passive so ERC accepts it alongside power output pin 7. Pinout is common to TPS63070, TPS630701 and TPS630702. FB2 is an internally switched open-drain to GND (the datasheet types it O) but is typed passive here so ERC accepts grounding it, which the datasheet sanctions when voltage scaling is unused"
 			(at 0 -25.4 0)
 			(effects
 				(font
@@ -3923,7 +3923,7 @@
 					)
 				)
 			)
-			(pin open_collector line
+			(pin passive line
 				(at 17.78 -2.54 180)
 				(length 5.08)
 				(name "FB2"
