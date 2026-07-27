@@ -5472,7 +5472,7 @@
 		(at 46.99 41.91 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "1eb1ad5a-efe9-4998-8ca7-c387e76840dc")
@@ -5880,7 +5880,7 @@
 		(at 46.99 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "50ea1b50-2b89-4b48-98f0-e5b9a78ac247")
@@ -5928,6 +5928,15 @@
 			)
 		)
 		(property "MFG Part No" ""
+			(at 46.99 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
 			(at 46.99 91.44 0)
 			(effects
 				(font
@@ -6294,7 +6303,7 @@
 		(at 204.47 59.69 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6376,7 +6385,7 @@
 		(at 157.48 92.71 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6485,7 +6494,7 @@
 		(at 74.93 44.45 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -6974,7 +6983,7 @@
 		(at 157.48 43.18 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -7083,7 +7092,7 @@
 		(at 74.93 93.98 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -7350,7 +7359,7 @@
 		(at 113.03 140.97 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -7893,7 +7902,7 @@
 		(at 231.14 132.08 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -8271,7 +8280,7 @@
 		(at 129.54 90.17 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "c54f5e18-b308-4d02-9519-1dd6eb9e6310")
@@ -8319,6 +8328,15 @@
 			)
 		)
 		(property "MFG Part No" ""
+			(at 129.54 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
 			(at 129.54 90.17 0)
 			(effects
 				(font
@@ -8749,7 +8767,7 @@
 		(at 129.54 40.64 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "d60de912-6b2b-4b52-ba26-7f4fa45128d7")
@@ -8797,6 +8815,15 @@
 			)
 		)
 		(property "MFG Part No" ""
+			(at 129.54 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
 			(at 129.54 40.64 0)
 			(effects
 				(font
@@ -8949,7 +8976,7 @@
 		(at 204.47 36.83 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
