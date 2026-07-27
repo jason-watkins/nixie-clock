@@ -479,6 +479,12 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile, out_csv: P
             "--group-by",
             ",".join(["Value", "Footprint"] + part_fields),
             "--exclude-dnp",
+            # Spell every reference out. kicad-cli defaults to collapsing
+            # runs into ranges ("C1-C3"), which an assembly house reads as
+            # one literal designator matching nothing in the placement file,
+            # so those parts silently go unassembled.
+            "--ref-range-delimiter",
+            "",
             str(project.sch),
         ]
     )
