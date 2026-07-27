@@ -1,53 +1,100 @@
 \section{BCD decoder/driver characteristics}
 \label{sec:bcd-driver}
 
-Each IN-12B digit tube (\textsc{nx1}--\textsc{nx4}) is paired
-one-to-one with a K155ID1 BCD decoder/driver
-(\textsc{u1}--\textsc{u4}), a Soviet-made functional clone of the
-Texas Instruments SN74141. Each of the driver's ten outputs is an
+Each IN-12B digit tube (NX1--NX4, \cref{sec:tubes}) is
+paired one-to-one with a K155ID1 BCD decoder/driver, designated
+U1--U4 throughout this document, a Soviet-made
+functional clone of the Texas Instruments SN74141. Each of the driver's
+ten outputs is an
 open-collector transistor wired directly to one cathode of its tube;
 the selected (lit) output sinks current, pulling that cathode low,
 while the other nine sit in a high-impedance off state. There is no
 interposing high-voltage buffer transistor between driver and tube in
-this design --- the driver's own output stage must tolerate whatever
+this design: the driver's own output stage must tolerate whatever
 voltage an unselected cathode presents.
 
-\paragraph{Substitution.} No datasheet for the K155ID1 itself could be
-located in \texttt{docs/datasheets/}. By explicit decision recorded
-for this document, the K155ID1 is treated as electrically equivalent
-to a generic TI SN74141, and the figures below are transcribed from
-that part's datasheet (\texttt{SN74141\_TI.pdf}, Texas Instruments,
-originally published 1972, revised 1983) instead. Every value in this
-section is therefore a documented substitution, not a verified
-characteristic of the part actually populated on the board.
+\paragraph{Substitution.} No K155ID1 datasheet is on file in
+\texttt{docs/datasheets/}. The K155ID1 is treated as electrically
+equivalent to the TI SN74141 it clones, and the figures below are
+transcribed from that part's datasheet (\texttt{SN74141\_TI.pdf}, Texas Instruments,
+originally published 1972, revised 1983) instead. The datasheet itself
+splits these figures across two tables, Absolute Maximum Ratings and
+Recommended Operating Conditions/Electrical Characteristics; the
+following two tables preserve that split, since
+\cref{sec:bcd-voltage-risk} depends on which table a given off-state
+voltage figure comes from. Rows drawn from the second source table are
+tagged \textbf{[ROC]} (Recommended Operating Conditions) or
+\textbf{[EC]} (Electrical Characteristics).
 
-\begin{longtable}{L{4.4cm}L{2.0cm}L{2.6cm}L{4.0cm}L{1.2cm}}
-\toprule
-Parameter & Value & Category & Conditions & Page \\
-\midrule
+{\footnotesize
+\begin{longtable}{|L{4.6cm}|c|c|c|L{4.2cm}|c|}
+\caption{SN74141 absolute maximum ratings (substituting for K155ID1)}\label{tab:sn74141-max}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
+\endfirsthead
+\caption[]{SN74141 absolute maximum ratings (substituting for K155ID1) (continued)}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
 \endhead
-Supply voltage \(V_{CC}\) & \SI{7}{\volt} & Abs.\ max & w.r.t.\ network ground & 2 \\
-Input voltage & \SI{5.5}{\volt} & Abs.\ max & & 2 \\
-Current into any output (off-state) & \SI{2}{\milli\ampere} & Abs.\ max & & 2 \\
-Operating free-air temperature & \SIrange{0}{70}{\celsius} & Abs.\ max & & 2 \\
-Storage temperature & \SIrange{-65}{150}{\celsius} & Abs.\ max & & 2 \\
-Supply voltage \(V_{CC}\), Min/Nom/Max & 4.75~/~5~/~5.25~V & Rec.\ operating & & 2 \\
-\textbf{Off-state output voltage} & \textbf{\SI{60}{\volt} max} & \textbf{Rec.\ operating} & & \textbf{2} \\
-\(V_{IH}\), high-level input voltage & \SI{2}{\volt} min & Electrical char.\ & & 2 \\
-\(V_{IL}\), low-level input voltage & \SI{0.8}{\volt} max & Electrical char.\ & & 2 \\
-\(V_{IK}\), input clamp voltage & \SI{-1.5}{\volt} max & Electrical char.\ & \(V_{CC}=\)min, \(I_I=-5\)~mA & 2 \\
-\(V_{O(on)}\), on-state output voltage & \SI{2.5}{\volt} max & Electrical char.\ & \(V_{CC}=\)min, \(I_O=7\)~mA & 2 \\
-\textbf{\(V_{O(off)}\), off-state output voltage, counts 0--9} & \textbf{\SI{60}{\volt} min} & \textbf{Electrical char.\ (guaranteed)} & \(V_{CC}=\)max, \(I_O=0.5\)~mA & \textbf{2} \\
-\(I_{O(off)}\), off-state reverse current & \SI{50}{\micro\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_O=55\)~V, \(T_A=55\)\si{\celsius} & 2 \\
-\(I_{O(off)}\), off-state reverse current, counts 10--15 & 5 (typ) / 15 (max) \si{\micro\ampere} & Electrical char.\ & \(V_O=30\)~V, \(T_A=70\)\si{\celsius} & 2 \\
-\(I_I\), input current at max input voltage & \SI{1}{\milli\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=5.5\)~V & 2 \\
-\(I_{IH}\), A input & \SI{40}{\micro\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=2.4\)~V & 2 \\
-\(I_{IH}\), B/C/D input & \SI{80}{\micro\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=2.4\)~V & 2 \\
-\(I_{IL}\), A input & \SI{-1.6}{\milli\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=0.4\)~V & 2 \\
-\(I_{IL}\), B/C/D input & \SI{-3.2}{\milli\ampere} max & Electrical char.\ & \(V_{CC}=\)max, \(V_I=0.4\)~V & 2 \\
-\(I_{CC}\), supply current & 16 (typ) / 25 (max) \si{\milli\ampere} & Electrical char.\ & \(V_{CC}=\)max, inputs grounded, outputs open & 2 \\
-\bottomrule
+Supply voltage \(V_{CC}\) & & \num{7} & \si{\volt} & w.r.t.\ network ground & 2 \\
+\hline
+Input voltage & & \num{5.5} & \si{\volt} & & 2 \\
+\hline
+Current into any output (off-state) & & \num{2} & \si{\milli\ampere} & & 2 \\
+\hline
+Operating free-air temperature & \num{0} & \num{70} & \si{\celsius} & & 2 \\
+\hline
+Storage temperature & \num{-65} & \num{150} & \si{\celsius} & & 2 \\
+\hline
 \end{longtable}
+}
+
+{\footnotesize
+\begin{longtable}{|L{4.6cm}|c|c|c|c|L{3.4cm}|c|}
+\caption{SN74141 recommended operating conditions and electrical characteristics (substituting for K155ID1)}\label{tab:sn74141}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Source} \\
+\hline
+\endfirsthead
+\caption[]{SN74141 recommended operating conditions and electrical characteristics (substituting for K155ID1) (continued)}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Source} \\
+\hline
+\endhead
+Supply voltage \(V_{CC}\) & \num{4.75} & \num{5} & \num{5.25} & \si{\volt} & & [ROC] p.2 \\
+\hline
+\textbf{Off-state output voltage} & & & \textbf{\num{60}} & \si{\volt} & & \textbf{[ROC] p.2} \\
+\hline
+\(V_{IH}\), high-level input voltage & \num{2} & & & \si{\volt} & & [EC] p.2 \\
+\hline
+\(V_{IL}\), low-level input voltage & & & \num{0.8} & \si{\volt} & & [EC] p.2 \\
+\hline
+\(V_{IK}\), input clamp voltage & & & \num{-1.5} & \si{\volt} & \(V_{CC}=\)min, \(I_I=-5\)~mA & [EC] p.2 \\
+\hline
+\(V_{O(on)}\), on-state output voltage & & & \num{2.5} & \si{\volt} & \(V_{CC}=\)min, \(I_O=7\)~mA & [EC] p.2 \\
+\hline
+\textbf{\(V_{O(off)}\), off-state output voltage, counts 0--9} & \textbf{\num{60}} & & & \si{\volt} & \(V_{CC}=\)max, \(I_O=0.5\)~mA & \textbf{[EC] p.2} \\
+\hline
+\(I_{O(off)}\), off-state reverse current & & & \num{50} & \si{\micro\ampere} & \(V_{CC}=\)max, \(V_O=55\)~V, \(T_A=55\)\si{\celsius} & [EC] p.2 \\
+\hline
+\(I_{O(off)}\), off-state reverse current, counts 10--15 & & \num{5} & \num{15} & \si{\micro\ampere} & \(V_O=30\)~V, \(T_A=70\)\si{\celsius} & [EC] p.2 \\
+\hline
+\(I_I\), input current at max input voltage & & & \num{1} & \si{\milli\ampere} & \(V_{CC}=\)max, \(V_I=5.5\)~V & [EC] p.2 \\
+\hline
+\(I_{IH}\), A input & & & \num{40} & \si{\micro\ampere} & \(V_{CC}=\)max, \(V_I=2.4\)~V & [EC] p.2 \\
+\hline
+\(I_{IH}\), B/C/D input & & & \num{80} & \si{\micro\ampere} & \(V_{CC}=\)max, \(V_I=2.4\)~V & [EC] p.2 \\
+\hline
+\(I_{IL}\), A input & & & \num{-1.6} & \si{\milli\ampere} & \(V_{CC}=\)max, \(V_I=0.4\)~V & [EC] p.2 \\
+\hline
+\(I_{IL}\), B/C/D input & & & \num{-3.2} & \si{\milli\ampere} & \(V_{CC}=\)max, \(V_I=0.4\)~V & [EC] p.2 \\
+\hline
+\(I_{CC}\), supply current & & \num{16} & \num{25} & \si{\milli\ampere} & \(V_{CC}=\)max, inputs grounded, outputs open & [EC] p.2 \\
+\hline
+\end{longtable}
+}
 
 Pin mapping (16-pin DIP): BCD inputs A, B, C, D on pins 3, 6, 7, 4;
 \(V_{CC}\) on pin 5, ground on pin 12; decimal outputs 0--9 on pins
@@ -59,7 +106,7 @@ ESD rating, and propagation delay.
 \label{sec:bcd-voltage-risk}
 
 The datasheet's Absolute Maximum Ratings table gives no distinct
-off-state output voltage limit --- it bounds only off-state output
+off-state output voltage limit; it bounds only off-state output
 \emph{current} (\SI{2}{\milli\ampere}). The only off-state voltage
 figure anywhere in the datasheet is \SI{60}{\volt}, and it is a
 \emph{guaranteed operating} point (Recommended Operating Conditions,
@@ -73,30 +120,25 @@ test points exist below that ceiling (\SI{50}{\micro\ampere} max at
 typ/max at \(V_O=\SI{30}{\volt}\) with all ten outputs off) and should
 not be mistaken for the guaranteed standoff voltage itself.
 
-This board's anode rail runs \SIrange{160}{196}{\volt}
+This board's anode rail spans \SIrange{164.8}{191.5}{\volt}
 (\cref{sec:hv-converter}), and with no buffer transistor between
 driver and tube, an unselected cathode is exposed to something on the
 order of the tube's maintaining voltage up to the full rail voltage
---- \SIrange{145}{196}{\volt} by the figures in \cref{sec:tubes} ---
-2.5--3.3$\times$ the datasheet's guaranteed \SI{60}{\volt} standoff.
+(\SIrange{145}{191.5}{\volt} by the figures in \cref{sec:tubes}),
+2.4--3.2$\times$ the datasheet's guaranteed \SI{60}{\volt} standoff.
 
-This is treated in this document as an accepted, community-validated
-condition rather than an unresolved defect: direct cathode drive from
-a 7441/74141/K155ID1-class open-collector decoder, run well above its
-guaranteed off-state rating, is the standard topology used across
-essentially all amateur IN-12/IN-14-class Nixie clocks, with a long
-track record of field reliability at rail voltages in this same range.
-Two effects plausibly explain the margin, neither confirmed from a
-cited source: guaranteed datasheet minimums are worst-case
-production-lot figures, not the actual breakdown point of any given
-part, which in practice typically exceeds the guarantee by a wide
-margin; and an unselected cathode inside a lit tube is not necessarily
-pulled to the full anode potential the way a simple resistive
-off-state model would suggest, since it floats within the tube's own
-glow-discharge field rather than being driven there by an external
-low-impedance source. This document records the substitution and the
-margin explicitly rather than silently assuming the outputs are
-safe: it is a documented, precedent-based judgment call, not a
-datasheet guarantee, and it remains open pending a datasheet for the
-actual populated part (K155ID1) that might state a higher verified
-rating.
+Direct cathode drive from a 7441/74141/K155ID1-class open-collector
+decoder, run well above its guaranteed off-state rating, is the
+standard topology in amateur IN-12/IN-14-class Nixie clocks, with a
+long track record of field reliability at rail voltages in this same
+range. Two effects plausibly
+explain the margin, neither confirmed from a cited source: guaranteed
+datasheet minimums are worst-case production-lot figures rather than
+the actual breakdown point of any given part, which typically exceeds
+the guarantee by a wide margin; and an unselected
+cathode inside a lit tube is not necessarily pulled to the full anode
+potential the way a simple resistive off-state model would suggest,
+since it floats within the tube's own glow-discharge field instead of
+being driven there by an external low-impedance source. The question
+stays open pending a K155ID1-specific datasheet, which might state a
+higher verified rating.

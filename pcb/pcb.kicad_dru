@@ -8,6 +8,10 @@
   (condition "A.memberOfFootprint('T201') && B.memberOfFootprint('T201')")
   (constraint clearance (min 0.6mm)))
 
+(rule "TP501 is a probe pad, not a solder joint, so it ties solid to the ground plane"
+  (condition "A.memberOfFootprint('TP501')")
+  (constraint zone_connection solid))
+
 (rule "U501 antenna and J301 shell overhang board edge by design"
   (severity ignore)
   (condition "A.memberOfFootprint('U501') || A.memberOfFootprint('J301')")

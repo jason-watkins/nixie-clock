@@ -1,7 +1,7 @@
 \documentclass[11pt,letterpaper]{article}
 
 % ---------------------------------------------------------------------------
-% Nixie Clock -- Design Analysis
+% Nixie Clock -- Design Basis
 %
 % Derives the board's key electrical characteristics from first principles
 % and from component datasheets on file in docs/datasheets/. This document
@@ -23,16 +23,48 @@
   ItalicFont = *-Italic,
   BoldItalicFont = *-BoldItalic,
 ]
+\setmonofont{BerkeleyMono}[
+  Path = fonts/,
+  Extension = .otf,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+]
 
 \usepackage{amsmath,amssymb}
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 \usepackage{cleveref}
+\usepackage{chngcntr}
+
+% Tables number "<section>-<n>" (e.g. 2-1, 2-2, 3-1), resetting only at
+% each \section, not at \subsection -- a table living inside a particular
+% subsection is incidental to this scheme, not what it counts by.
+\counterwithin{table}{section}
+\renewcommand{\thetable}{\thesection-\arabic{table}}
+\counterwithin{figure}{section}
+\renewcommand{\thefigure}{\thesection-\arabic{figure}}
+
+\graphicspath{{figures/}}
+
+% Reference designators are set the way the schematics draw them: a class
+% letter carrying a subsystem-and-function tag as an upright subscript.
+% \des{R}{3V3D1} -> R_3V3D1. Works in prose and inside math alike.
+\newcommand{\des}[2]{\ensuremath{#1_{\mathrm{#2}}}}
+
+% Number down to \paragraph (depth 4) so a deeply nested topic -- e.g. one
+% pin's check inside a "housekeeping" subsubsection -- still gets its own
+% citable number instead of forcing an ever-larger subsubsection to do the
+% job of several independent ones. article's default tocdepth already
+% reaches this depth, so paragraph headings appear in the ToC too.
+\setcounter{secnumdepth}{4}
+\crefname{paragraph}{paragraph}{paragraphs}
+\Crefname{paragraph}{Paragraph}{Paragraphs}
 
 \sisetup{
   per-mode = symbol,
@@ -53,7 +85,7 @@
 % the KiCad project's REV text variable -- do not hand-edit revision.tex.
 \input{revision}
 
-\title{Nixie Clock --- Design Analysis}
+\title{Nixie Clock --- Design Basis}
 \author{}
 \date{Rev \DesignRev{} --- compiled \today}
 
@@ -81,6 +113,8 @@ for the USB-PD front end that supplies them.
 \end{abstract}
 
 \tableofcontents
+\listoftables
+\listoffigures
 
 \input{sections/01_introduction}
 \input{sections/02_tubes}
@@ -88,7 +122,9 @@ for the USB-PD front end that supplies them.
 \input{sections/04_hv_components}
 \input{sections/05_hv_converter}
 \input{sections/06_lv_components}
-\input{sections/07_5v_converter}
-\input{sections/08_3v3_converter}
+\input{sections/07_esp32}
+\input{sections/08_5v_converter}
+\input{sections/09_3v3_converter}
+\input{sections/10_usb_pd}
 
 \end{document}

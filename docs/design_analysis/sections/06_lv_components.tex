@@ -1,177 +1,334 @@
 \section{5~V and 3.3~V converters: driving component characteristics}
 \label{sec:lv-components}
 
-The 5~V rail (for the four K155ID1 BCD decoder/drivers) and the 3.3~V
-rail (for the ESP32-S3-WROOM-1 MCU module) are each produced by a
-fixed-output synchronous buck built around one IC family: the
-AP63205WU (5~V, \textsc{u401}) and the AP63203WU (3.3~V,
-\textsc{u411}). Both are named, design-driving parts and are verified
-from datasheet here, alongside the MCU module whose supply-current
-profile sets the 3.3~V rail's load budget.
+The two low-voltage rails are produced by different converter
+topologies. The 5~V rail (for the four K155ID1 BCD decoder/drivers) is
+a synchronous buck, the TPS629203, because its input is always
+well above its output. The 3.3~V rail (for the MCU module of
+\cref{sec:esp32}) must regulate from inputs both above and below
+\SI{3.3}{\volt}, so it is a four-switch buck-boost, the TPS63070;
+\cref{sec:3v3-diodeor} derives that input range. This section
+records the datasheet characteristics both converter derivations draw
+on.
 
-\subsection{AP63205WU / AP63203WU synchronous buck converters}
-\label{sec:ap632xx}
+\subsection{TPS629203 synchronous buck converter}
+\label{sec:tps629203}
 
-Source: \texttt{AP632XX.pdf} (Diodes Incorporated, DS41326 Rev.\ 3-2,
-Nov.\ 2024). This is a family datasheet covering AP63200, AP63201,
-AP63203, AP63205, and AP63212; the ordering-information table (p.~16)
-confirms product-version digit ``3'' is the 3.3~V fixed-output part
-(AP63203) and digit ``5'' is the 5.0~V fixed-output part (AP63205),
-both in the TSOT26 (industry TSOT-23-6) package, both switching at
-1.1~MHz. On both fixed variants the FB pin is wired directly to
-\(V_{OUT}\); the feedback divider is entirely internal, so the
-datasheet's ``\(V_{FB}\)'' accuracy specification \emph{is} the
-output-voltage accuracy specification, not a scaled reference.
+Source: \texttt{tps629203.pdf} (Texas Instruments, SLVSGE2, Mar.\ 2022). A
+synchronous buck with internal compensation, a DCS-Control architecture that
+passes between pulse-width modulation and power save without a discrete mode
+change, and no external bootstrap capacitor. Two pins are resistor-programmed: FB/VSET either
+takes an external divider or, with a resistor to ground, selects one of eighteen
+preset output voltages; MODE/S-CONF selects the feedback configuration, the
+switching-frequency mode, output discharge, and the modulation mode together.
 
-\begin{longtable}{L{4.6cm}L{3.2cm}L{5.2cm}L{1.2cm}}
-\toprule
-Parameter & Value & Conditions & Page \\
-\midrule
+{\footnotesize
+\begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.6cm}|c|}
+\caption{TPS629203 electrical characteristics}\label{tab:tps629203}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
+\endfirsthead
+\caption[]{TPS629203 electrical characteristics (continued)}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
 \endhead
-Input voltage, absolute maximum & \(-0.3\) to \SI{35}{\volt} (DC); \SI{40}{\volt} (400~ms transient) & Common to family & 4 \\
-Input voltage, recommended operating & \SIrange{3.8}{32}{\volt} & \(T_A=-40\) to \SI{85}{\celsius} & 4 \\
-Output voltage, AP63203 (3.3~V) & 3.27 / 3.30 / 3.33~V (min/typ/max) & CCM, \(V_{FB}=V_{OUT}\) & 5 \\
-Output voltage, AP63205 (5~V) & 4.95 / 5.00 / 5.05~V (min/typ/max) & CCM, \(V_{FB}=V_{OUT}\) & 5 \\
-Switching frequency & \SI{1100}{\kilo\hertz} typ, \(\pm6\%\) spread-spectrum dither & Common to family & 5 \\
-Minimum on-time & \SI{80}{\nano\second} typ & Common to family & 5 \\
-Quiescent current & \SI{22}{\micro\ampere} typ & No load, non-switching, \(V_{EN}\)=open & 5 \\
-Shutdown supply current & 1 / 3~\si{\micro\ampere} (typ/max) & \(V_{EN}=0\)~V & 5 \\
-HS peak current limit & 2.5 / 2.8 / 3.1~A (min/typ/max) & Cycle-by-cycle, senses high-side FET & 5 \\
-LS valley current limit & 2.5 / 3.2 / 3.9~A (min/typ/max) & See note below & 5 \\
-EN logic-high threshold & 1.15 / 1.18 / 1.23~V (min/typ/max) & Rising; enables device, starts soft-start & 5 \\
-EN logic-low threshold & 1.05 / 1.10 / 1.15~V (min/typ/max) & Falling; disables device & 5 \\
-EN input current & 5.5~\si{\micro\ampere} typ @ \(V_{EN}=1.5\)~V; 1.5~\si{\micro\ampere} typ @ \(V_{EN}=1\)~V & Internal 1.5~\si{\micro\ampere} pull-up from internal LDO & 5, 10 \\
-Soft-start period & \SI{4}{\milli\second} typ, fixed internal & Not externally programmable & 5, 9, 11 \\
-VIN UVLO, rising / falling & 3.50 / \(\approx\)3.06~V typ & Hysteresis \SI{440}{\milli\volt} typ & 5, 11 \\
-High-side \(R_{DS(ON)}\) & \SI{125}{\milli\ohm} typ & Common to family & 5 \\
-Low-side \(R_{DS(ON)}\) & \SI{68}{\milli\ohm} typ & Common to family & 5 \\
-Recommended output capacitor & \SIrange{22}{68}{\micro\farad} ceramic, low ESR & General guidance; BOM tables use \(2\times22\)~\si{\micro\farad} for both variants & 13, 14 \\
-Recommended input capacitor & \(>\)\SI{10}{\micro\farad} ceramic & Low ESR; RMS rating \(>\) half max load current; BOM tables use \SI{10}{\micro\farad} & 13 \\
-Inductor selection equation & \(L = \dfrac{V_{OUT}(V_{IN}-V_{OUT})}{V_{IN}\,\Delta I_L\,f_{SW}}\) & \(\Delta I_L\) recommended 30--50\% of the 2~A max load & 13 \\
-Recommended inductance range & \SIrange{2.2}{10}{\micro\henry} & General guidance & 13 \\
-Recommended inductor, AP63203 (3.3~V) BOM table & \SI{3.9}{\micro\henry} & Table 2 & 13 \\
-Recommended inductor, AP63205 (5~V) BOM table & \SI{4.7}{\micro\henry} & Table 3 & 13 \\
-Inductor saturation-current margin & \(\geq\)35\% above max load current & DCR \(<100\)~m\(\Omega\) recommended for efficiency & 13 \\
-Dropout voltage & No numeric spec & Qualitative only: near-100\%-duty ``LDO mode,'' HS FET held on, LS FET pulsed periodically to refresh the BST cap & 14 \\
-Thermal shutdown & \SI{160}{\celsius} typ (EC table) & See note on inconsistency below & 5, 11, 12 \\
-\(\theta_{JA}\) (TSOT26) & \SI{89}{\celsius\per\watt} & FR-4, single layer, 2~oz Cu, minimum pad & 4 \\
-BST capacitor, recommended & \SI{100}{\nano\farad} & Ceramic, SW-to-BST & 2, 14 \\
-VSW absolute maximum & \(-1.0\) to \(V_{IN}+0.3\)~V & & 4 \\
-VEN absolute maximum & \(-0.3\) to \SI{35}{\volt} & Same as VIN; EN is a high-voltage pin & 4 \\
-\bottomrule
+Input voltage range & \num{3.0} & & \num{17} & \si{\volt} & & 4 \\
+\hline
+Output voltage range & \num{0.4} & & \num{5.5} & \si{\volt} & & 4 \\
+\hline
+Output current & \num{0} & & \num{0.3} & \si{\ampere} & & 4 \\
+\hline
+VIN, EN, PG, MODE/S-CONF absolute maximum & \num{-0.3} & & \num{18} & \si{\volt} & & 4 \\
+\hline
+FB/VSET, VOS absolute maximum & \num{-0.3} & & \num{6} & \si{\volt} & & 4 \\
+\hline
+Effective input capacitance & \num{3} & \num{4.7} & & \si{\micro\farad} & & 4 \\
+\hline
+Effective output capacitance & \num{10} & \num{22} & \num{100} & \si{\micro\farad} & capacitors directly at the output & 4 \\
+\hline
+Output inductance & \num{1.0} & \num{2.2} & \num{4.7} & \si{\micro\henry} & nominal inductance value; \SI{1.0}{\micro\henry} not recommended for 1-MHz operation & 4 \\
+\hline
+Output voltage regulation & \num{-1} & & \num{1} & \% & VSET configuration; \(T_J=-40\) to \SI{125}{\celsius} & 5, 6 \\
+\hline
+Output voltage regulation & \num{-0.75} & & \num{0.75} & \% & VSET configuration; \(T_J=\SI{25}{\celsius}\) & 5 \\
+\hline
+Feedback regulation voltage \(V_{FB}\) & & \num{0.6} & & \si{\volt} & adjustable configuration selected & 6 \\
+\hline
+Feedback voltage regulation & \num{-1} & & \num{0.5} & \% & FB option; \(T_J=-40\) to \SI{125}{\celsius} & 6 \\
+\hline
+Switching frequency & & \num{2.5} & & \si{\mega\hertz} & 2.5-MHz selection, FPWM mode & 5 \\
+\hline
+Switching frequency & & \num{1.0} & & \si{\mega\hertz} & 1.0-MHz selection, FPWM mode & 5 \\
+\hline
+Minimum on time \(T_{ON(MIN)}\) & & \num{40} & & \si{\nano\second} & & 5 \\
+\hline
+High-side FET current limit \(I_{LIM}\) & \num{0.8} & \num{1.1} & \num{1.4} & \si{\ampere} & & 6 \\
+\hline
+Low-side FET current limit & \num{0.5} & \num{0.9} & \num{1.3} & \si{\ampere} & & 6 \\
+\hline
+Low-side FET sink current limit & \num{0.8} & \num{1} & \num{1.2} & \si{\ampere} & & 6 \\
+\hline
+High-side \(R_{DS(ON)}\) & & \num{250} & & \si{\milli\ohm} & & 6 \\
+\hline
+Low-side \(R_{DS(ON)}\) & & \num{85} & & \si{\milli\ohm} & & 6 \\
+\hline
+Quiescent current \(I_Q\) & & \num{4} & & \si{\micro\ampere} & \(I_{OUT}=0\)~mA, device not switching & 5 \\
+\hline
+Shutdown current into VIN & & \num{0.25} & \num{1.5} & \si{\micro\ampere} & EN = 0~V & 5 \\
+\hline
+Undervoltage lockout, rising & \num{2.85} & \num{2.95} & \num{3.0} & \si{\volt} & \(V_{IN}\) rising & 5 \\
+\hline
+Undervoltage lockout, falling & \num{2.65} & \num{2.75} & \num{2.85} & \si{\volt} & \(V_{IN}\) falling & 5 \\
+\hline
+EN input threshold, high & \num{0.97} & \num{1.0} & \num{1.03} & \si{\volt} & & 5 \\
+\hline
+EN input threshold, low & \num{0.87} & \num{0.9} & \num{0.93} & \si{\volt} & & 5 \\
+\hline
+EN input leakage current & & \num{3} & \num{300} & \si{\nano\ampere} & EN = \(V_{IN}\) & 5 \\
+\hline
+Start-up delay \(T_{delay}\) & & \num{1000} & \num{1800} & \si{\micro\second} & \(I_O=0\)~mA, EN rising edge until start switching, VSET configuration & 6 \\
+\hline
+Soft-start time \(T_{SS}\) & & \num{600} & \num{700} & \si{\micro\second} & \(I_O=0\)~mA after \(T_{delay}\), from first switching pulse until target \(V_O\) & 6 \\
+\hline
+Active discharge resistance & & \num{7.5} & \num{20} & \si{\ohm} & Discharge = ON option selected, EN = LOW & 6 \\
+\hline
+Thermal shutdown threshold & & \num{170} & & \si{\celsius} & \(T_J\) rising & 6 \\
+\hline
+Thermal shutdown hysteresis & & \num{20} & & \si{\celsius} & \(T_J\) falling & 6 \\
+\hline
+Minimum off time & & \num{80} & & \si{\nano\second} & & 17 \\
+\hline
+Internal propagation delay \(t_{PD}\) & & \num{50} & & \si{\nano\second} & & 14 \\
+\hline
+Maximum ripple current & & & \num{1.6} & \si{\ampere} & to avoid continuous operation of the negative current limit at \(I_O=0\)~A & 14 \\
+\hline
+Inductor saturation margin & \num{20} & & & \% & above the calculated maximum inductor current & 22 \\
+\hline
+Dynamic peak current & \multicolumn{4}{L{5.0cm}|}{\(I_{peak} = I_{LIMH} + \dfrac{V_{IN}-V_{OUT}}{L}\times t_{PD}\)} & & 14, 15 \\
+\hline
+Power-save on-time, 2.5-MHz selection & \multicolumn{4}{L{5.0cm}|}{\(T_{ON} = \SI{100}{\nano\second}\times\dfrac{V_{IN}}{V_{IN}-V_{OUT}}\)} & & 16 \\
+\hline
+Power-save peak inductor current & \multicolumn{4}{L{5.0cm}|}{\(I_{L(peak)} = \dfrac{V_{IN}-V_{OUT}}{L}\times T_{ON}\)} & & 16 \\
+\hline
+Power-save output ripple & \multicolumn{4}{L{5.0cm}|}{\(\Delta V = \dfrac{L\,V_{IN}^2}{200\,C}\left(\dfrac{1}{V_{IN}-V_{OUT}}+\dfrac{1}{V_{OUT}}\right)\)} & & 16 \\
+\hline
+Power-save entry threshold & \multicolumn{4}{L{5.0cm}|}{\(I_{load(PSM)} = \tfrac{1}{2}\Delta I_L\)} & suspended when \(V_{IN}\) falls within \SI{15}{\percent} of \(V_{OUT}\) & 16, 22 \\
+\hline
+Switching frequency with efficiency enhancement & \multicolumn{4}{L{5.0cm}|}{\(f_{SW}\,[\si{\mega\hertz}] = 10\,V_{OUT}\dfrac{V_{IN}-V_{OUT}}{V_{IN}^2}\)} & & 16 \\
+\hline
+Minimum input for regulation & \multicolumn{4}{L{5.0cm}|}{\(V_{IN(min)} = V_{OUT}+I_{OUT}(R_{DS(on)}+R_L)\)} & 100\,\% duty-cycle mode & 17 \\
+\hline
+Output voltage programming & \multicolumn{4}{L{5.0cm}|}{\(R_1 = R_2\left(\dfrac{V_{OUT}}{V_{FB}}-1\right)\)} & adjustable configuration; \(R_2\leq300\)~\si{\kilo\ohm} & 20 \\
+\hline
+VSET resistor for \SI{5.0}{\volt} output & & \num{80.6} & & \si{\kilo\ohm} & E96, 1\,\% accuracy, temperature coefficient at or better than $\pm200$~ppm/\si{\celsius} & 13 \\
+\hline
+MODE/S-CONF resistor, VSET with efficiency enhancement and discharge & & \num{27.4} & & \si{\kilo\ohm} & E96, 1\,\%, $\pm200$~ppm/\si{\celsius}; auto PFM/PWM, \(f_{SW}\) up to \SI{2.5}{\mega\hertz} & 11 \\
+\hline
+Effective capacitance derating & \num{-50} & & \num{20} & \% & basis of the recommended filter table & 21 \\
+\hline
+ESD rating, HBM & & & \num{2000} & \si{\volt} & $\pm$, either polarity & 4 \\
+\hline
+ESD rating, CDM & & & \num{500} & \si{\volt} & $\pm$, either polarity & 4 \\
+\hline
+\(\theta_{JA}\) (SOT-5X3, 8 pins) & & \num{120} & & \si{\celsius\per\watt} & JEDEC PCB & 4 \\
+\hline
+\(\theta_{JA}\) (SOT-5X3, 8 pins) & & \num{60} & & \si{\celsius\per\watt} & TPS6292xx EVM & 4 \\
+\hline
 \end{longtable}
+}
 
-\paragraph{EN floating or tied to VIN are both valid always-on
-configurations,} per the datasheet (an internal 1.5~\si{\micro\ampere}
-pull-up auto-enables the part when EN floats, and EN is explicitly
-rated as a high-voltage pin safe to tie directly to VIN) --- relevant
-because both bucks in this design enable directly from their own input
-rail rather than from a sequenced logic signal.
+\paragraph{The output-voltage tolerance depends on which feedback configuration
+is selected.} With the internal divider the output itself is specified to
+$\pm1\,\%$ over the full junction-temperature range. With an external divider
+only the feedback pin is specified, and the divider's own ratio tolerance adds to
+it at the output. \Cref{sec:5v-vset} takes the internal divider for that reason.
 
-\paragraph{Thermal shutdown threshold is stated three different ways}
-across the document: the Electrical Characteristics table gives
-\SI{160}{\celsius} typ with \SI{25}{\celsius} hysteresis (implying a
-\(\approx\)\SI{135}{\celsius} restart), the narrative Thermal Shutdown
-section states \SI{150}{\celsius} shutdown / \SI{130}{\celsius}
-restart, and the Power Derating section separately recommends keeping
-\(T_J\) below \SI{125}{\celsius} for design margin. The
-production-tested table value is treated as authoritative for
-compliance; \SI{125}{\celsius} is the more conservative design target
-used in \cref{sec:5v-converter,sec:3v3-converter}.
+\paragraph{Both configuration resistors are read once, at start-up.} The device
+interprets MODE/S-CONF after its internal trim readout and before it begins
+switching, and interprets VSET immediately after. Neither can be changed while
+the converter runs, and selecting a configuration by resistor rather than by
+logic level disables dynamic mode changes entirely. Both resistors must be E96
+1\,\% parts with a temperature coefficient at or better than
+$\pm200$~ppm/\si{\celsius}, since the device distinguishes sixteen and eighteen
+values respectively across the same decade span.
 
-\paragraph{The ``LS valley current limit'' figure (2.5/3.2/3.9~A) is
-higher than the ``HS peak current limit'' (2.5/2.8/3.1~A),} which is
-unusual naming for a high-side peak-current-mode part: ordinarily a
-valley limit sensed on the low-side FET would be expected to trip
-\emph{below} the peak limit, not above it. The datasheet gives no
-further explanation of what the labeled ``valley'' limit protects
-against. \Cref{sec:5v-converter,sec:3v3-converter} therefore treat the
-HS peak current limit as the operative cycle-by-cycle limit for margin
-calculations, since it is both the lower figure and the one whose
-function (peak inductor current limiting) matches the part's stated
-control architecture.
+\paragraph{Efficiency enhancement makes the switching frequency a function of the
+conversion ratio.} Rather than holding a fixed frequency, the device scales it
+so the inductor ripple amplitude stays roughly constant across the input range,
+which recovers the efficiency a fixed-frequency converter loses at small duty
+cycles. The consequence for design is that the frequency is an output of the
+operating point rather than an input to it, and \cref{sec:5v-op} evaluates it
+across the input window instead of assuming a single value.
 
-\paragraph{No numeric dropout spec.} When \(V_{IN}\) approaches
-\(V_{OUT}\), the part enters a qualitatively-described ``LDO mode''
-(high-side FET held on nearly continuously, low-side FET pulsed
-periodically only to refresh the bootstrap capacitor) rather than
-failing to regulate outright. Where dropout behavior matters ---
-specifically the 3.3~V rail's alternate UART-supplied input path in
-\cref{sec:3v3-converter} --- the resulting output is estimated from
-\(R_{DS(ON)}\) and inductor DCR rather than read from a table, since no
-such table exists.
+\paragraph{Ripple current is bounded from above by a stability requirement, not
+only by efficiency.} The datasheet cautions that inductor ripple must not exceed
+\SI{1.6}{\ampere}, above which the low-side negative current limit can operate
+continuously at no load. This bounds how small an inductance may be chosen at a
+given input voltage, independently of the usual ripple-fraction reasoning.
 
-\subsection{ESP32-S3-WROOM-1 MCU module}
-\label{sec:esp32}
+\subsection{TPS63070 buck-boost converter}
+\label{sec:tps63070}
 
-Source: \texttt{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}
-(Espressif). This is a generic module datasheet covering ten-plus
-flash/PSRAM SKUs (N4/N8/N16 flash; no-PSRAM/R2/R8/R16V PSRAM options)
-under one part number; the schematic specifies the module generically
-with no flash/PSRAM suffix, so the exact installed configuration is
-not determinable from the schematic alone.
+Source: \texttt{tps63070.pdf} (Texas Instruments, SLVSC58B, Rev.\ B,
+Mar.\ 2019). A four-switch buck-boost with synchronous rectification and
+internal loop compensation, regulating from inputs above or below the output
+and transitioning between modes automatically. The adjustable variant is used,
+its output set by an external divider against an \SI{800}{\milli\volt}
+feedback reference.
 
-\begin{longtable}{L{4.8cm}L{2.8cm}L{4.8cm}L{1.2cm}}
-\toprule
-Parameter & Value & Conditions & Page \\
-\midrule
+{\footnotesize
+\begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.6cm}|c|}
+\caption{TPS63070 electrical characteristics}\label{tab:tps63070}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
+\endfirsthead
+\caption[]{TPS63070 electrical characteristics (continued)}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
 \endhead
-VDD33 recommended operating range & \SIrange{3.0}{3.6}{\volt}, 3.3~V typ & & 27 \\
-VDD33 absolute maximum & \(-0.3\) to \SI{3.6}{\volt} & Identical to the recommended maximum --- no extra headroom above 3.6~V & 27 \\
-External supply current capability required & \(\geq\)\SI{0.5}{\ampere} & Table 6-2, ``current delivered by external power supply'' --- Espressif's own minimum regulator sizing requirement & 27 \\
-Wi-Fi TX peak (highest of all published conditions) & \SI{355}{\milli\ampere} & 802.11b, 1~Mbps, @20.5~dBm; rated at 100\% TX duty cycle & 28 \\
-Wi-Fi TX, 802.11n HT40 MCS7 @17~dBm & \SI{285}{\milli\ampere} & & 28 \\
-Wi-Fi RX & 95 / \SI{97}{\milli\ampere} & HT20 / HT40; peripherals disabled, CPU idle & 28 \\
-Bluetooth LE TX peak & \SI{344}{\milli\ampere} & @20.0~dBm (max power) & 28 \\
-Bluetooth LE RX & \SI{93}{\milli\ampere} & & 28 \\
-Modem-sleep, lowest & \SI{13.2}{\milli\ampere} typ (18.8~mA with peripheral clocks enabled) & WAITI, dual-core idle, 40~MHz & 29 \\
-Modem-sleep, highest & \SI{91.7}{\milli\ampere} typ (107.9~mA with peripheral clocks enabled) & Dual-core, 128-bit access, 240~MHz & 29 \\
-Light-sleep & \SI{240}{\micro\ampere} typ & Wi-Fi and VDD\_SPI powered down, GPIOs Hi-Z & 30 \\
-Deep-sleep (various ULP configurations) & \SIrange{7}{190}{\micro\ampere} typ & See page for the specific ULP/RTC configuration & 30 \\
-Power off & \SI{1}{\micro\ampere} typ & EN held low & 30 \\
-EN recommended external network & \(R=10\)~k\(\Omega\), \(C=1\)~\si{\micro\farad} & Espressif reference ``Peripheral Schematics'' circuit --- matches this board's R501/C503 exactly & 41 \\
-EN reset-release threshold & \(\geq0.75\times V_{DD}\) & \(\approx\)2.475~V at \(V_{DD}=3.3\)~V & 27--28 \\
-EN reset threshold & \(\leq0.25\times V_{DD}\) & \(\approx\)0.825~V at \(V_{DD}=3.3\)~V & 27--28 \\
-EN/strapping setup and hold time & \(t_{SU}\geq0\), \(t_H\geq3\)~ms & Table 4-2 & 14 \\
-GPIO0 (boot strap) default state & Weak pull-up, high = SPI boot (normal) & Internal \(\approx\)45~k\(\Omega\) pull-up; no external pull resistor required; pulling low selects download-mode boot & 13--14, 27 \\
-ESD rating & HBM \(\pm\)2000~V, CDM \(\pm\)500~V & & 47 \\
-Flash current adder (modem-sleep, 80~Mbit/s, SPI 2-line) & \(+10\)~mA & Added atop the base modem-sleep figures when flash is accessed & 29 \\
-PSRAM current adder (light-sleep) & \(+40\) to \(+200\)~\si{\micro\ampere} & Depends on PSRAM size/interface/voltage; no adder is published for active-mode Wi-Fi TX/RX & 30 \\
-GPIO \(V_{IH}\) / \(V_{IL}\) & \(\geq0.75\times V_{DD}\) / \(\leq0.25\times V_{DD}\) & Table 6-3, \SI{25}{\celsius} & 27 \\
-GPIO \(V_{OH}\) / \(V_{OL}\) & \(\geq0.8\times V_{DD}\) / \(\leq0.1\times V_{DD}\) & High-impedance load & 27 \\
-GPIO source/sink current & 40 / \SI{28}{\milli\ampere} typ & \(V_{DD}=3.3\)~V, PAD\_DRIVER=3 & 27 \\
-GPIO internal weak pull-up/down & \SI{45}{\kilo\ohm} typ each & & 27 \\
-\bottomrule
+Input voltage range, running & \num{2.0} & & \num{16} & \si{\volt} & once started; \(V_{OUT}\geq3.0\)~V & 6 \\
+\hline
+Input voltage range, start-up & \num{3.0} & & \num{16} & \si{\volt} & for start-up & 6 \\
+\hline
+Output voltage range & \num{2.5} & & \num{9} & \si{\volt} & & 7 \\
+\hline
+Feedback voltage \(V_{FB}\) & & \num{800} & & \si{\milli\volt} & & 7 \\
+\hline
+Output current & & & \num{2} & \si{\ampere} & \(V_{IN}\geq4.5\)~V or \(V_{OUT}\geq4.5\)~V, and boost factor \((V_{OUT}/V_{IN})\leq1\) & 6 \\
+\hline
+Feedback voltage accuracy, PWM & \num{-1} & & \num{1} & \% & TPS63070/TPS630702; PS/SYNC = GND (PWM mode) & 7 \\
+\hline
+Feedback voltage accuracy, PFM & \num{-1} & & \num{3} & \% & TPS63070/TPS630702; PS/SYNC = VIN (PFM mode); \(V_{IN}\geq3\)~V & 7 \\
+\hline
+Feedback leakage & & & \num{100} & \si{\nano\ampere} & for adjustable version; \(V_{FB}=0.8\)~V & 7 \\
+\hline
+Oscillator frequency & \num{2100} & \num{2400} & \num{2700} & \si{\kilo\hertz} & & 7 \\
+\hline
+Average positive input current limit & \num{3050} & \num{3600} & \num{4150} & \si{\milli\ampere} & \(V_{IN}=5.0\)~V; \(V_{OUT}=6.5\)~V; \(T_J=0\) to \SI{125}{\celsius} & 7 \\
+\hline
+Start-up current limit & & \num{1} & & \si{\ampere} & while power good is low & 15 \\
+\hline
+PFM-to-PWM transition & & \num{650} & & \si{\milli\ampere} & inductor current & 14 \\
+\hline
+Quiescent current into VIN & & \num{54} & \num{103} & \si{\micro\ampere} & \(I_{OUT}=0\)~mA, \(V_{EN}=V_{IN}=6\)~V, PFM, \(V_{OUT}=5\)~V & 6 \\
+\hline
+Quiescent current into VOUT & & \num{5} & \num{9} & \si{\micro\ampere} & \(I_{OUT}=0\)~mA, \(V_{EN}=6\)~V, \(V_{OUT}=5\)~V, PFM & 6 \\
+\hline
+Undervoltage lockout threshold & \num{1.7} & \num{1.85} & \num{1.95} & \si{\volt} & VIN voltage falling & 6 \\
+\hline
+Undervoltage lockout hysteresis & \num{525} & & \num{850} & \si{\milli\volt} & VIN voltage rising & 6 \\
+\hline
+EN, PS/SYNC threshold, rising & \num{0.77} & \num{0.8} & \num{0.83} & \si{\volt} & & 6 \\
+\hline
+EN, PS/SYNC threshold, falling & \num{0.67} & \num{0.7} & \num{0.73} & \si{\volt} & & 6 \\
+\hline
+EN, PS/SYNC, VSEL input current & & & \num{0.2} & \si{\micro\ampere} & & 6 \\
+\hline
+Power good threshold, rising & \num{94.5} & \num{96} & \num{98.5} & \% & rising \(V_{OUT}\) & 6 \\
+\hline
+Power good threshold, falling & \num{90} & \num{92} & \num{94.5} & \% & falling \(V_{OUT}\) & 6 \\
+\hline
+PG output low voltage \(V_{OL}\) & & & \num{0.4} & \si{\volt} & \(I_{PG}=-1\)~mA & 6 \\
+\hline
+PG sink current \(I_{PG}\) & & \num{1} & & \si{\milli\ampere} & & 6 \\
+\hline
+PG output leakage current & & & \num{0.2} & \si{\micro\ampere} & PG pin high impedance; \(V_{PG}=5\)~V & 6 \\
+\hline
+High-side \(R_{DS(ON)}\), buck & & \num{50} & \num{80} & \si{\milli\ohm} & \(V_{IN}=5\)~V & 7 \\
+\hline
+Low-side \(R_{DS(ON)}\), buck & & \num{100} & \num{160} & \si{\milli\ohm} & \(V_{IN}=5\)~V & 7 \\
+\hline
+High-side \(R_{DS(ON)}\), boost & & \num{40} & \num{70} & \si{\milli\ohm} & \(V_{IN}=5\)~V & 7 \\
+\hline
+Low-side \(R_{DS(ON)}\), boost & & \num{80} & \num{125} & \si{\milli\ohm} & \(V_{IN}=5\)~V & 7 \\
+\hline
+Soft-start time, buck mode & & \num{400} & & \si{\micro\second} & 5\% to 95\% of \(V_{OUT}\); \(V_{IN}=7.2\)~V, \(V_{OUT}=3.3\)~V, \(I_{OUT}=500\)~mA & 7 \\
+\hline
+Soft-start time, boost mode & & \num{850} & & \si{\micro\second} & 5\% to 95\% of \(V_{OUT}\); \(V_{IN}=3.0\)~V, \(V_{OUT}=3.3\)~V, \(I_{OUT}=250\)~mA & 7 \\
+\hline
+Start-up delay & & \num{70} & & \si{\micro\second} & from \(V_{EN}=V_{IH}\) to switching & 7 \\
+\hline
+Effective inductance & \num{0.7} & \num{1.5} & \num{2.8} & \si{\micro\henry} & & 4 \\
+\hline
+Effective inductance tolerance & \num{-30} & & \num{20} & \% & anticipated, including current derating & 17 \\
+\hline
+Capacitance at VIN pin & \num{4.7} & \num{10} & & \si{\micro\farad} & & 4 \\
+\hline
+Capacitance at VAUX pin & & \num{100} & & \si{\nano\farad} & & 4 \\
+\hline
+Total capacitance at VOUT pin & \num{15} & \num{47} & \num{470} & \si{\micro\farad} & for the nominal inductance of \SI{1.5}{\micro\henry} & 4 \\
+\hline
+Recommended output capacitance, \(L=\SI{1.5}{\micro\henry}\) & \multicolumn{4}{L{5.0cm}|}{\num{47}, \num{68}, or \SI{100}{\micro\farad} nominal} & typical application: \SI{47}{\micro\farad} & 17 \\
+\hline
+Duty cycle in buck mode & \num{30} & & & \% & over recommended operating conditions & 4 \\
+\hline
+Duty cycle in buck mode, relaxed & \num{20} & & & \% & effective \(C_{OUT}\geq40\)~\si{\micro\farad}; effective \(L=0.7\) to \(1.8\)~\si{\micro\henry} & 4 \\
+\hline
+Output filter ratio & \multicolumn{4}{L{5.0cm}|}{\(C_{OUT,\mathrm{eff}} \geq 10 \times L_{\mathrm{eff}}\)} & \si{\micro\farad} against \si{\micro\henry}; adjustable version & 17 \\
+\hline
+Output voltage programming & \multicolumn{4}{L{5.0cm}|}{\(R_1 = R_2\left(\dfrac{V_{OUT}}{0.8\,\mathrm{V}}-1\right)\)} & \(R_2\leq400\)~\si{\kilo\ohm} for \(\geq2\)~\si{\micro\ampere} divider current & 17 \\
+\hline
+Boost duty cycle & \multicolumn{4}{L{5.0cm}|}{\(D = \dfrac{V_{OUT}-V_{IN}}{V_{OUT}}\)} & & 18 \\
+\hline
+Boost peak inductor current & \multicolumn{4}{L{5.0cm}|}{\(I_{PEAK} = \dfrac{I_{OUT}}{\eta(1-D)} + \dfrac{V_{IN} D}{2 f L}\)} & evaluate at the minimum input reached in boost mode & 18 \\
+\hline
+Inductor saturation margin & \num{20} & & & \% & above the calculated peak & 18 \\
+\hline
+Right-half-plane zero & \multicolumn{4}{L{5.0cm}|}{\(f_{RHPZ} = \dfrac{(1-D)^2 V_{OUT}}{2\pi I_{OUT} L}\)} & recommended above \SI{400}{\kilo\hertz} & 18 \\
+\hline
+PFM output voltage offset & & \num{1} & & \% & above nominal & 14 \\
+\hline
+PFM output ripple & & \num{50} & & \si{\milli\volt} & pk-pk, \SI{22}{\micro\farad} effective capacitance & 14 \\
+\hline
+\(V_{IN}\), PS/SYNC, EN, VSEL absolute maximum & \num{-0.3} & & \num{20} & \si{\volt} & & 4 \\
+\hline
+L2, PG, VOUT, FB absolute maximum & \num{-0.3} & & \num{12} & \si{\volt} & & 4 \\
+\hline
+AUX absolute maximum & \num{-0.3} & & \num{7} & \si{\volt} & & 4 \\
+\hline
+ESD rating, HBM & & & \num{2000} & \si{\volt} & $\pm$, either polarity & 4 \\
+\hline
+ESD rating, CDM & & & \num{500} & \si{\volt} & $\pm$, either polarity & 4 \\
+\hline
+\(\theta_{JA}\) (VQFN, 13 pins) & & \num{63} & & \si{\celsius\per\watt} & & 5 \\
+\hline
 \end{longtable}
+}
 
-\paragraph{Not specified in this module datasheet.} Brown-out/POR
-threshold for VDD33 undervoltage detection, and any GPIO absolute
-maximum voltage beyond the recommended \(V_{IH}\) maximum
-(\(V_{DD}+0.3\)~V) --- both live in the ESP32-S3 chip-level datasheet,
-which this module document references but does not reproduce.
+\paragraph{The input range is split, and the start-up row is the binding
+one.} The part is internally supplied from whichever of its input and output
+terminals is higher, and that supply needs \SI{3.0}{\volt} to bring the device
+up. Once running and holding an output at or above \SI{3.0}{\volt}, it
+sustains operation down to \SI{2.0}{\volt} of input. Any source that must
+cold-start the converter is therefore held to the \SI{3.0}{\volt} figure,
+which \cref{sec:3v3-diodeor} carries as a requirement on the input path.
 
-\paragraph{Installed flash/PSRAM configuration is unconfirmed.} The
-current-consumption tables explicitly note that PSRAM-equipped SKUs
-draw more current than the tabulated baseline: an adder is published
-for light-sleep (\(+40\) to \(+200\)~\si{\micro\ampere}) and for
-modem-sleep with flash access (\(+10\)~mA), but \emph{no} adder is
-given for active-mode Wi-Fi TX/RX --- so if the installed module has
-PSRAM, the 285--355~mA active-mode figures above may understate real
-draw by an amount Espressif does not quantify. \Cref{sec:3v3-converter}
-treats the published figures as the design point and flags this as an
-open, unquantified margin item rather than papering over it.
+\paragraph{The \SI{2}{\ampere} output-current figure is conditioned.} It
+applies only when either terminal is at or above \SI{4.5}{\volt} \emph{and}
+the converter is bucking. Outside those conditions the guaranteed load current
+is lower and comes from the datasheet's application curves rather than the
+specification table.
 
-\paragraph{EN network matches Espressif's own reference exactly.} The
-board's populated R501 (10~k\(\Omega\)) and C503 (1~\si{\micro\farad})
-on the ESP32's EN pin are identical to the values in Espressif's own
-recommended application circuit --- confirmed, not merely
-plausible.
+\paragraph{Power Save Mode trades accuracy and ripple for light-load
+efficiency.} Below roughly \SI{650}{\milli\ampere} of inductor current the
+converter skips cycles, regulating against a comparator rather than the PWM
+loop. The output then sits about \SI{1}{\percent} above nominal, which
+reserves headroom for the drop at a load step, and the feedback tolerance
+widens from $\pm1\,\%$ to $+3/-1\,\%$. The mode is selected by the PS/SYNC pin
+and can be disabled by tying that pin low.
 
-\paragraph{The regulator must tolerate the full Wi-Fi TX transient, not
-just steady-state draw.} Espressif's own stated minimum external
-supply-current capability (\(\geq\)0.5~A) is driven directly by the
-355~mA Wi-Fi TX peak plus margin; a buck sized only for the module's
-idle/modem-sleep current (tens of mA) would brown out during a
-transmit burst. \Cref{sec:3v3-converter} sizes the 3.3~V converter
-against this transient requirement, not against an averaged current
-figure.
+\paragraph{On the adjustable variant the regulation tolerance is specified at
+the feedback pin.} The datasheet gives output-referred accuracy only for the
+fixed-voltage TPS630701. For the adjustable part the specified quantity is
+$V_{FB}$, so the external divider's ratio tolerance and the feedback pin's
+\SI{100}{\nano\ampere} leakage add to it at the output rather than being
+contained by it. \Cref{sec:3v3-fb,sec:3v3-cout} carry both terms.
+
+\paragraph{Package.} The part is offered only in a 13-pin VQFN on a
+$2.5\times3$~\si{\milli\meter} body. This is one of the cases where a
+design-driving part exists in a single package, so the footprint enters the
+design rather than being left entirely to layout.

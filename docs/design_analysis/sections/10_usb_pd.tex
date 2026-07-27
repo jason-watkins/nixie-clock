@@ -1,0 +1,1247 @@
+\section{USB-PD}\label{sec:usb-pd}
+
+This section derives the input stage that supplies all three converters: the
+Type-C receptacle, the port controller that negotiates a contract on it, the
+switch that connects the negotiated rail to the board, and the data path that
+reaches the MCU's native USB. It is built around the CYPD3176
+(\cref{sec:cypd3176}), referred to by part number rather than by a designator,
+being the only device of its kind on the board. Unlike the two converter
+subsystems, whose driving-component characteristics are collected ahead of
+their derivations in \cref{sec:hv-components,sec:lv-components}, this
+subsystem's are gathered in its own first subsection, there being one such
+component. Designators are assigned as follows:
+
+\begin{table}[htbp]
+\centering
+\caption{USB-PD front end: component designators}\label{tab:pd-designators}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Designator} & \textbf{Function} \\
+\hline
+\des{J}{USB} & USB Type-C receptacle \\
+\hline
+\des{Q}{BUS} & Bus pass switch, two common-source devices driven by VBUS\_CTRL \\
+\hline
+\des{R}{BUSG} & \des{Q}{BUS} gate series resistor \\
+\hline
+\des{R}{BUSOFF} & \des{Q}{BUS} gate-to-source default-off pull-up \\
+\hline
+\des{R}{BUSBIAS} & \des{Q}{BUS} gate bias to the receptacle's VBUS \\
+\hline
+\des{D}{BUSG} & \des{Q}{BUS} gate-source clamp \\
+\hline
+\des{C}{BUSSLEW} & \des{Q}{BUS} output slew-rate capacitor \\
+\hline
+\des{C}{BUSCM} & \des{Q}{BUS} gate common-mode capacitor \\
+\hline
+\des{R}{PDMAX1}, \des{R}{PDMAX2} & VBUS\_MAX selection divider \\
+\hline
+\des{R}{PDI1}, \des{R}{PDI2} & ISNK\_FINE selection divider \\
+\hline
+\des{C}{PDD1} & VDDD bulk decoupling \\
+\hline
+\des{C}{PDD2}, \des{C}{PDD3} & VDDD high-frequency decoupling \\
+\hline
+\des{C}{PDC} & VCCD decoupling \\
+\hline
+\des{C}{PDIN} & VBUS\_IN\_DIS decoupling \\
+\hline
+\des{R}{PDSDA}, \des{R}{PDSCL} & HPI bus pull-ups \\
+\hline
+\des{R}{PDINT} & HPI\_INT pull-up \\
+\hline
+\des{R}{PDFLT} & FAULT mode-select pull-down \\
+\hline
+\des{R}{USBSW} & Data-switch disable pull-up \\
+\hline
+\des{R}{PDDP}, \des{R}{PDDM} & Controller D+/D$-$ branch series resistors \\
+\hline
+\des{D}{USBESD} & D+/D$-$ ESD array \\
+\hline
+\des{D}{BUSTVS} & Receptacle VBUS transient suppressor \\
+\hline
+\des{R}{BUSBLEED} & Bus-rail discharge path (\cref{sec:3v3-diodeor}) \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{usbpd}
+\caption{USB-PD front end: reference schematic}\label{fig:usbpd}
+\end{figure}
+
+\Cref{fig:usbpd} shows the connections. The nets that leave the sheet as labels
+go to the MCU (\cref{sec:esp32}), except $V_{\mathrm{BUS}}$, which is the rail
+the three converters draw from.
+
+The stage's topology comprises: the receptacle with its data-line ESD array and
+its bus-rail suppressor; the
+controller, which senses the receptacle's VBUS and CC pins and drives
+\des{Q}{BUS}'s gate through the network that biases, clamps and slews it; four
+resistors that program the acceptable contract;
+the controller's own decoupling and interface terminations; \des{Q}{BUS},
+which connects the negotiated rail to $V_{\mathrm{BUS}}$ and thereby to the
+three converters; \des{R}{BUSBLEED} on that rail; and a USB 2.0 analog switch
+in the MCU's branch of the data pair. \Cref{sec:3v3-diodeor} derives
+\des{R}{BUSBLEED}'s bound and defers to this section the question of whether the
+front end satisfies it unaided; \cref{sec:pd-bleed} answers it.
+
+\subsection{Driving component characteristics}\label{sec:cypd3176}
+
+Source: \texttt{infineon-cypd3176-24lqxq-datasheet-en.pdf} (Infineon,
+002-32090 Rev.~*E, Sep.\ 2024). An EZ-PD BCR-PLUS Type-C port controller for
+power sinks, in a 24-pin QFN. It presents the sink's own CC terminations,
+negotiates a contract, and drives an external P-channel pass FET when the
+negotiated result satisfies a window programmed by four resistor-divider pins.
+Its D+/D$-$ pins carry legacy and proprietary charging negotiation for sources
+that do not implement USB-PD.
+
+{\footnotesize
+\begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.6cm}|c|}
+\caption{CYPD3176 electrical characteristics}\label{tab:cypd3176}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
+\endfirsthead
+\caption[]{CYPD3176 electrical characteristics (continued)}\\
+\hline
+\textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
+\hline
+\endhead
+\hline
+\endlastfoot
+VBUS\_IN supply input voltage & \num{3.0} & & \num{24.5} & \si{\volt} & \(-40\)~\si{\celsius} \(\leq T_A \leq\) \SI{105}{\celsius} & 18 \\
+\hline
+VDDD supply input voltage & \num{2.7} & & \num{5.5} & \si{\volt} & sink mode; \(-40\)~\si{\celsius} \(\leq T_A \leq\) \SI{105}{\celsius} & 18 \\
+\hline
+VCCD core logic output & & \num{1.8} & & \si{\volt} & & 18 \\
+\hline
+Supply current from VBUS or VDDD & & \num{10} & & \si{\milli\ampere} & VDDD = 5~V OR VBUS = 5~V, \(T_A\) = \SI{25}{\celsius}; CC1/CC2 in Tx or Rx, no I/O sourcing current, 2 SCBs at 1~Mbps, EA/ADC/CSA/UVOV ON, CPU at 24~MHz & 18 \\
+\hline
+VDDD decoupling capacitor & \num{0.8} & \num{1} & & \si{\micro\farad} & X5R ceramic or better & 18 \\
+\hline
+VBUS\_IN\_DIS decoupling capacitor & \num{0.1} & & & \si{\micro\farad} & X5R ceramic or better & 18 \\
+\hline
+VBUS\_IN\_DIS, DC\_OUT\_DIS absolute maximum & & & \num{30} & \si{\volt} & absolute max & 16 \\
+\hline
+VDDD absolute maximum & & & \num{6} & \si{\volt} & & 16 \\
+\hline
+CC1, CC2 absolute maximum & & & \num{22} & \si{\volt} & as per USB PD specification, maximum allowed VBUS = 21.5~V & 16 \\
+\hline
+VBUS\_CTRL absolute maximum & \num{-0.3} & & \multicolumn{2}{c|}{VBUS\_MAX} & & 17 \\
+\hline
+GPIO absolute maximum & \num{-0.5} & & \multicolumn{2}{c|}{VDDD + \num{0.5}} & & 17 \\
+\hline
+Rd UFP CC termination & \num{4.59} & \num{5.1} & \num{5.61} & \si{\kilo\ohm} & & 22 \\
+\hline
+Gate-driver pull-down resistance & & & \num{3} & \si{\kilo\ohm} & applicable on VBUS\_CTRL and SAFE\_PWR\_EN to turn ON external PFET & 24 \\
+\hline
+Gate-driver pull-up resistance & & & \num{4} & \si{\kilo\ohm} & applicable on VBUS\_CTRL to turn OFF external PFET & 24 \\
+\hline
+Gate-driver pull-down current, strength 1 & \num{25} & & \num{75} & \si{\micro\ampere} & I-mode (current mode) pull down at 5~V & 24 \\
+\hline
+Gate-driver pull-down current, strength 8 & \num{280} & & \num{580} & \si{\micro\ampere} & & 24 \\
+\hline
+CSP input capacitance & \num{7} & & \num{10} & \si{\pico\farad} & guaranteed by characterization & 22 \\
+\hline
+D+, D$-$ pin capacitance & & & \num{22} & \si{\pico\farad} & capacitance on D+, D\(-\) pins; guaranteed by characterization & 19 \\
+\hline
+ESD, human body model & \num{2200} & & & \si{\volt} & & 16 \\
+\hline
+ESD, IEC 61000-4-2 contact & \num{8000} & & & \si{\volt} & contact discharge on CC1, CC2, VBUS\_IN\_DIS, HPI\_SDA and HPI\_SCL pins & 16 \\
+\hline
+ESD, IEC 61000-4-2 air & \num{15000} & & & \si{\volt} & air discharge for D+, D\(-\), CC1, CC2, VBUS\_IN\_DIS, HPI\_SDA and HPI\_SCL pins & 16 \\
+\hline
+\end{longtable}
+}
+
+Two behaviors of the part govern the derivations below and are quoted rather
+than paraphrased. On negotiation order (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{15}):
+
+\begin{quote}
+Negotiation sequence: (PD $\rightarrow$ BC1.2 $\rightarrow$ AFC $\rightarrow$
+QC2.0 (Class B) $\rightarrow$ Apple $\rightarrow$ Type-C Only) \dots When
+negotiating legacy protocols, the BCR-PLUS device negotiates voltage and current
+based on the VBUS\_MIN/MAX and ISNK\_COARSE/ISNK\_FINE settings.
+\end{quote}
+
+And on the alternate power path (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{14}):
+
+\begin{quote}
+This gate driver is enabled when the PD contract defaults to 5~V due to
+mismatching capabilities. This driver is not enabled when the device is
+configured so that 5~V input is accepted by the system.
+\end{quote}
+
+The second sentence makes the SAFE\_PWR\_EN path and a 5~V entry in the accepted
+window mutually exclusive. \Cref{sec:pd-window} takes the second, and
+SAFE\_PWR\_EN is therefore unused throughout.
+
+{\sloppy
+The register interface through which the MCU reaches the part is specified
+separately, in
+\texttt{infineon-\allowbreak ez-\allowbreak pd-\allowbreak tm-\allowbreak
+bcr-\allowbreak plus-\allowbreak bcr-\allowbreak lite-\allowbreak
+host-\allowbreak processor-\allowbreak interface-\allowbreak
+specification-\allowbreak cypd3176-\allowbreak cypd3178-\allowbreak
+usermanual-\allowbreak en.pdf}
+(Infineon, 002-33575 Rev.~*A, Oct.\ 2023), cited below as the HPI
+specification. Two of its registers govern derivations here rather than
+firmware alone, because what they can do decides what the hardware must
+provide: SINK\_RDO\_REQUEST, which sends an arbitrary Request Data Object to the
+source (\cref{sec:pd-sequence}), and CHARGING\_MODE\_STATUS, which reports which
+legacy charging protocol is active (\cref{sec:pd-data}).
+\par}
+
+The USB 2.0 analog switch in the data path gets no table here. It is
+characterized in \cref{sec:pd-data} against the requirements derived there,
+being selected to a specification rather than driving one.
+
+\subsection{Load budget referred to the bus}\label{sec:pd-load}
+
+The three converters' input powers, each at the worst case its own section
+derives:
+\begin{align*}
+  P_{\mathrm{in,HV}} &= \SI{3.50}{\watt} && \text{(\cref{sec:hv-op}, design-max envelope, } \eta = 0.872), \\
+  P_{\mathrm{in,5V}} &= \SI{0.588}{\watt} && \text{(\cref{sec:5v-ss}, \SI{0.50}{\watt} at } \eta = 0.85), \\
+  P_{\mathrm{in,3V3}} &= \SI{1.39}{\watt} && \text{(\cref{sec:3v3-load}, \SI{1.18}{\watt} at } \eta = 0.85),
+\end{align*}
+summing worst-case additive to \SI{5.48}{\watt}. Referred to the contract
+voltages, and adding the controller's own \SI{10}{\milli\ampere}:
+\begin{align*}
+  I_{\mathrm{port}} &= \frac{5.48}{V_{\mathrm{BUS}}} + 0.010
+  &&\SI{8.5}{\volt}: \SI{0.655}{\ampere}; \quad
+    \SI{9}{\volt}: \SI{0.619}{\ampere}; \quad
+    \SI{12}{\volt}: \SI{0.467}{\ampere}.
+\end{align*}
+The \SI{8.5}{\volt} figure governs, being the bottom of the window
+\cref{sec:hv-converter,sec:5v-converter} derive against. Worst-case additive
+overstates the real draw: the flyback's design-max envelope puts every digit
+tube simultaneously at its datasheet-maximum current, and the 3.3~V figure is
+the MCU's Wi-Fi transmit condition at \SI{100}{\percent} duty. Neither is a
+sustained operating point and their coincidence is not one either, but the
+front end is sized against it because a source that cannot supply it will not
+negotiate at all.
+
+\subsection{Contract window}\label{sec:pd-window}
+
+VBUS\_MIN and VBUS\_MAX each take one of six settings through a divider from
+VDDD (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{13}), listed in
+\cref{tab:pd-vbus-settings}. The pair defines the range of source voltages the
+controller will accept.
+
+\begin{table}[htbp]
+\centering
+\caption{VBUS\_MIN and VBUS\_MAX settings}\label{tab:pd-vbus-settings}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Voltage (V)} & \textbf{Ratio to VDDD} & \textbf{Pull-up (\si{\kilo\ohm})} & \textbf{Pull-down (\si{\kilo\ohm})} & \textbf{Pin window (mV)} \\
+\hline
+5 & 0/6 & open & 0 & 0--248 \\
+\hline
+9 & 1/6 & 5.1 & 1 & 249--786 \\
+\hline
+12 & 2/6 & 5.1 & 2.4 & 787--1347 \\
+\hline
+15 & 3/6 & 5.1 & 5.1 & 1348--1920 \\
+\hline
+19 & 4/6 & 5.1 & 10 & 1921--2778 \\
+\hline
+20 & $\geq$5/6 & 0 & open & $\geq$2779 \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Upper limit.} \SI{15}{\volt} is the first setting above
+\SI{12}{\volt} and it exceeds what the downstream converters tolerate. A
+\SI{15}{\volt} contract at its $+5\,\%$ limit is \SI{15.75}{\volt}, which is
+\SI{87.5}{\percent} of the TPS629203's \SI{18}{\volt} absolute maximum
+(\cref{sec:tps629203}) and past the \SI{80}{\percent} derating this document
+applies to voltage ratings throughout. Specification: VBUS\_MAX =
+\SI{12}{\volt}, which at $+5\,\%$ gives \SI{12.6}{\volt} and holds the
+\SI{13}{\volt} ceiling that \cref{sec:hv-converter,sec:5v-converter,sec:3v3-converter}
+derive against.
+
+\paragraph{Lower limit.} A window whose floor is \SI{9}{\volt} leaves the board
+dead on any source that cannot offer a high-voltage contract, including an
+ordinary host port. The board must come up on such a source so the MCU can be
+programmed and reached over USB, which \cref{sec:pd-data} routes. Setting the
+floor to \SI{5}{\volt} admits those sources, and does so at no component cost:
+the \SI{5}{\volt} entry is the 0/6 ratio, an open pull-up and a pull-down of
+zero, which is a connection to ground rather than a divider. Specification:
+VBUS\_MIN = \SI{5}{\volt}, tied to ground; VBUS\_MAX = \SI{12}{\volt} through
+\des{R}{PDMAX1} $= \SI{5.1}{\kilo\ohm}$ to VDDD and \des{R}{PDMAX2} $=
+\SI{2.4}{\kilo\ohm}$ to ground.
+
+The accepted set is therefore \SI{5}{\volt}, \SI{9}{\volt}, and
+\SI{12}{\volt}. \emph{Assumption:} presented with a source offering more than
+one of them, the controller requests the highest. The datasheet states that
+VBUS\_MIN and VBUS\_MAX bound what the controller will accept but never states
+the selection rule within those bounds. The assumption is what VBUS\_MAX is for,
+and the consequence of its being wrong is severe rather than marginal: the
+board would take a \SI{5}{\volt} contract from every source and never light the
+display. It is the one behavior in this section that must be confirmed against
+the CCG UFP HPI specification before the setting is committed.
+
+\subsection{Operating current request}\label{sec:pd-isnk}
+
+ISNK\_COARSE and ISNK\_FINE are read the same way and sum to the requested
+operating current (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{13, 14}):
+coarse in \SI{1}{\ampere} steps from \SIrange{0}{5}{\ampere}, fine in the
+sequence \SI{0}{}, \SI{250}{}, \SI{500}{}, \SI{750}{}, \SI{900}{\milli\ampere}.
+The requirement is that the request cover \cref{sec:pd-load}'s
+\SI{0.655}{\ampere} while asking for no more than that, since every increment
+above the requirement narrows the set of sources that can satisfy it: a source
+offering a voltage inside the window but a current below the request is a fault
+condition, not a degraded contract
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{14}).
+
+A single setting cannot serve both operating classes. Covering
+\cref{sec:pd-load}'s \SI{0.655}{\ampere} takes the \SI{750}{\milli\ampere} fine
+step, and a source offering \SI{5}{\volt} at \SI{500}{\milli\ampere}, which is
+what a USB~2.0 host port supplies, would then be refused: its voltage is inside
+the window and its current is below the request, so the contract does not close
+and the pass switch never asserts. That is precisely the source
+\cref{sec:pd-window} widened the window to admit, and a request sized for full
+operation would leave the board dead on it.
+
+The resistors therefore ask for what limited operation needs, and firmware asks
+for the rest once it is running (\cref{sec:pd-sequence}).
+\Cref{sec:pd-classes} puts limited operation at \SI{0.426}{\ampere}, so the
+\SI{500}{\milli\ampere} fine step covers it with \SI{17}{\percent} to spare and
+matches the weakest port exactly. Specification: ISNK\_COARSE =
+\SI{0}{\ampere}, tied to ground; ISNK\_FINE = $+\SI{500}{\milli\ampere}$
+through \des{R}{PDI1} $= \SI{5.1}{\kilo\ohm}$ to VDDD and \des{R}{PDI2} $=
+\SI{2.4}{\kilo\ohm}$ to ground.
+
+At the three accepted voltages this asks \SI{2.5}{\watt}, \SI{4.5}{\watt}, and
+\SI{6}{\watt}, all of which any source offering the corresponding contract
+supplies, the smallest common USB-PD adapter supplying \SI{9}{\volt} at
+\SI{2}{\ampere} and a bare host port \SI{5}{\volt} at
+\SI{500}{\milli\ampere}. What it does not cover is the display, and nothing in
+the resistor settings prevents the display from starting on it, which is what
+\cref{sec:pd-sequence} has to arrange.
+
+\subsection{Operating classes}\label{sec:pd-classes}
+
+The window of \cref{sec:pd-window} admits two electrically distinct results,
+and the design's behavior differs in kind between them rather than in degree.
+
+\paragraph{Full operation.} A \SI{9}{\volt} or \SI{12}{\volt} contract puts
+$V_{\mathrm{BUS}}$ in the \SIrange{8.5}{13}{\volt} window that
+\cref{sec:hv-converter,sec:5v-converter,sec:3v3-converter} derive against. All
+three converters operate inside their derived envelopes and the display runs.
+
+\paragraph{Limited operation.} A \SI{5}{\volt} result, whether a PD contract, a
+legacy protocol that yields no more, or the Type-C-only case at the end of the
+negotiation sequence, puts $V_{\mathrm{BUS}}$ between \SI{4.75}{\volt} and
+\SI{5.5}{\volt}, the range the controller accepts when the window's floor is
+\SI{5}{\volt} (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{15}). Each
+converter's behavior there follows from its own section:
+\begin{description}
+  \item[170~V flyback] held off twice over. Its input UVLO releases at
+    \SI{8.12}{\volt} rising (\cref{sec:hv-uvlo}), far above this range, and the
+    MCU-controlled inhibit of \cref{sec:hv-inhibit} is asserted by default. The
+    tubes stay dark.
+  \item[5~V rail] in \SI{100}{\percent} duty. The TPS629203 enters that mode
+    below \SI{5.04}{\volt} of input (\cref{sec:5v-input}) and holds the
+    high-side switch on, so the rail follows its input less
+    $I_{\mathrm{load}}(R_{DS(\mathrm{on})}+R_L) = \SI{35}{\milli\volt}$ at the
+    \SI{100}{\milli\ampere} bound. The K155ID1 packages therefore sit below the
+    \SI{4.75}{\volt} bottom of their recommended supply window
+    (\cref{sec:bcd-driver}) at the low end of the range. They are idle: their
+    outputs are open collectors with no anode supply behind them, and an
+    undervolted supply shifts a bipolar TTL part's thresholds without
+    endangering it.
+  \item[3.3~V rail] in regulation. The TPS63070 boosts from an input this far
+    below its output as a matter of course, the header branch of
+    \cref{sec:3v3-diodeor} presenting a lower one still.
+\end{description}
+
+The load in limited operation is the 3.3~V rail and the idle drivers:
+\begin{align*}
+  I_{\mathrm{port}}^{\mathrm{lim}} &= \frac{1.39}{4.4} + 0.100 + 0.010
+    = \SI{0.426}{\ampere},
+\end{align*}
+the first term at the converter input node one \des{D}{3V3BUS} drop below the
+bottom of the range (\cref{sec:3v3-input}), the second the drivers passed
+through at unity duty, the third the
+controller. That is \SI{85}{\percent} of the \SI{500}{\milli\ampere} a
+USB~2.0 host port supplies and well inside both a USB~3.x port's
+\SI{900}{\milli\ampere} and a Type-C source's default
+\SI{1.5}{\ampere}. Limited operation is therefore self-consistent on the
+weakest source the board will encounter, and it is so at the 3.3~V rail's
+worst-case load rather than at a programming-time load.
+
+\subsection{Start-up and renegotiation}\label{sec:pd-sequence}
+
+The contract the resistors ask for carries the board but not the display
+(\cref{sec:pd-isnk}). Closing that gap without a power cycle is a firmware
+sequence, and it turns on two constraints: the display must not start on a
+contract that cannot carry it, and the bus voltage must not step while the MCU
+depends on it.
+
+\begin{enumerate}[itemsep=2pt]
+  \item \textbf{Attach.} The controller runs from the receptacle's VBUS through
+    its own regulator and negotiates the highest voltage in the window at
+    \SI{500}{\milli\ampere}. VBUS\_CTRL closes under the slew control of
+    \cref{sec:pd-fet}.
+  \item \textbf{Rails.} The 3.3~V rail comes up and the MCU boots; the 5~V rail
+    comes up and the drivers idle. The flyback stays off: below its UVLO on a
+    \SI{5}{\volt} contract, and behind the inhibit of \cref{sec:hv-inhibit} on a
+    \SI{9}{\volt} or \SI{12}{\volt} one.
+  \item \textbf{Interrogate.} The MCU reads the source's advertised capability
+    and the negotiated result over HPI (\cref{sec:pd-pins}).
+  \item \textbf{Renegotiate.} If the source can supply full operation, the MCU
+    requests \SI{750}{\milli\ampere} at a voltage in the window, covering
+    \cref{sec:pd-load}'s \SI{0.655}{\ampere} with \SI{15}{\percent} to spare.
+  \item \textbf{Release.} On a confirmed contract the MCU releases the display
+    inhibit. On any other outcome it does not, and the board remains in limited
+    operation indefinitely rather than transiently.
+\end{enumerate}
+
+\paragraph{Why the display needs an inhibit at all.} The flyback's UVLO is a
+voltage floor, not a contract check. It releases at \SI{8.12}{\volt} whatever
+current the contract allows, so on a \SI{9}{\volt} contract at
+\SI{500}{\milli\ampere} it would start the display into a contract short of the
+\SI{0.619}{\ampere} full operation draws at that voltage. Nothing about the
+input voltage distinguishes the two cases, so the distinction has to be made by
+the only element that knows the contract, and it must default to inhibited so
+that the state before the MCU is running is the safe one.
+\Cref{sec:hv-inhibit} derives it.
+
+\paragraph{Why step 4 changes current rather than voltage.} With the controller
+already holding the highest voltage in the window, step 4 is a current-only
+renegotiation: the contract's voltage is unchanged, the pass switch stays
+closed, and no capacitance is charged or discharged. A voltage step is the
+hazardous operation. \Cref{sec:pd-fet} puts \SI{135}{\micro\farad} on the bus
+rail, and during a negotiated voltage transition the pass switch is fully on and
+cannot moderate the charging current the way it does at attach; at the source's
+permitted transition slew that capacitance draws amperes. The design tolerates
+one such event rather than depending on never seeing one, because the outcome is
+bounded: the source current-limits or drops to its safe voltage, which returns
+to step~1 with the board in the state it started in.
+
+That distinction is what makes \cref{sec:pd-window}'s assumption recoverable. If
+the controller does not in fact select the highest offered voltage, step 4
+becomes a voltage step, the board takes one inrush event, and the MCU reaches
+full operation anyway. The assumption's cost drops from a display that never
+lights to a transient at start-up.
+
+\paragraph{What step 4 writes.} A Request Data Object carries the selected
+source capability and the operating current in one word, so revising the current
+is an ordinary request rather than a special operation. SINK\_RDO\_REQUEST takes
+a 32-bit object and sends it to the source unexamined: ``Writing to this
+register will result in Request of PD contract re-negotiation'' (HPI
+specification, p.~24). The other route to the same contract, replacing the sink
+capability list through SELECT\_SINK\_PDO, is rejected on the specification's own
+warning that ``once the Sink PDOs are updated, BCR-PLUS will re-negotiate the PD
+contract with the power adapter. This will cause momentary power loss to the
+system'' (HPI specification, p.~22). Step 4 therefore writes an RDO and leaves
+the capability list as the four resistors set it, which is also what keeps
+\cref{sec:pd-window}'s window in force over a rejected request.
+
+The register is gated on the sink PDO mask being non-zero, which it is at reset,
+and its SUCCESS response means only that the request was queued. Whether the
+contract closed is read from EVENT\_STATUS, and step 5 conditions on that rather
+than on the write.
+
+\subsection{Bus pass switch}\label{sec:pd-fet}
+
+VBUS\_CTRL drives \des{Q}{BUS}'s gates through \des{R}{BUSG}, asserting only when
+a contract inside the window closes.
+
+\paragraph{The switch blocks in both directions, so it is two devices.} A single
+P-channel MOSFET with its source on the receptacle's VBUS and its drain on
+$V_{\mathrm{BUS}}$ blocks the forward path when it is off, but its body diode,
+whose anode is the drain, conducts the reverse one. Two states make that
+unacceptable. On detach the \SI{135}{\micro\farad} the bus rail carries, totalled
+under \emph{Inrush} below, would drain onto the receptacle's exposed contacts
+through that diode, against the requirement that VBUS fall to its safe level in a
+bounded time. And an overvoltage on the port, the event for which the controller
+opens the switch at all, would reach $V_{\mathrm{BUS}}$ regardless of the
+switch's state, since the diode does not care that the channel is off.
+
+\des{Q}{BUS} is therefore two P-channel devices with their sources joined and
+their gates driven together. Each body diode has its anode on its own drain, so
+the pair sits anode-to-anode at the shared source: current from either end
+reaches that node through one diode and is blocked by the other. The common
+source is also what lets one gate driver serve both, the gate-source voltage
+being the same for each. The controller's own pin description assumes this
+arrangement, directing DC\_OUT\_DIS to ``the output of the PFETs''
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{9}).
+
+\paragraph{Ratings.} Each device stands off the full contract voltage when the
+pair is open, \SI{12.6}{\volt}, which with the \SI{20}{\percent} derating would
+give $V_{DS} \geq \SI{16}{\volt}$. The binding figure is larger and comes from
+elsewhere: \cref{sec:pd-esd} puts \SI{24}{\volt} on this node during an
+electrostatic discharge, and raises the requirement to
+$V_{DS} \geq \SI{30}{\volt}$. The gate-source junction is a separate question,
+answered under \emph{Gate network} below, because the network holds it well
+inside what the rail alone would impose. Unlike \cref{sec:3v3-diodeor}'s header
+switch, this one faces no low-drive constraint: the gate has the whole bus rail
+to work with, so threshold and on-resistance are not in tension here. Continuous
+current is \cref{sec:pd-load}'s \SI{0.655}{\ampere}, giving $I_D \geq
+\SI{1}{\ampere}$ derated.
+
+\paragraph{On-resistance.} The drop across the switch comes out of the margin
+between what the source presents and the \SI{8.5}{\volt} floor the downstream
+derivations assume, and the two channels are in series so the budget is shared.
+Specification: $R_{DS(\mathrm{on})} \leq \SI{25}{\milli\ohm}$ per device at the
+gate drive the bus affords, \SI{50}{\milli\ohm} across the pair, which costs
+\SI{33}{\milli\volt} at \SI{0.655}{\ampere} and \SI{21}{\milli\watt}.
+
+\emph{Assumption:} the \SI{8.5}{\volt} floor is the voltage at
+$V_{\mathrm{BUS}}$, and the budget between it and a \SI{9}{\volt} contract's
+$-5\,\%$ limit of \SI{8.55}{\volt} is \SI{50}{\milli\volt} in total. The switch
+consumes two thirds of that and the cable consumes the rest and more: a
+compliant Type-C cable may present up to \SI{250}{\milli\ohm} on the VBUS and
+ground conductors together, which at \SI{0.655}{\ampere} is
+\SI{164}{\milli\volt}. A worst-case source, a worst-case cable and a worst-case
+load together put $V_{\mathrm{BUS}}$ near \SI{8.35}{\volt}, below the floor. The
+consequence is bounded rather than open-ended: the flyback's UVLO does not
+release its falling threshold until \SI{7.14}{\volt}
+(\cref{sec:hv-uvlo}), so the converter continues to run, drawing a primary
+current \SI{1.8}{\percent} above the value \cref{sec:hv-op} derives at
+\SI{8.5}{\volt}. The floor is the point below which the derivations stop being
+exact, not the point below which the design stops working.
+
+\paragraph{Inrush.} The bus rail's capacitance is the sum of the three
+converters' input capacitance: \SI{100}{\micro\farad} polymer and
+\SI{4.7}{\micro\farad} ceramic at the flyback (\cref{sec:hv-caps}),
+\SI{10}{\micro\farad} at the 5~V converter (\cref{sec:5v-cin}), and
+\SI{20}{\micro\farad} across the 3.3~V converter's two input capacitors
+(\cref{sec:3v3-cin}), \SI{135}{\micro\farad} nominal. Charging it is a load the
+source sees on top of the operating current, and the requirement is that the two
+together stay inside the negotiated \SI{750}{\milli\ampere}. Allocating half the
+request to inrush:
+\begin{align*}
+  t_{\mathrm{ramp}} &\geq \frac{C\,\Delta V}{I_{\mathrm{inrush}}}
+    = \frac{\SI{135}{\micro\farad}\times\SI{12.6}{\volt}}{\SI{0.375}{\ampere}}
+    = \SI{4.5}{\milli\second}.
+\end{align*}
+Specification: $t_{\mathrm{ramp}} \geq \SI{5}{\milli\second}$. The gate network
+below is what sets it.
+
+\paragraph{Gate network.} The gate driver by itself does none of three things
+this switch requires: hold the pair off before the controller is powered, bound
+the gate-source voltage, or set the output ramp. Five elements around the gate
+node do, in the arrangement the manufacturer's application diagram carries
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{12}).
+
+\begin{description}
+  \item[\des{R}{BUSOFF}, gate to common source] holds $V_{GS}$ at zero whenever
+    nothing drives the gate: before the controller has powered up, through its
+    reset, and on any fault that releases VBUS\_CTRL. The driver's own
+    \SI{4}{\kilo\ohm} pull-up cannot serve here because it does not exist until
+    the controller does, which is after the rail it gates. Specification:
+    \SI{49.9}{\kilo\ohm}, large enough that the \SI{200}{\micro\ampere} it
+    carries at full gate drive is a small part of what the driver must sink,
+    small enough that gate leakage across it is negligible.
+  \item[\des{R}{BUSBIAS}, gate to the receptacle's VBUS] makes the off state
+    positive rather than merely zero. With the pair open the common source rests
+    one body-diode drop below the receptacle, so \des{R}{BUSBIAS} and
+    \des{R}{BUSOFF} divide that drop onto the gate and leave $V_{GS}$ at about
+    $+\SI{0.6}{\volt}$. It also gives the gate a defined path to the input rail
+    during plug-in, before the source node has charged through the body diode at
+    all. Specification: \SI{10}{\kilo\ohm}.
+  \item[\des{D}{BUSG}, cathode on the source, anode on the gate] bounds
+    $V_{GS}$. Its role is protective rather than operational: with the driver's
+    \SI{3}{\kilo\ohm} pull-down working against \des{R}{BUSBIAS} and
+    \des{R}{BUSOFF}, the gate settles at
+    \begin{align*}
+      V_G &= V_S\,\frac{G_{\mathrm{BIAS}}+G_{\mathrm{OFF}}}
+                       {G_{\mathrm{BIAS}}+G_{\mathrm{OFF}}+G_{\mathrm{PD}}}
+        = 12.6 \times 0.324 = \SI{4.1}{\volt},
+    \end{align*}
+    that is $V_{GS} = -\SI{8.5}{\volt}$, short of the clamp. The clamp therefore
+    does not conduct at this rail's voltages and exists for the excursions
+    beyond them. Specification: \SI{10}{\volt} Zener, which caps the
+    gate-source requirement on \des{Q}{BUS} at $|V_{GS}| \geq
+    \SI{12.5}{\volt}$ with the \SI{20}{\percent} derating rather than the
+    \SI{16}{\volt} the bare rail would demand.
+  \item[\des{C}{BUSSLEW}, gate to $V_{\mathrm{BUS}}$] sets the output ramp. It
+    is the Miller path: as the gate is drawn down the output rises against it, so
+    $dV_{\mathrm{BUS}}/dt = I_{PD}/C$. Across the driver's current-mode range
+    that is \SIrange{0.025}{0.58}{\volt\per\milli\second}, and at the strongest
+    setting the \SI{12.6}{\volt} ramp takes \SI{21.7}{\milli\second} and draws
+    $\SI{135}{\micro\farad}\times\SI{0.58}{\volt\per\milli\second} =
+    \SI{78}{\milli\ampere}$ of inrush, a fifth of the budget above.
+    Specification: \SI{1}{\micro\farad}.
+  \item[\des{C}{BUSCM}, gate to the receptacle's VBUS] couples a fast transient
+    on the input rail onto the gate and the source alike, so $V_{GS}$ holds
+    through it and the switch cannot be driven by an edge on its own supply.
+    Specification: \SI{1}{\micro\farad}.
+\end{description}
+
+\des{R}{BUSG} sits between VBUS\_CTRL and that node. It is not merely a damping
+element: it carries the whole of the driver's pull-down, and it sets the current
+through \des{D}{BUSG} whenever the clamp does conduct. Specification:
+\des{R}{BUSG} $= \SI{1}{\kilo\ohm}$.
+
+The drive-strength setting is therefore a design parameter rather than a detail.
+At the weakest of the five, \SI{25}{\micro\ampere}, the same
+\SI{1}{\micro\farad} stretches the ramp to \SI{500}{\milli\second}, which is
+long against the timing a source expects a sink to settle in. It must be
+selected against \des{C}{BUSSLEW}, not independently of it.
+
+\subsection{Bus-rail discharge}\label{sec:pd-bleed}
+
+\Cref{sec:3v3-diodeor} derives a bound on the impedance at $V_{\mathrm{BUS}}$,
+$R_{\mathrm{BUSBLEED}} \leq \SI{0.66}{\volt}/I_R$ with $I_R$ the reverse current
+of \des{D}{3V3BUS}, and leaves open whether the front end satisfies it as a
+by-product of its own detach behavior. It does not.
+
+The controller carries an integrated VBUS discharge FET, described as
+``used to discharge VBUS to meet the USB-PD specification timing on a detach
+condition'' (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{5}). That is an
+event-driven function with a timing requirement behind it, and the datasheet
+specifies no static impedance at either VBUS\_IN\_DIS or DC\_OUT\_DIS. The
+requirement \cref{sec:3v3-diodeor} raises is continuous rather than
+event-driven: while the board runs from the header branch, \des{D}{3V3BUS}'s
+reverse current flows into a bus rail that no source is holding, and the rail
+must rest near ground for as long as that lasts. A discharge that fires once on
+detach does not hold it there.
+
+\des{R}{BUSBLEED} is therefore a populated part, not a placeholder. Its value
+follows from \des{D}{3V3BUS}'s reverse current at \SI{3}{\volt} and the maximum
+ambient, the selection criterion \cref{sec:3v3-diodeor} places on that diode.
+Its cost while a bus supply is attached is $V_{\mathrm{BUS}}^2/R$, which at
+\SI{12.8}{\volt} and a resistance in the tens of kilohms is a few milliwatts and
+a few hundred microamps against \cref{sec:pd-load}'s budget.
+
+\subsection{Data path}\label{sec:pd-data}
+
+D+ and D$-$ reach three places: the controller's own D+ and D$-$ pins, which
+carry BC1.2, AFC, QC~2.0 and Apple negotiation for sources that do not implement
+USB-PD; the ESD array; and the MCU's native USB (\cref{sec:esp32-usb}). USB~2.0
+admits one host and one device on a segment, so the third connection is switched
+rather than shared.
+
+\paragraph{Legacy negotiation reaches the contracts the display needs.} QC~2.0 signals its
+\SI{9}{\volt} and \SI{12}{\volt} steps on D+ and D$-$, which are exactly the
+contracts \cref{sec:pd-window} accepts. A source implementing QC but not PD can
+therefore run the display, and the negotiation sequence reaches it before
+falling through to Type-C-only. This is why CHARGING\_MODE selects all legacy
+protocols rather than BC1.2 alone (\cref{sec:pd-pins}), and why the controller's
+D+/D$-$ connection is not optional.
+
+\paragraph{The two claims on the pair are separable in time, not in space.}
+QC~2.0 and AFC do not negotiate and release. They express the contract as a
+state the sink holds on D+ and D$-$ for as long as it wants the voltage, so a
+sink that surrenders the pair surrenders the contract with it. The controller
+and the MCU therefore cannot both have the pair while such a contract is in
+force, and no arrangement of switches changes that: the conflict is over who
+holds a signal, not over who is wired to it.
+
+What makes the design work is that the conflict never arises in a case the board
+meets. The MCU wants the pair to enumerate against a host, and a host port
+offers PD or Type-C-only, never QC or AFC. A source that offers QC or AFC is a
+charger, and a charger is not a host. The two demands are disjoint over the
+population of sources, and the front end only has to know which one it is
+looking at.
+
+CHARGING\_MODE\_STATUS answers exactly that, reporting no legacy mode, BC1.2,
+QC~2.0, AFC or Apple as a single byte (HPI specification, p.~18). The MCU reads
+it before closing the switch and closes only on the first two: no legacy mode
+means the contract came from PD or from Type-C-only and nothing is holding the
+pair, and a BC1.2 result means a charging port whose D+ and D$-$ are shorted
+together at the source, which cannot be a host in any case and cannot be
+disturbed by a device that fails to enumerate against it. On QC~2.0, AFC or
+Apple the switch stays open, and the board is a clock without a console.
+
+This is a firmware condition, not a component, but it is derived here
+because it is what permits the controller and the MCU to share one pair at all,
+and because it is the reason \cref{sec:pd-pins} can leave CHARGING\_MODE
+floating without qualification.
+
+\paragraph{The switch goes in the MCU's branch alone.} The controller needs the
+pair at attach, running from the receptacle's VBUS through its own regulator,
+which is before a contract closes, before \des{Q}{BUS} turns on, and therefore
+before the 3.3~V rail exists. Any switch powered from that rail is unpowered at
+that moment. Placing a single-throw switch in the MCU's branch rather than a
+two-way multiplexer at the junction makes the unpowered state the correct one:
+open, with the controller holding the pair. The MCU closes it once it is running
+and wants to enumerate. That alternative would need a supply that exists before
+the contract does and a resistor-defined default pointing at the controller, to
+reach a state the series switch gets for nothing.
+
+The MCU's own pins argue the same way from the other end. Its USB pins are
+general-purpose I/O with clamps to a rail that does not exist during
+negotiation, so an unswitched MCU branch would load D+ and D$-$ exactly while
+the controller is driving them to \SI{0.6}{\volt} or \SI{3.3}{\volt} against a
+charger. And both pins glitch high twice at power-up, for about
+\SI{60}{\micro\second} each within windows of \SI{3.2}{\milli\second} and
+\SI{2}{\milli\second} (\cref{sec:esp32-usb}), which the switch confines to the
+MCU side of itself.
+
+Specification: the enable net is held in the disabled state by \des{R}{USBSW}
+against a high-impedance MCU pin, so the switch is open through reset and
+opens again if the MCU stops driving it; the MCU pin carrying it must be free of
+strapping duty (\cref{sec:esp32-usb}). The switch's select input, where
+the part has one, is tied to the level that reaches the populated branch.
+
+\paragraph{Orientation.} A USB~2.0-only receptacle ties A6/A7 to B6/B7, so the
+pair is present in both cable orientations and no orientation switching is
+required. The FLIP output the controller offers on DATAMODE/FLIP is therefore
+unused; \cref{sec:pd-pins} keeps that pin in its data-capable configuration for
+the other half of its function.
+
+\paragraph{Capacitance on the shared node.} The pair carries the receptacle, the
+ESD array, the controller's two pins, the switch's common side and, behind the
+switch, the MCU. The USB~2.0 specification bounds the total at
+\SI{100}{\pico\farad} on the upstream port of a device with a detachable cable,
+against \SI{150}{\pico\farad} on a downstream-facing one. The contributors, each
+at its worst case:
+
+\begin{table}[htbp]
+\centering
+\caption{Capacitance on one line of the data pair}\label{tab:pd-datacap}
+\begin{tabular}{|l|r|l|}
+\hline
+\textbf{Contributor} & \textbf{pF} & \textbf{Source} \\
+\hline
+CYPD3176 D+ or D$-$ pin & \num{22} & \cref{tab:cypd3176} \\
+\hline
+\des{D}{USBESD} & \num{3.5} & \cref{sec:pd-esd} \\
+\hline
+Switch common side, closed & \num{7.5} & \cref{tab:pd-switch} \\
+\hline
+MCU transceiver and traces & \num{15} & estimate \\
+\hline
+\textbf{Total} & \textbf{\num{48}} & against \SI{100}{\pico\farad} \\
+\hline
+\end{tabular}
+\end{table}
+
+Only the last row is an estimate; the module's datasheet specifies no
+capacitance at its USB pins. It would have to be wrong by a factor of four
+before the budget closed, so the node is not capacitance-limited.
+
+This is a full-speed conclusion and does not survive being applied to a faster
+link. High-speed signaling would want the whole node inside roughly
+\SI{10}{\pico\farad}, and the controller's pins alone exceed that. It is the
+MCU's full-speed-only transceiver (\cref{sec:esp32-usb}) that makes a shared
+pair feasible at all, and the same fact makes the stub the controller's branch
+forms electrically invisible: at \SI{4}{\nano\second} edges a few centimeters of
+trace is not a transmission line.
+
+\paragraph{Switch requirements.} The branch carries USB~2.0 full speed at
+\SI{12}{\mega\bit\per\second}. Bandwidth is therefore not the selecting
+parameter, and neither is on-capacitance, given the budget above.
+What selects the part is the state it must hold while it has no supply: the
+switch is unpowered for the whole of the negotiation window, and a part whose
+I/O clamps to its own dead rail would pull D+ and D$-$ toward ground and break
+the negotiation it is there to stay out of.
+
+\begin{table}[htbp]
+\centering
+\caption{Data-path switch requirements}\label{tab:pd-switch}
+\begin{tabular}{|l|L{8.6cm}|}
+\hline
+\textbf{Parameter} & \textbf{Requirement} \\
+\hline
+Rating & USB 2.0 full speed, \SI{12}{\mega\bit\per\second} \\
+\hline
+Bandwidth & $\geq\SI{50}{\mega\hertz}$ at \num{-3}~dB, for
+  \SIrange{4}{20}{\nano\second} edges \\
+\hline
+On-capacitance & $\leq\SI{15}{\pico\farad}$ \\
+\hline
+On-resistance & $\leq\SI{10}{\ohm}$, channel mismatch $\leq\SI{1}{\ohm}$;
+  it adds to the transceiver's \SIrange{28}{44}{\ohm} source impedance \\
+\hline
+Signal range & $\geq\SI{3.6}{\volt}$, covering the legacy negotiation levels
+  the open switch is exposed to \\
+\hline
+Supply & \SI{3.3}{\volt}, from the MCU's own rail \\
+\hline
+Unpowered state & open, and drawing no more than a few \si{\micro\ampere} with
+  its supply at \SI{0}{\volt} and either I/O anywhere up to
+  \SI{3.6}{\volt} \\
+\hline
+\end{tabular}
+\end{table}
+
+The TS3USB221A (\texttt{ts3usb221a.pdf}, Texas Instruments, SCDS277C, Oct.\
+2024) meets every line: \SI{900}{\mega\hertz} typical bandwidth,
+\SI{7.5}{\pico\farad} maximum on-capacitance, \SI{6}{\ohm} maximum on-resistance
+with \SI{0.2}{\ohm} typical mismatch, signal handling to \SI{5.5}{\volt},
+\SI{2.3}{}--\SI{3.6}{\volt} supply, and $\pm\SI{2}{\micro\ampere}$ power-off
+leakage with $V_{CC} = \SI{0}{\volt}$ and its I/O anywhere from \num{0} to
+\SI{5.25}{\volt}. It is a 1:2 multiplexer used as a single-throw switch, its
+second branch unconnected, in a $2\times1.5$~\si{\milli\meter} UQFN-10.
+
+Its bandwidth is far past what a full-speed link asks for and is not why it is
+here. The power-off specification is: switches carrying that guarantee are
+concentrated among parts built for USB, so the part class the requirement
+selects is the one a faster link would also have chosen, reached by a different
+argument. Its enable input disconnects on a logic high, which makes
+\des{R}{USBSW} a pull-up to the 3.3~V rail and the MCU's assertion a drive low.
+
+\paragraph{The controller's branch.} \des{R}{PDDP} and \des{R}{PDDM} join the
+controller's D+ and D$-$ to the pair. At \SI{0}{\ohm} they are the connection
+\cref{sec:pd-esd} protects and this subsection's argument assumes.
+
+\emph{Assumption:} the controller leaves D+ and D$-$ high-impedance when no
+legacy protocol is active. The pins are ordinary GPIO, numbered among the port
+pins and specified in the GPIO table with the GPIO pull resistors
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{19}), and the datasheet
+contemplates a data application on this receptacle, but it nowhere states the
+idle behavior. If the assumption fails the controller holds the pair
+permanently, no firmware condition recovers it, and the recourse is to depopulate
+\des{R}{PDDP} and \des{R}{PDDM}: the controller then loses the legacy protocols
+it cannot run without the lines, the data path runs from receptacle to switch
+alone, and every source that offers PD or Type-C-only, which is every source the
+board is programmed from, behaves as derived. The assumption's cost is the
+high-voltage legacy protocols, which is what makes it worth taking rather than
+designing around.
+
+\subsection{ESD protection}\label{sec:pd-esd}
+
+The receptacle's contacts are exposed metal and require IEC 61000-4-2
+protection independent of what the silicon behind them carries. The five lines
+do not take the same treatment, and the reason is that their standoff
+requirements differ by more than a factor of four: D+ and D$-$ never leave the
+MCU's logic rail, CC rests near ground, and VBUS carries the negotiated
+contract. No single device spans that range, which is why the protection
+divides three ways rather than arriving in one package.
+
+The controller's own ESD table makes the first cut
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{16}). Contact discharge at
+\SI{8}{\kilo\volt} is specified on CC1, CC2 and VBUS\_IN\_DIS; D+ and D$-$
+appear only under air discharge.
+
+\paragraph{CC1 and CC2 take nothing.} The controller specifies both against the
+harder of the two tests, and nothing else on the board connects to them. An
+external clamp would add capacitance to the lines carrying the power-delivery
+physical layer for no protection the controller does not already provide.
+
+\paragraph{D+ and D$-$ take a matched array.} These are the lines the
+controller does \emph{not} specify for contact discharge, and they run on to the
+analog switch of \cref{sec:pd-data} and the MCU of \cref{sec:esp32-usb}, neither
+of which carries an IEC rating of any kind. Requirement: IEC 61000-4-2 level 4,
+no more than \SI{4}{\pico\farad} per line, which is the share of
+\cref{tab:pd-datacap}'s budget an array can be held to without difficulty, and
+line-to-line capacitance matched so the pair stays balanced. The last of those
+is what a discrete device per line cannot deliver: matching is a property of one
+die, not of two parts drawn from the same reel.
+
+\des{D}{USBESD}, the USBLC6-2 (\texttt{USBLC6-2.pdf}, STMicroelectronics),
+satisfies all three: \SI{3.5}{\pico\farad} maximum line capacitance,
+\SI{0.015}{\pico\farad} matching between the two I/O lines,
+\SI{150}{\nano\ampere} maximum leakage, and \SI{8}{\kilo\volt} contact with
+\SI{15}{\kilo\volt} air discharge, in a SOT-666 or SOT23-6L body.
+
+Its rail pin does not connect to the receptacle's VBUS. That pin is the anode
+rail for the steering diodes with a suppressor behind it, specified at
+$V_{RM} = \SI{5.25}{\volt}$ and a breakdown between it and ground of
+\SI{6}{\volt} minimum (\ds{USBLC6-2.pdf}{2}); the part is a USB~2.0 device built
+for a \SI{5}{\volt} bus, and a \SI{9}{\volt} or \SI{12}{\volt} contract would
+hold that junction past breakdown continuously. Specification: the rail pin ties
+to VDDD, which is inside the standoff at \SI{3.3}{\volt} and, unlike any
+converter output, is alive as soon as the receptacle has voltage on it.
+
+\paragraph{VBUS takes its own clamp.} The controller's VBUS\_IN\_DIS pin is
+rated for contact discharge, but it is not the only thing on that node:
+\des{Q}{BUS} sits directly across from the receptacle and carries no IEC rating,
+and \des{C}{PDIN} and the gate network hang off the same rail. Requirement:
+a suppressor with a standoff above the \SI{12.6}{\volt} maximum contract,
+IEC 61000-4-2 level 4, and a clamping voltage low enough that what it lets
+through is survivable by everything else on the node.
+
+It must be unidirectional. This is a ground-referenced DC rail that never goes
+negative, and VBUS\_IN\_DIS has an absolute minimum of $-\SI{0.3}{\volt}$. A
+unidirectional device clamps a negative discharge at one forward drop; a
+bidirectional one avalanches in both directions and would not clamp until its
+full breakdown voltage below ground.
+
+\des{D}{BUSTVS}, the SD15Q (\texttt{SD15Q.pdf}, Diodes Incorporated), meets it:
+\SI{15}{\volt} standoff against \SI{12.6}{\volt} of operating voltage,
+\SI{16}{\volt} minimum breakdown, \SI{1}{\micro\ampere} maximum leakage at the
+full standoff, and $\pm\SI{30}{\kilo\volt}$ contact and air discharge to
+IEC 61000-4-2, in SOD-323.
+
+Its clamping behavior has to be read from the right test. The tabulated figures,
+\SI{21}{\volt} at \SI{1}{\ampere} rising to \SI{27}{\volt} at
+\SI{12}{\ampere}, are 8/20~\si{\micro\second} surge measurements whose apparent
+dynamic resistance includes self-heating across a \SI{20}{\micro\second} pulse.
+An electrostatic discharge is three orders of magnitude shorter and the die does
+not heat, so the governing figure is the transmission-line-pulse curve at
+\SI{100}{\nano\second} (\ds{SD15Q.pdf}{3}): it turns on near
+\SI{19.5}{\volt} and reaches \SI{24}{\volt} at \SI{30}{\ampere}, the first-peak
+current an \SI{8}{\kilo\volt} contact discharge produces. Roughly
+\SI{0.15}{\ohm} of dynamic resistance, against \SI{0.55}{\ohm} inferred from the
+surge table.
+
+\paragraph{The clamp voltage is a requirement on everything else on the node.}
+\SI{24}{\volt} is what the rest of the rail must survive during an event. The
+\SI{20}{\percent} derating this document applies elsewhere does not apply here:
+a clamp is a transient, and the requirement is only that an absolute maximum not
+be exceeded. Three consequences follow.
+\begin{description}
+  \item[\des{Q}{BUS}] needs $V_{DS} \geq \SI{24}{\volt}$, which the
+    \SI{16}{\volt} of \cref{sec:pd-fet} does not cover. Specification:
+    \SI{30}{\volt}, the next standard grade. On-resistance at that grade
+    remains inside the \SI{25}{\milli\ohm} the same subsection
+    requires, so nothing else moves.
+  \item[\des{C}{PDIN}] sees the clamp across it. A \SI{25}{\volt} part is
+    under-rated for a \SI{24}{\volt} transient. Specification:
+    \SI{50}{\volt}, available in 0603 at no change in body size.
+  \item[VBUS\_IN\_DIS] has a \SI{30}{\volt} absolute maximum, used to
+    \SI{80}{\percent} at the clamp. That is the thinnest margin the clamp
+    leaves, and it is on the one pin that carries its own
+    \SI{8}{\kilo\volt} rating and therefore does not depend on this device.
+\end{description}
+
+\subsection{Configuration and housekeeping pins}\label{sec:pd-pins}
+
+\paragraph{CHARGING\_MODE.} Left floating, selecting all legacy charging
+protocols rather than the BC1.2-only option a \SI{5}{\kilo\ohm} pull-up to VDDD
+would select. \Cref{sec:pd-data} gives the reason: QC~2.0 reaches the
+\SI{9}{\volt} and \SI{12}{\volt} contracts this design wants, and BC1.2 alone
+reaches only \SI{5}{\volt}. No component.
+
+The pin is a strap and not a control. It is sampled once, at power-up, to fix
+which protocols the controller will attempt
+(\ds{infineon-cy4534-bcr-plus-usermanual-en.pdf}{14}), so the choice made here
+is the choice for the whole attachment. Its run-time counterpart is
+CHARGING\_\allowbreak MODE\_\allowbreak DISABLE, which withdraws legacy charging
+altogether (HPI specification, p.~30). Nothing in this design writes it: the only moment it
+would help is one in which CHARGING\_MODE\_STATUS has already reported that no
+legacy protocol is active, and there is then nothing to withdraw.
+
+\paragraph{DATAMODE/FLIP.} Left unconnected, which is the configuration for
+``applications that need to sink power as well as support USB communication''
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{9}). The alternative, a
+\SI{1}{\kilo\ohm} pull-up, declares the application to be power-only and is
+incompatible with \cref{sec:pd-data}. No component.
+
+The datasheet's own data-capable application diagram pairs this setting with a
+controller whose D+ and D$-$ are unconnected and with the BC1.2-only strap on
+CHARGING\_MODE, which is the arrangement that results from declining to arbitrate
+the pair at all. \Cref{sec:pd-data} arbitrates it instead, in firmware, and
+keeps the protocols that arrangement gives up. The pin's own description
+attaches no condition to the data setting beyond the one this design meets.
+
+\paragraph{SAFE\_PWR\_EN.} Unused and unconnected, the window of
+\cref{sec:pd-window} having made it inoperative.
+
+\paragraph{FAULT.} Driven to the MCU. A weak pull-down to ground puts the pin in
+strong-drive mode at \SI{3.3}{\volt} rather than the open-drain mode a
+\SI{1.8}{\volt} pull-up would select
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{8}), which matches the MCU's
+input levels without translation. Specification: \des{R}{PDFLT} $=
+\SI{100}{\kilo\ohm}$ to ground. The signal tells the MCU whether a contract
+inside the window closed, which is the distinction between the two classes of
+\cref{sec:pd-classes} and the one piece of front-end state the firmware cannot
+infer from its own rail.
+
+\paragraph{The same pin carries an indicator.} Strong-drive mode makes FAULT a
+push-pull output, so an indicator and the MCU input can share it, and the
+indicator branch does not disturb \des{R}{PDFLT}: below the diode's forward
+voltage that branch is an open, which is where the mode select reads. What
+bounds the arrangement is the pin's drive. It guarantees
+$V_{OH} \geq V_{DDD} - \SI{0.6}{\volt}$ at \SI{4}{\milli\ampere}
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{19}), an output resistance of
+\SI{150}{\ohm}, and the MCU reads a high above
+$0.75\,V_{DD} = \SI{2.475}{\volt}$ (\cref{sec:esp32-mcu}). Loading the pin to
+its full rating leaves \SI{2.7}{\volt} and only \SI{225}{\milli\volt} of margin,
+so the indicator takes a fraction of it:
+\begin{align*}
+  I &= \frac{V_{DDD} - V_F}{R + \SI{150}{\ohm}}, &
+  V_{OH} &= V_{DDD} - \SI{150}{\ohm}\cdot I,
+\end{align*}
+which at $R = \SI{1}{\kilo\ohm}$ and a red diode's \SI{1.9}{\volt} gives
+\SI{1.22}{\milli\ampere} and \SI{3.12}{\volt}, \SI{0.65}{\volt} of margin at
+under a third of the rating. Specification: \des{R}{PDIND} $\geq
+\SI{1}{\kilo\ohm}$, and the indicator is a red or amber diode. A blue or white
+one forward-drops close to the pin's own high level and would light weakly or
+not at all.
+
+\paragraph{HPI.} HPI\_SDA, HPI\_SCL and HPI\_INT go to the MCU as an I\textsuperscript{2}C
+slave at address 0x08, all three open-drain and pulled up to the 3.3~V rail:
+\des{R}{PDSDA}, \des{R}{PDSCL}, \des{R}{PDINT} $= \SI{10}{\kilo\ohm}$, the value
+the datasheet recommends for HPI\_INT. The interface is required rather than
+optional: it is the route by which \cref{sec:pd-sequence} raises the contract
+from what the resistors ask to what full operation needs, and the resistors
+cannot be sized to do both.
+
+\subparagraph{The pull-ups belong on the MCU's rail, not the controller's.} The
+two supplies do not come up together. VDDD is alive from attach, running off the
+receptacle's VBUS through the controller's own regulator, while the 3.3~V rail
+waits for a contract and for \des{Q}{BUS}. Pull-ups referred to VDDD would
+therefore hold three lines at \SI{3.3}{\volt} against an MCU whose rail is at
+zero, and its pin clamps would conduct into that dead rail. Referred to the
+3.3~V rail, the bus rests at ground through the same interval and no pin is
+driven against an unpowered die. Nothing is lost: every use of the interface
+falls after negotiation, when both supplies are up. The controller's side needs
+no pull-up of its own, its pins being open-drain and idle.
+
+\subparagraph{The value.} A pull-up sets the rise time against the bus
+capacitance, $t_r = 0.847RC$ between the \SI{30}{\percent} and
+\SI{70}{\percent} thresholds, and fast mode allows \SI{300}{\nano\second}. The
+bus is two devices and a short trace: \SI{7}{\pico\farad} at the controller's
+pins (\cref{tab:cypd3176}), a comparable figure at the MCU's, and the trace,
+call it \SI{27}{\pico\farad} in total. \SI{10}{\kilo\ohm} then gives
+\SI{229}{\nano\second}, inside the limit, at the controller's maximum
+\SI{400}{\kilo\bit\per\second}. The \SI{2.2}{\kilo\ohm} of the reference
+application is what a longer bus or a third device would need, and is not
+required here.
+
+\paragraph{Supply and decoupling.} VBUS\_IN\_DIS connects to the receptacle's
+VBUS with \des{C}{PDIN} $= \SI{100}{\nano\farad}$, meeting the
+\SI{0.1}{\micro\farad} X5R minimum. VDDD is the internal \SI{3.3}{\volt}
+regulator's output and takes \des{C}{PDD1} $= \SI{1}{\micro\farad}$ against the
+\SIrange{0.8}{1}{\micro\farad} requirement plus \des{C}{PDD2} and \des{C}{PDD3}
+$= \SI{100}{\nano\farad}$. VCCD is the internal \SI{1.8}{\volt} core regulator's
+output and takes \des{C}{PDC} $= \SI{1}{\micro\farad}$. VDDD supplies nothing
+outside the controller other than the two divider pull-ups, whose combined draw
+is \SI{0.98}{\milli\ampere} at \SI{3.3}{\volt}.
+
+\paragraph{CC1, CC2.} Direct to the receptacle. The sink terminations are
+internal at \SIrange{4.59}{5.61}{\kilo\ohm}, so no external Rd is required, and
+the \SI{22}{\volt} absolute maximum covers any compliant source.
+
+\paragraph{DC\_OUT\_DIS.} Connects to \des{Q}{BUS}'s output drain, that is, to
+$V_{\mathrm{BUS}}$, which is what the pin monitors. Its \SI{30}{\volt} absolute
+maximum is used to \SI{42}{\percent} at \SI{12.6}{\volt}.
+
+\paragraph{DNU1, DNU2.} Left unconnected as the datasheet directs.
+
+\paragraph{CSP.} Tied to VSS, forgoing the controller's sink over-current
+protection. The function is real and is not merely telemetry: an over-current
+trip turns the external pass FET off within \SI{50}{\micro\second}
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{23}), with no host involvement,
+and it also asserts FAULT. What it costs is the network it needs. The pin's
+absolute maximum is VDDD~$+\SI{0.5}{\volt}$, so it cannot sense on the bus rail,
+and the reference application senses in the return instead: a
+\SI{5}{\milli\ohm} shunt separates the receptacle's ground from the board's,
+CSP on the receptacle side and VSS on the board side
+(\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{11}). Every return current on
+the board then crosses that element, including the discharge \cref{sec:pd-esd}
+routes into the receptacle's ground, which has to stay on the receptacle side of
+the shunt to keep an electrostatic event out of the board's reference. A split
+ground plane is a large price for a protection the design does not need: the
+negotiated contract bounds the draw at the source, each converter current-limits
+at its own input, and a downstream short is answered by the source's own
+protection at the cost of a renegotiation. The trip threshold is also a
+configuration-table parameter rather than a pin-programmed one, so the shunt
+does nothing until the part is reprogrammed.
+
+\subsection{Summary}\label{sec:pd-summary}
+
+Assumptions carried through this section: the controller requests the highest
+offered voltage inside the programmed window (\cref{sec:pd-window}); the
+controller leaves D+ and D$-$ high-impedance when no legacy protocol is active
+(\cref{sec:pd-data}); the \SI{8.5}{\volt} floor is a
+voltage at $V_{\mathrm{BUS}}$ that a worst-case source, cable and load together
+fall slightly below, with bounded consequence (\cref{sec:pd-fet}). Each fails
+into a degraded rather than a broken design, and each appears at its point of
+use above.
+
+{\footnotesize
+\begin{longtable}{|p{0.23\textwidth}|p{0.335\textwidth}|p{0.335\textwidth}|}
+\caption{USB-PD front end: specification summary}\label{tab:pd-summary}\\
+\hline
+\textbf{Parameter} & \textbf{Derived requirement} & \textbf{Specification / result} \\
+\hline
+\endfirsthead
+\caption[]{USB-PD front end: specification summary (continued)}\\
+\hline
+\textbf{Parameter} & \textbf{Derived requirement} & \textbf{Specification / result} \\
+\hline
+\endhead
+\hline
+\endlastfoot
+Bus load & --- & \SI{5.48}{\watt} worst-case additive;
+  \SI{0.655}{\ampere} at \SI{8.5}{\volt} \\
+\hline
+VBUS\_MAX & $\leq\SI{13}{\volt}$ at the converters; \SI{80}{\percent} of the
+  TPS629203's \SI{18}{\volt} rating & \SI{12}{\volt} setting; \SI{12.6}{\volt}
+  at $+5\,\%$; \SI{5.1}{\kilo\ohm}/\SI{2.4}{\kilo\ohm} \\
+\hline
+VBUS\_MIN & board must start on a source with no high-voltage contract &
+  \SI{5}{\volt} setting; pin to ground, no components \\
+\hline
+Accepted contracts & --- & \SI{5}{\volt}, \SI{9}{\volt}, \SI{12}{\volt} \\
+\hline
+Operating current, resistors & satisfiable by a \SI{5}{\volt} /
+  \SI{500}{\milli\ampere} host port; $\geq\SI{0.426}{\ampere}$ &
+  coarse \SI{0}{\ampere} + fine \SI{500}{\milli\ampere};
+  \SI{5.1}{\kilo\ohm}/\SI{2.4}{\kilo\ohm} \\
+\hline
+Operating current, run time & $\geq\SI{0.655}{\ampere}$ for full operation &
+  \SI{750}{\milli\ampere} requested over HPI before the display is released;
+  SINK\_RDO\_REQUEST, not SELECT\_SINK\_PDO \\
+\hline
+Full operation & \SIrange{8.5}{13}{\volt} at $V_{\mathrm{BUS}}$ and a contract
+  that carries the display & \SI{9}{\volt} or \SI{12}{\volt} at
+  \SI{750}{\milli\ampere}; all three converters in envelope \\
+\hline
+Limited operation & 3.3~V rail in regulation; no display &
+  \SIrange{4.75}{5.5}{\volt}, or any contract before renegotiation; flyback
+  inhibited, 5~V rail at \SI{100}{\percent} duty; \SI{0.426}{\ampere} draw \\
+\hline
+Display inhibit & default asserted; released only on a confirmed contract &
+  MCU shunt across the flyback's UVLO divider (\cref{sec:hv-inhibit}) \\
+\hline
+\des{Q}{BUS} topology & block in both directions: no bus-capacitance drain onto
+  a detached receptacle, no port overvoltage past an open switch & two
+  P-channel devices, sources joined, gates driven together \\
+\hline
+\des{Q}{BUS} ratings & \des{D}{BUSTVS}'s \SI{24}{\volt} clamp on $V_{DS}$;
+  \des{D}{BUSG}'s \SI{10}{\volt} clamp on $V_{GS}$; \SI{0.655}{\ampere} &
+  $V_{DS}\geq\SI{30}{\volt}$; $|V_{GS}|\geq\SI{12.5}{\volt}$;
+  $I_D\geq\SI{1}{\ampere}$ \\
+\hline
+\des{Q}{BUS} on-resistance & drop inside the input-window budget, shared by two
+  channels in series & $\leq\SI{25}{\milli\ohm}$ each;
+  \SI{33}{\milli\volt}, \SI{21}{\milli\watt} across the pair \\
+\hline
+Inrush & operating current plus inrush inside \SI{750}{\milli\ampere} &
+  \SI{135}{\micro\farad} bus capacitance; \SI{21.7}{\milli\second} ramp,
+  \SI{78}{\milli\ampere} at the strongest drive setting \\
+\hline
+Gate network & off before the controller is powered; $V_{GS}$ bounded; ramp
+  set deliberately & \des{R}{BUSOFF}/\des{R}{BUSBIAS} bias off at
+  $+\SI{0.6}{\volt}$; \des{D}{BUSG} caps $|V_{GS}|$; \des{C}{BUSSLEW} sets
+  $dV/dt = I_{PD}/C$ \\
+\hline
+\des{R}{BUSBLEED} & $\leq\SI{0.66}{\volt}/I_R$ (\cref{sec:3v3-diodeor}) &
+  \SI{10}{\kilo\ohm}; the controller's discharge FET is detach-timed, not
+  continuous \\
+\hline
+Data path & one host and one device on the pair; controller holds it at attach &
+  single-throw switch in the MCU branch; open unpowered \\
+\hline
+Data-path arbitration & the MCU must not take the pair while a legacy contract
+  is held on it & CHARGING\_MODE\_STATUS read before the switch closes; closed on
+  no-legacy-mode or BC1.2 only \\
+\hline
+Switch & \SI{12}{\mega\bit\per\second}; $\leq\SI{15}{\pico\farad}$;
+  $\leq\SI{10}{\ohm}$; isolating at $V_{CC} = \SI{0}{\volt}$ &
+  TS3USB221A: \SI{900}{\mega\hertz}, \SI{7.5}{\pico\farad}, \SI{6}{\ohm},
+  $\pm\SI{2}{\micro\ampere}$ power-off leakage \\
+\hline
+Data-pair capacitance & $\leq\SI{100}{\pico\farad}$ per line, USB 2.0 upstream
+  port & \SI{48}{\pico\farad} worst-case additive \\
+\hline
+ESD, D+/D$-$ & IEC 61000-4-2 level 4; $\leq\SI{4}{\pico\farad}$ per line,
+  matched & USBLC6-2: \SI{3.5}{\pico\farad}, \SI{0.015}{\pico\farad} matching;
+  rail pin on VDDD, not the receptacle \\
+\hline
+ESD, VBUS & standoff $>\SI{12.6}{\volt}$; unidirectional; clamp survivable by
+  the node & SD15Q: \SI{15}{\volt} standoff, \SI{24}{\volt} at the
+  \SI{30}{\ampere} first peak, $\pm\SI{30}{\kilo\volt}$ \\
+\hline
+ESD, CC1/CC2 & --- & none; the controller specifies \SI{8}{\kilo\volt} contact
+  on both \\
+\hline
+CHARGING\_MODE & QC 2.0 reaches \SI{9}{\volt} and \SI{12}{\volt} &
+  floating: all legacy protocols; sampled once at power-up \\
+\hline
+CSP & --- & tied to VSS; sink over-current protection forgone rather than buy a
+  split ground plane for it \\
+\hline
+DATAMODE/FLIP & data communication required & unconnected: data mode \\
+\hline
+SAFE\_PWR\_EN & --- & unused; inoperative with \SI{5}{\volt} in the window \\
+\hline
+FAULT & MCU-readable at \SI{3.3}{\volt} levels & \SI{100}{\kilo\ohm} to ground:
+  strong-drive mode \\
+\hline
+\end{longtable}
+}
+
+The front end's substantive result is that one setting, a \SI{5}{\volt} floor
+on the accepted window, converts a board that is dead on any ordinary host port
+into one that comes up on every source it can be plugged into, and does it with
+no components at all: the setting is a connection to ground. What it costs is
+that $V_{\mathrm{BUS}}$ is no longer guaranteed to be a voltage the display
+subsystem can use, and the design absorbs that without a new mechanism because
+the flyback already had to hold itself off below its own rated input and the
+5~V converter already had a defined behavior in dropout.
+
+\subsection{Component selection}\label{sec:pd-parts}
+
+The requirements derived above, collected as selection criteria. Values are
+those specified in this section and ratings are the derived minima. Body size is
+a requirement only at the controller, whose package is fixed; elsewhere it is
+the smallest that commonly satisfies the electrical requirement.
+
+{\footnotesize
+\begin{longtable}{|L{0.10\textwidth}|L{0.14\textwidth}|L{0.11\textwidth}|L{0.33\textwidth}|L{0.12\textwidth}|}
+\caption{USB-PD front end: component selection}\label{tab:pd-parts}\\
+\hline
+\textbf{Designator} & \textbf{Class} & \textbf{Value} & \textbf{Required ratings and characteristics} & \textbf{Body} \\
+\hline
+\endfirsthead
+\caption[]{USB-PD front end: component selection (continued)}\\
+\hline
+\textbf{Designator} & \textbf{Class} & \textbf{Value} & \textbf{Required ratings and characteristics} & \textbf{Body} \\
+\hline
+\endhead
+\hline
+\endlastfoot
+--- & Type-C port controller & CYPD3176 & sink mode; internal Rd; external pass-FET gate driver with current-mode slew control & QFN-24 \\
+\hline
+\des{J}{USB} & USB Type-C receptacle & --- & USB 2.0 pinout with A6/A7 tied to B6/B7; VBUS rated $\geq\SI{16}{\volt}$ and $\geq\SI{1}{\ampere}$; through-hole shell anchors preferred over surface-mount for connector retention & --- \\
+\hline
+\des{Q}{BUS} & P-channel MOSFET pair & --- & two devices, sources joined and gates common; $V_{DS}\geq\SI{30}{\volt}$, set by \des{D}{BUSTVS}'s clamp rather than by the rail; $|V_{GS}|\geq\SI{12.5}{\volt}$, set by \des{D}{BUSG}; $I_D\geq\SI{1}{\ampere}$; $R_{DS(\mathrm{on})}\leq\SI{25}{\milli\ohm}$ each; one drain on the receptacle's VBUS, the other on $V_{\mathrm{BUS}}$ & common-source dual, SOT-363 or SOT-563 \\
+\hline
+--- & USB 2.0 analog switch & TS3USB221A & \cref{tab:pd-switch}; the selecting parameter is power-off leakage, not bandwidth: open and drawing no more than a few \si{\micro\ampere} with its supply at \SI{0}{\volt} and either I/O up to \SI{3.6}{\volt} & UQFN-10, $2\times1.5$~\si{\milli\meter} \\
+\hline
+\des{D}{USBESD} & ESD protection array & USBLC6-2 & IEC 61000-4-2 level 4; $\leq\SI{4}{\pico\farad}$ per line with matched line-to-line capacitance; two data lines; rail pin to VDDD, \emph{not} to the receptacle's VBUS, the part's standoff being \SI{5.25}{\volt} & SOT-666 or SOT23-6L \\
+\hline
+\des{D}{BUSTVS} & Transient suppressor & SD15Q & unidirectional; standoff $\geq\SI{13}{\volt}$; IEC 61000-4-2 level 4 stated explicitly, not a 10/1000~\si{\micro\second} surge rating alone; clamping voltage at the ESD waveform below \des{Q}{BUS}'s $V_{DS}$; capacitance unconstrained & SOD-323 or smaller \\
+\hline
+\des{R}{BUSG} & Film resistor & \SI{1}{\kilo\ohm} & $\pm5\,\%$ sufficient; carries the driver's full pull-down and sets \des{D}{BUSG}'s clamp current & 0402 \\
+\hline
+\des{R}{BUSOFF} & Film resistor & \SI{49.9}{\kilo\ohm} & $\pm5\,\%$ sufficient; gate to common source; holds the pair off with the gate undriven & 0402 \\
+\hline
+\des{R}{BUSBIAS} & Film resistor & \SI{10}{\kilo\ohm} & $\pm5\,\%$ sufficient; gate to the receptacle's VBUS; one series with \des{R}{BUSOFF} across a body-diode drop & 0402 \\
+\hline
+\des{D}{BUSG} & Zener diode & \SI{10}{\volt} & cathode on the common source, anode on the gate; clamps $V_{GS}$ against excursions beyond this rail; $\geq\SI{200}{\milli\watt}$ & SOD-323 or smaller \\
+\hline
+\des{C}{BUSSLEW} & Ceramic & \SI{1}{\micro\farad} & $\geq\SI{25}{\volt}$; X5R or X7R; gate to $V_{\mathrm{BUS}}$; sets the output ramp with the driver's pull-down current & 0402 \\
+\hline
+\des{C}{BUSCM} & Ceramic & \SI{1}{\micro\farad} & as \des{C}{BUSSLEW}; gate to the receptacle's VBUS & 0402 \\
+\hline
+\des{R}{PDMAX1} & Film resistor & \SI{5.1}{\kilo\ohm} & 1\,\%; one series with \des{R}{PDMAX2} so the ratio tracks; the \SI{12}{\volt} window spans \SIrange{787}{1347}{\milli\volt} on the pin & 0402 \\
+\hline
+\des{R}{PDMAX2} & Film resistor & \SI{2.4}{\kilo\ohm} & as \des{R}{PDMAX1} & 0402 \\
+\hline
+\des{R}{PDI1} & Film resistor & \SI{5.1}{\kilo\ohm} & 1\,\%; one series with \des{R}{PDI2}; the $+\SI{500}{\milli\ampere}$ window spans \SIrange{787}{1347}{\milli\volt} on the pin & 0402 \\
+\hline
+\des{R}{PDI2} & Film resistor & \SI{2.4}{\kilo\ohm} & as \des{R}{PDI1} & 0402 \\
+\hline
+\des{C}{PDD1} & Ceramic, VDDD bulk & \SI{1}{\micro\farad} & $\geq\SI{10}{\volt}$; X5R or better, as the datasheet requires; \SI{0.8}{\micro\farad} effective minimum & 0603 \\
+\hline
+\des{C}{PDD2} & Ceramic, VDDD & \SI{100}{\nano\farad} & $\geq\SI{10}{\volt}$; X7R & 0402 \\
+\hline
+\des{C}{PDD3} & Ceramic, VDDD & \SI{100}{\nano\farad} & as \des{C}{PDD2} & 0402 \\
+\hline
+\des{C}{PDC} & Ceramic, VCCD & \SI{1}{\micro\farad} & $\geq\SI{6.3}{\volt}$; X5R or better; nothing else on the pin & 0603 \\
+\hline
+\des{C}{PDIN} & Ceramic, VBUS\_IN\_DIS & \SI{100}{\nano\farad} & $\geq\SI{50}{\volt}$, covering \des{D}{BUSTVS}'s clamp rather than the rail; X5R or better; \SI{0.1}{\micro\farad} effective minimum at \SI{12.6}{\volt} bias & 0603 \\
+\hline
+\des{R}{PDSDA} & Film resistor & \SI{10}{\kilo\ohm} & $\pm5\,\%$ sufficient; open-drain bus pull-up to +3V3 & 0402 \\
+\hline
+\des{R}{PDSCL} & Film resistor & \SI{10}{\kilo\ohm} & as \des{R}{PDSDA} & 0402 \\
+\hline
+\des{R}{PDINT} & Film resistor & \SI{10}{\kilo\ohm} & as \des{R}{PDSDA}; the value the datasheet recommends & 0402 \\
+\hline
+\des{R}{PDFLT} & Film resistor & \SI{100}{\kilo\ohm} & $\pm5\,\%$ sufficient; weak pull-down selects strong-drive \SI{3.3}{\volt} mode & 0402 \\
+\hline
+\des{R}{USBSW} & Film resistor & \SI{10}{\kilo\ohm} & $\pm5\,\%$ sufficient; pull-up to +3V3, the switch's enable input disconnecting on a logic high; holds the switch disabled against a high-impedance MCU pin & 0402 \\
+\hline
+\des{R}{PDDP} & Film resistor & \SI{0}{\ohm} & joins the controller's D+ to the pair; a placement at which the controller's branch can be opened & 0402 \\
+\hline
+\des{R}{PDDM} & Film resistor & \SI{0}{\ohm} & as \des{R}{PDDP}, on D$-$ & 0402 \\
+\hline
+\des{R}{BUSBLEED} & Film resistor & \SI{10}{\kilo\ohm} & $\pm5\,\%$ sufficient; \SI{16.4}{\milli\watt} at the top of the window; populated, the controller's discharge being detach-timed rather than continuous & 0402 \\
+\hline
+\end{longtable}
+}

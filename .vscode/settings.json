@@ -1,4 +1,8 @@
 {
+    "latex-workshop.formatting.latex": "tex-fmt",
+    "[latex]": {
+        "editor.defaultFormatter": "James-Yu.latex-workshop"
+    },
     "cSpell.words": [
         "Coilcraft",
         "commoned",
@@ -12,6 +16,7 @@
         "jlcpcb",
         "JTAG",
         "kicad",
+        "KOHM",
         "LCSC",
         "Mbps",
         "microamp",

@@ -51,3 +51,5 @@ docs/design_analysis/**/*.synctex.gz
 docs/design_analysis/**/*.bbl
 docs/design_analysis/**/*.blg
 docs/design_analysis/**/*.pdf
+# ...but figures/ holds committed source artwork, not build output.
+!docs/design_analysis/figures/*.pdf
