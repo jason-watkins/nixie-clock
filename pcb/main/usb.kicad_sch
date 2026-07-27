@@ -9356,7 +9356,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG Part No" "0402WGF5101TCE"
+		(property "MFG Part No" "0402WGF2401TCE"
 			(at 177.8 128.27 0)
 			(effects
 				(font
@@ -9365,7 +9365,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25905"
+		(property "LCSC" "C25882"
 			(at 177.8 128.27 0)
 			(effects
 				(font
@@ -10011,7 +10011,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFG Part No" "0402WGF5101TCE"
+		(property "MFG Part No" "0402WGF2401TCE"
 			(at 167.64 135.89 0)
 			(effects
 				(font
@@ -10020,7 +10020,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25905"
+		(property "LCSC" "C25882"
 			(at 167.64 135.89 0)
 			(effects
 				(font
