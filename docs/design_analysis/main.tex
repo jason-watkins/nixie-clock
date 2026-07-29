@@ -54,8 +54,9 @@
 
 % Reference designators are set the way the schematics draw them: a class
 % letter carrying a subsystem-and-function tag as an upright subscript.
-% \des{R}{3V3D1} -> R_3V3D1. Works in prose and inside math alike.
-\newcommand{\des}[2]{\ensuremath{#1_{\mathrm{#2}}}}
+% \des{R}{3V3D1} -> R_3V3D1. Works in prose and inside math alike, and
+% degrades to a flat "R_3V3D1" in PDF bookmarks, where math is unavailable.
+\newcommand{\des}[2]{\texorpdfstring{\ensuremath{#1_{\mathrm{#2}}}}{#1\_#2}}
 
 % Number down to \paragraph (depth 4) so a deeply nested topic -- e.g. one
 % pin's check inside a "housekeeping" subsubsection -- still gets its own

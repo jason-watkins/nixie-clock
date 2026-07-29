@@ -37,8 +37,18 @@ guaranteed worst cases and which are typical or test-condition values.
 gets a cited, traceable figure if and only if its datasheet lives
 there, and everything else (resistors, capacitors, standard diodes,
 and any other component the design does not hinge on) is sized to
-ordinary engineering practice instead. Package and hand-soldering
-constraints enter only where a single critical part is available in
-one specific package (for example, the flyback transformer or the
-load-switch dual MOSFET); otherwise the analysis stays at the
-schematic level.
+ordinary engineering practice instead. Package constraints enter only
+where a single critical part is available in one specific package (for
+example, the flyback transformer or the load-switch dual MOSFET);
+otherwise the analysis stays at the schematic level.
+
+\paragraph{Construction.} Two build styles coexist. The 170~V converter
+and the tube and driver stages are through-hole wherever a through-hole
+part exists, and prefer the larger body among parts that already meet
+the requirement, so the supply looks of a piece with the tubes it
+drives. The USB-PD front end and the low-voltage rails make no such
+attempt, a USB-C receptacle being anachronistic on this board by
+construction; those stages follow current surface-mount practice and
+are laid out for assembly by the fabricator. Neither preference reaches
+into the derivations that follow: a requirement decides first, and the
+build style decides only among the parts that already satisfy it.

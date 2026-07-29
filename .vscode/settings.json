@@ -1,13 +1,16 @@
 {
-    "latex-workshop.formatting.latex": "tex-fmt",
+    "latex-workshop.formatting.latex": "none",
     "[latex]": {
-        "editor.defaultFormatter": "James-Yu.latex-workshop"
+        "editor.formatOnSave": false,
+        "editor.formatOnPaste": false,
+        "editor.formatOnType": false
     },
     "cSpell.words": [
         "Coilcraft",
         "commoned",
         "CYPD",
         "datasheet",
+        "deglitch",
         "derating",
         "excellon",
         "gerbers",
@@ -21,6 +24,7 @@
         "Mbps",
         "microamp",
         "microamps",
+        "MOSFET",
         "MOSFETs",
         "multiturn",
         "Netlist",
@@ -33,6 +37,7 @@
         "trimmable",
         "UART",
         "unpowered",
+        "UVLO",
         "VBUS",
         "VCCD",
         "VDDD",

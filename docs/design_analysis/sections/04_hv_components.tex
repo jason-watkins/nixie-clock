@@ -2,26 +2,28 @@
 \label{sec:hv-components}
 
 The 170~V anode rail is produced by a current-mode flyback built
-around a TI LM5155 controller (U201) and a Coilcraft
-DA2032-AL flyback transformer (T201). This section records the
-datasheet characteristics the converter derivation of
-\cref{sec:hv-converter} draws on.
+around a TI LM51561H controller and a Coilcraft DA2032-AL flyback
+transformer. This section records the datasheet characteristics the
+converter derivation of \cref{sec:hv-converter} draws on; that section
+assigns the designators.
 
-\subsection{LM5155 flyback controller}
-\label{sec:lm5155}
+\subsection{LM51561H flyback controller}
+\label{sec:lm5156h}
 
-Source: \texttt{lm5155.pdf} (Texas Instruments, SNVSB75E, Rev.\ E,
-Aug.\ 2023). Figures apply identically to the LM5155 and LM51551
-variants unless noted.
+Source: \texttt{lm5156h.pdf} (Texas Instruments, SNVSBV2, Sep.\ 2020). The
+LM5156H and LM51561H share one datasheet, one pinout, and every figure below;
+they differ only in that hiccup mode overload protection is enabled on the
+LM51561H and disabled on the LM5156H (p.~2). \Cref{sec:hv-ss} specifies the
+LM51561H. Pin numbers are those of the 14-pin HTSSOP (PWP) package.
 
 {\footnotesize
 \begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.8cm}|c|}
-\caption{LM5155 electrical characteristics}\label{tab:lm5155}\\
+\caption{LM51561H electrical characteristics}\label{tab:lm5156h}\\
 \hline
 \textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
 \hline
 \endfirsthead
-\caption[]{LM5155 electrical characteristics (continued)}\\
+\caption[]{LM51561H electrical characteristics (continued)}\\
 \hline
 \textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
 \hline
@@ -38,45 +40,63 @@ Soft-start current \(I_{SS}\) & \num{9} & \num{10} & \num{11} & \si{\micro\amper
 \hline
 Soft-start time, boost topology & \multicolumn{4}{L{5.0cm}|}{\(t_{SS} = \dfrac{C_{SS}}{I_{SS}}\left(1-\dfrac{V_{SUPPLY}}{V_{LOAD}}\right)V_{REF}\)} & No flyback-specific equation given (see note) & 16 \\
 \hline
-Enable (EN) threshold, rising & & \num{0.52} & & \si{\volt} & Same physical pin as UVLO/SYNC (pin 12) & 6--7 \\
+Enable (EN) threshold, rising & \num{0.4} & \num{0.52} & \num{0.7} & \si{\volt} & Same physical pin as UVLO/SYNC (pin 14) & 5 \\
 \hline
-Enable (EN) threshold, falling & & \num{0.49} & & \si{\volt} & Same physical pin as UVLO/SYNC (pin 12) & 6--7 \\
+Enable (EN) threshold, falling & & \num{0.49} & & \si{\volt} & Same physical pin as UVLO/SYNC (pin 14) & 5 \\
 \hline
-UVLO/SYNC threshold, rising & & \num{1.5} & & \si{\volt} & Separate comparator, same pin as EN & 7 \\
+UVLO/SYNC threshold, rising & \num{1.425} & \num{1.5} & \num{1.575} & \si{\volt} & Separate comparator, same pin as EN & 6 \\
 \hline
-UVLO/SYNC threshold, falling & & \num{1.45} & & \si{\volt} & Separate comparator, same pin as EN & 7 \\
+UVLO/SYNC threshold, falling & \num{1.370} & \num{1.45} & \num{1.520} & \si{\volt} & Separate comparator, same pin as EN & 6 \\
 \hline
-UVLO hysteresis current \(I_{UVLO}\) & \num{4} & \num{5} & \num{6} & \si{\micro\ampere} & \(V_{UVLO}=1.6\)~V; sets external divider hysteresis & 7, 13 \\
+UVLO hysteresis current \(I_{UVLO}\) & \num{4} & \num{5} & \num{6} & \si{\micro\ampere} & \(V_{UVLO}=1.6\)~V; sets external divider hysteresis & 6 \\
 \hline
-BIAS absolute maximum & \num{-0.3} & & \num{50} & \si{\volt} & & 5 \\
+BIAS absolute maximum & \num{-0.3} & & \num{65} & \si{\volt} & & 4 \\
 \hline
-BIAS recommended operating & \num{3.5} & & \num{45} & \si{\volt} & When VCC is supplied from the internal regulator & 6, 14 \\
+BIAS recommended operating & \num{3.5} & & \num{60} & \si{\volt} & When VCC is supplied from the internal regulator; \num{2.97} to \num{16}~V if BIAS is tied to VCC & 14 \\
 \hline
-VCC (internal gate-drive rail) regulation & \num{6.5} & \num{6.85} & \num{7} & \si{\volt} & \(V_{BIAS}=8\)~V, no load & 6 \\
+VCC (internal gate-drive rail) regulation & \num{6.5} & \num{6.85} & \num{7} & \si{\volt} & \(V_{BIAS}=8\)~V, no load: the only condition at which the rail is specified & 5 \\
 \hline
-VCC regulation, loaded & \num{6.5} & & & \si{\volt} & \(V_{BIAS}=8\)~V, \(I_{VCC}=35\)~mA & 6 \\
+VCC regulation, loaded & \num{6.5} & & & \si{\volt} & \(V_{BIAS}=8\)~V, \(I_{VCC}=35\)~mA & 5 \\
 \hline
-VCC absolute maximum & \num{-0.3} & & \num{18}\footnotemark & \si{\volt} & or \(V_{BIAS}+0.3\)~V, whichever is lower & 5 \\
+VCC UVLO threshold, rising & \num{2.75} & \num{2.85} & \num{2.95} & \si{\volt} & \num{0.063}~V hysteresis falling & 5 \\
 \hline
-PGOOD absolute maximum & \num{-0.3} & & \num{18} & \si{\volt} & Open-drain; sink limited to 1~mA when \(V_{PGOOD}>V_{BIAS}\) & 5 \\
+BIAS operating current \(I_{Q}\) & & \num{490} & \num{580} & \si{\micro\ampere} & \(V_{BIAS}=12\)~V, \(V_{FB}=V_{REF}\), \(R_T=220\)~k\(\Omega\) & 5 \\
 \hline
-PGOOD recommended pull-up & \num{10} & & & \si{\kilo\ohm} & & 22 \\
+VCC absolute maximum & \num{-0.3} & & \num{18}\footnotemark & \si{\volt} & or \(V_{BIAS}+0.3\)~V, whichever is lower & 4 \\
 \hline
-PGOOD assert condition & \multicolumn{4}{L{5.0cm}|}{FB $>$ \(V_{UVTH}\) AND VCC $>$ VCC-UVLO AND UVLO/EN above threshold} & 25~\si{\micro\second} deglitch & 22 \\
+PGOOD absolute maximum & \num{-0.3} & & \num{18} & \si{\volt} & Open-drain; cannot exceed \(V_{BIAS}+0.3\)~V, internal diode path to BIAS & 4, 25 \\
 \hline
-PGOOD undervoltage threshold \(V_{UVTH}\) (\% of \(V_{REF}\), falling) & \num{87} & \num{90} & \num{93} & \% & & 7 \\
+PGOOD recommended pull-up & \num{10} & & & \si{\kilo\ohm} & & 25 \\
 \hline
-Minimum on-time \(t_{ON(MIN)}\) & & \num{50} & & \si{\nano\second} & At \(R_T=9.09\)~k\(\Omega\) (2.2~MHz); \(\approx\)165~ns implied near 150~kHz & 7, 21 \\
+PGOOD pull-down \(r_{DS(on)}\) & & \num{90} & & \si{\ohm} & 1~mA sinking & 6 \\
 \hline
-Maximum duty cycle \(D_{MAX}\), at \(R_T=9.09\)~k\(\Omega\) & \num{80} & & \num{90} & \% & Frequency-dependent; \(\approx\)91--92\% typ interpolated near 150~kHz & 7 \\
+PGOOD assert condition & \multicolumn{4}{L{5.0cm}|}{FB $>$ \(V_{UVTH}\) AND VCC $>$ VCC-UVLO AND UVLO/EN above threshold} & 25~\si{\micro\second} deglitch & 25 \\
 \hline
-Maximum duty cycle \(D_{MAX}\), at \(R_T=220\)~k\(\Omega\) & \num{90} & & \num{96} & \% & Frequency-dependent & 7 \\
+PGOOD undervoltage threshold \(V_{UVTH}\) (\% of \(V_{REF}\), falling) & \num{87} & \num{90} & \num{93} & \% & \num{95}\% rising & 6 \\
 \hline
-GATE absolute maximum & \multicolumn{4}{c|}{No explicit positive max beyond VCC rail} & Negative transients: \(-1\)~V/100~ns, \(-2\)~V/50~ns & 5 \\
+Overvoltage threshold \(V_{OVTH}\) (\% of \(V_{REF}\), rising) & \num{107} & \num{110} & \num{113} & \% & \num{105}\% falling & 6 \\
 \hline
-CS absolute maximum (DC) & \num{-0.3} & & \num{0.3} & \si{\volt} & \(-1\)~V/100~ns, \(-2\)~V/20~ns transients & 5 \\
+Hiccup enable cycles & & \num{64} & & cycles & LM51561H only; counts current-limited cycles after soft start finishes & 6, 25 \\
 \hline
-RT, FB, SS pin absolute maximum & \num{-0.3} & & \num{3.8} & \si{\volt} & Not intended for external drive & 5 \\
+Hiccup off-time & & \num{32768} & & cycles & LM51561H only; SS pulled down, then restart & 25 \\
+\hline
+Hiccup timer reset cycles & & \num{8} & & cycles & Consecutive cycles without current limiting & 6, 25 \\
+\hline
+Spread-spectrum modulation depth & & \multicolumn{2}{c|}{\(0.156 \times f_{SW}\)} & & Triangular sweep plus cycle-by-cycle randomization; disabled by tying DITHOFF to VCC & 17 \\
+\hline
+DITHOFF threshold, rising / falling & & \num{1.7} / \num{1.2} & & \si{\volt} & Dithers below 1.0~V, stops above 2.0~V & 6, 17 \\
+\hline
+Minimum on-time \(t_{ON(MIN)}\) & & \num{50} & & \si{\nano\second} & At \(R_T=9.09\)~k\(\Omega\) (2.2~MHz); \(\approx\)165~ns read from Fig.~8-12 near 150~kHz & 6, 9 \\
+\hline
+Maximum duty cycle \(D_{MAX}\), at \(R_T=9.09\)~k\(\Omega\) & \num{80} & \num{85} & \num{90} & \% & \(V_{BIAS}=4\)~V; frequency-dependent, \(\approx\)91--92\% typ interpolated near 150~kHz & 6 \\
+\hline
+Maximum duty cycle \(D_{MAX}\), at \(R_T=220\)~k\(\Omega\) & \num{90} & \num{93} & \num{96} & \% & \(V_{BIAS}=4\)~V; frequency-dependent & 6 \\
+\hline
+GATE absolute maximum & \multicolumn{4}{c|}{No explicit positive max beyond VCC rail} & \(-1\)~V, 50~ns transient & 4 \\
+\hline
+CS absolute maximum (DC) & \num{-0.3} & & \num{0.3} & \si{\volt} & \(-1\)~V, 50~ns transient & 4 \\
+\hline
+RT, SS pin absolute maximum & \num{-0.3} & & \num{3.8} & \si{\volt} & FB is \num{4.0}~V; not intended for external drive & 4 \\
 \hline
 \end{longtable}
 }
@@ -101,10 +121,12 @@ FB/SS/COMP the same way as the boost case, but the boost formula
 assumes an input-to-output pass-through path that a flyback
 transformer does not provide; \cref{sec:hv-ss} therefore derives
 soft-start timing from the SS pin's charging mechanism rather than
-from either published formula.
+from either published formula. On the LM51561H that timing is not a
+convenience: the datasheet requires soft start to outlast the output's rise,
+or hiccup trips on every power-up.
 
-\paragraph{EN and UVLO are distinct comparators on one pin.} Pin 12
-(``UVLO/SYNC'') carries two separate thresholds: EN (\(\approx\)0.5~V)
+\paragraph{EN and UVLO are distinct comparators on one pin.} Pin 14
+(``EN/UVLO/SYNC'') carries two separate thresholds: EN (\(\approx\)0.5~V)
 gates shutdown$\leftrightarrow$standby, and UVLO
 (\(\approx\)1.5~V/1.45~V) gates standby$\leftrightarrow$run. An
 external resistor divider from the input rail to this pin, sized

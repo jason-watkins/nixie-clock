@@ -27,7 +27,7 @@ override with `--sch <path>` placed *before* the subcommand.
 | `pins REF` | Pin table (number, name, electrical type) for one component's library symbol |
 | `erc` | Run KiCad ERC, print all violations with severity and involved items |
 | `diff` | Net-level changes since the previous export — run after the user edits the schematic to verify exactly what changed |
-| `pdf FILE KW [KW ...]` | Extract a PDF's text (cached) and print context around regex keyword hits — for datasheet spec lookups |
+| `pdf FILE KW [KW ...]` | Extract a PDF's text (cached) and print context around regex keyword hits, each tagged `[pN]` with its page — for datasheet spec lookups that must cite a page |
 
 Netlist-based subcommands re-export the netlist on every run, so output always
 reflects the last *saved* schematic. If results look stale, the user likely has

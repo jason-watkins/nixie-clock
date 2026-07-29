@@ -188,18 +188,34 @@ PROFILES: dict[str, FabProfile] = {p.name: p for p in (JLCPCB,)}
 # Environment discovery
 # --------------------------------------------------------------------------
 
+def _version_key(path: Path) -> list[int]:
+    """Numeric sort key for install directories named like '10.0' or '9.0'.
+
+    Sorting these as strings puts '9.0' above '10.0', which picks an older
+    CLI than the one installed and then fails to read files written by the
+    newer one. Non-numeric components sort last."""
+    return [int(part) if part.isdigit() else -1 for part in path.name.split(".")]
+
+
 def find_kicad_cli(explicit: str | None) -> str:
-    """Locate kicad-cli: --kicad-cli flag, KICAD_CLI env, PATH, then the
-    newest version under C:\\Program Files\\KiCad."""
-    for candidate in (explicit, os.environ.get("KICAD_CLI"), shutil.which("kicad-cli")):
+    """Locate kicad-cli: --kicad-cli flag, KICAD_CLI env, the newest version
+    under C:\\Program Files\\KiCad, then PATH.
+
+    The versioned install is preferred over PATH so that installing a new
+    KiCad takes effect without also having to fix a stale PATH entry."""
+    for candidate in (explicit, os.environ.get("KICAD_CLI")):
         if candidate:
             return candidate
     base = Path(r"C:\Program Files\KiCad")
     if base.is_dir():
-        for version_dir in sorted(base.iterdir(), reverse=True):
+        installs = [p for p in base.iterdir() if p.is_dir()]
+        for version_dir in sorted(installs, key=_version_key, reverse=True):
             cli = version_dir / "bin" / "kicad-cli.exe"
             if cli.is_file():
                 return str(cli)
+    found = shutil.which("kicad-cli")
+    if found:
+        return found
     raise ReleaseError("kicad-cli not found: install KiCad or set KICAD_CLI")
 
 

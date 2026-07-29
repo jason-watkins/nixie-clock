@@ -4,7 +4,7 @@ This section derives the required characteristics of the 3.3~V rail and specifie
 component values that satisfy them, built around the TPS63070
 (\cref{sec:tps63070}). The converter is referred to by part number rather than
 by a designator, being the only device of its kind on the rail.
-\Cref{sec:hv-converter,sec:esp32-mcu} already designate R206 and the MCU-side
+\Cref{sec:hv-converter,sec:esp32-mcu} already designate \des{R}{HVPG} and the MCU-side
 components; the remaining designators are assigned as follows:
 
 \begin{table}[htbp]
@@ -57,7 +57,7 @@ The rail's topology comprises: the converter with its inductor, input
 capacitance, VAUX bypass and output capacitance, the feedback divider
 \des{R}{3V3D1}/\des{R}{3V3D2} setting the output, the MCU
 module's supply pin with its local decoupling (\cref{sec:esp32-mcu}), and two
-resistive sources feeding other nets, R206 (the flyback's power-good pull-up,
+resistive sources feeding other nets, \des{R}{HVPG} (the flyback's power-good pull-up,
 \cref{sec:hv-house-pgood}) and \des{R}{3V3PG}, which terminates this
 converter's own power-good output and doubles as the MCU's reset pull-up
 (\cref{sec:esp32-reset}). Two things distinguish this rail from the 5~V rail of
@@ -88,7 +88,7 @@ to VDD33. Worst case, all sixteen lines high:
     = \SI{1.12}{\milli\ampere},
 \end{align*}
 0.3\,\% of the Wi-Fi figure: negligible.
-\item \emph{Pull-ups.} R206 (the flyback's power-good) and \des{R}{3V3PG} (this
+\item \emph{Pull-ups.} \des{R}{HVPG} (the flyback's power-good) and \des{R}{3V3PG} (this
 converter's, \cref{sec:3v3-house}) each contribute at most
 \SI{33}{\micro\ampere}, and only during power-not-good windows.
 \Cref{sec:esp32-pgood,sec:esp32-reset} quantify them.
@@ -681,7 +681,8 @@ presents $\leq\SI{0.42}{\ohm}$ and an adapter presents $\geq\SI{3.2}{\volt}$ at
 the header; a Schottky on the bus branch drops \SIrange{0.3}{0.4}{\volt} over
 the operating current range; output ceramics retain $\geq70\,\%$ at
 \SI{3.3}{\volt} bias with effective ESR \SI{2.5}{\milli\ohm}, and input
-ceramics roughly $50\,\%$ at \SI{12.8}{\volt}; converter efficiency 0.85;
+ceramics roughly $50\,\%$ at \SI{12.8}{\volt}; converter efficiency
+\SI{85}{\percent};
 control-loop response to a load step within \SI{5}{\micro\second}; download-mode
 MCU draw $\approx\SI{50}{\milli\ampere}$, bounded at \SI{100}{\milli\ampere}.
 Each appears at its point of use above.

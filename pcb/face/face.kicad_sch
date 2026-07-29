@@ -1360,7 +1360,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "nixie_clock:IN-12B"
+		(symbol "0_nixie_clock:IN-12B"
 			(pin_numbers
 				(hide yes)
 			)
@@ -1389,7 +1389,7 @@
 					(hide yes)
 				)
 			)
-			(property "Footprint" "nixie_clock:IN-12-DSUB"
+			(property "Footprint" "0_nixie_clock:IN-12-DSUB"
 				(at 0.762 3.81 0)
 				(effects
 					(font
@@ -1703,7 +1703,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "nixie_clock:IN-6"
+		(symbol "0_nixie_clock:IN-6"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -1730,7 +1730,7 @@
 					(hide yes)
 				)
 			)
-			(property "Footprint" "nixie_clock:IN-6"
+			(property "Footprint" "0_nixie_clock:IN-6"
 				(at 0.762 3.81 0)
 				(effects
 					(font
@@ -2010,7 +2010,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "nixie_clock:K155ID1"
+		(symbol "0_nixie_clock:K155ID1"
 			(pin_names
 				(offset 1.016)
 			)
@@ -2035,7 +2035,7 @@
 					(hide yes)
 				)
 			)
-			(property "Footprint" "nixie_clock:DIP16"
+			(property "Footprint" "0_nixie_clock:DIP16"
 				(at 0.762 3.81 0)
 				(effects
 					(font
@@ -5416,7 +5416,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
+		(property "Footprint" "0_nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
 			(at 107.6452 85.09 0)
 			(effects
 				(font
@@ -5468,7 +5468,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:K155ID1")
+		(lib_id "0_nixie_clock:K155ID1")
 		(at 46.99 41.91 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5492,7 +5492,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:DIP16"
+		(property "Footprint" "0_nixie_clock:DIP16"
 			(at 47.752 38.1 0)
 			(effects
 				(font
@@ -5876,7 +5876,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:K155ID1")
+		(lib_id "0_nixie_clock:K155ID1")
 		(at 46.99 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5900,7 +5900,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:DIP16"
+		(property "Footprint" "0_nixie_clock:DIP16"
 			(at 47.752 87.63 0)
 			(effects
 				(font
@@ -6181,7 +6181,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
+		(property "Footprint" "0_nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
 			(at 107.6452 35.56 0)
 			(effects
 				(font
@@ -6299,7 +6299,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:IN-6")
+		(lib_id "0_nixie_clock:IN-6")
 		(at 204.47 59.69 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6326,7 +6326,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-6"
+		(property "Footprint" "0_nixie_clock:IN-6"
 			(at 205.232 55.88 0)
 			(effects
 				(font
@@ -6381,7 +6381,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:IN-12B")
+		(lib_id "0_nixie_clock:IN-12B")
 		(at 157.48 92.71 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6408,7 +6408,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-12-DSUB"
+		(property "Footprint" "0_nixie_clock:IN-12-DSUB"
 			(at 158.242 88.9 0)
 			(effects
 				(font
@@ -6490,7 +6490,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:IN-12B")
+		(lib_id "0_nixie_clock:IN-12B")
 		(at 74.93 44.45 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6517,7 +6517,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-12-DSUB"
+		(property "Footprint" "0_nixie_clock:IN-12-DSUB"
 			(at 75.692 40.64 0)
 			(effects
 				(font
@@ -6979,7 +6979,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:IN-12B")
+		(lib_id "0_nixie_clock:IN-12B")
 		(at 157.48 43.18 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7006,7 +7006,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-12-DSUB"
+		(property "Footprint" "0_nixie_clock:IN-12-DSUB"
 			(at 158.242 39.37 0)
 			(effects
 				(font
@@ -7088,7 +7088,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:IN-12B")
+		(lib_id "0_nixie_clock:IN-12B")
 		(at 74.93 93.98 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7115,7 +7115,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-12-DSUB"
+		(property "Footprint" "0_nixie_clock:IN-12-DSUB"
 			(at 75.692 90.17 0)
 			(effects
 				(font
@@ -7303,7 +7303,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
+		(property "Footprint" "0_nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
 			(at 25.0952 86.36 0)
 			(effects
 				(font
@@ -8215,7 +8215,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
+		(property "Footprint" "0_nixie_clock:C_Rect_L5.1mm_W3.2mm_P2.54mm_Goldmax"
 			(at 25.0952 36.83 0)
 			(effects
 				(font
@@ -8276,7 +8276,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:K155ID1")
+		(lib_id "0_nixie_clock:K155ID1")
 		(at 129.54 90.17 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8300,7 +8300,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:DIP16"
+		(property "Footprint" "0_nixie_clock:DIP16"
 			(at 130.302 86.36 0)
 			(effects
 				(font
@@ -8763,7 +8763,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:K155ID1")
+		(lib_id "0_nixie_clock:K155ID1")
 		(at 129.54 40.64 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8787,7 +8787,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:DIP16"
+		(property "Footprint" "0_nixie_clock:DIP16"
 			(at 130.302 36.83 0)
 			(effects
 				(font
@@ -8972,7 +8972,7 @@
 		)
 	)
 	(symbol
-		(lib_id "nixie_clock:IN-6")
+		(lib_id "0_nixie_clock:IN-6")
 		(at 204.47 36.83 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8999,7 +8999,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-6"
+		(property "Footprint" "0_nixie_clock:IN-6"
 			(at 205.232 33.02 0)
 			(effects
 				(font

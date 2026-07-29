@@ -25,7 +25,7 @@
 			)
 		)
 	)
-	(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/tps63070.pdf"
+	(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/tps63070.pdf"
 		(at 0 0 0)
 		(unlocked yes)
 		(layer "F.Fab")

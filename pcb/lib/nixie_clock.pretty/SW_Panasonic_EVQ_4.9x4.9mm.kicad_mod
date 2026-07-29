@@ -25,7 +25,7 @@
 			)
 		)
 	)
-	(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/sw_lt_eng_49s.pdf"
+	(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/sw_lt_eng_49s.pdf"
 		(at 0 0 0)
 		(unlocked yes)
 		(layer "F.Fab")

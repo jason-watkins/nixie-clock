@@ -6,6 +6,12 @@ mechanism, recompute eta, repeat to convergence), plus the dependent
 downstream figures (RCD clamp voltage, DCM demag time, secondary RMS
 current, etc).
 
+Input window is 4.75-13 V: the 5 V USB-PD contract at -5% through the 12 V
+contract at +5%. The bottom of that window is below the LM5155's VCC regulator
+dropout, so BIAS is fed by the charge pump modeled in pump_bias() rather than
+directly from V_BUS; converge(pump=False) reproduces the alternative, in which
+the gate rail sags with the input and turn-off overlap runs away.
+
 Turn-off overlap (T_OVL) is derived, not assumed: the IRL540N datasheet
 (docs/datasheets/infineon-irl540n-datasheet-en.pdf) gives Q_gd only as a
 guaranteed max (38 nC, no typical) and separately gives a resistive-load
@@ -48,6 +54,8 @@ Run: python scripts/hv_loss_model.py
 # ---------------------------------------------------------------------------
 
 F_SW = 149_400.0            # Hz, converged switching frequency (sec:hv-fsw)
+V_BUS_MIN = 4.75             # V, 5 V USB-PD contract at -5% (sec:hv-converter)
+V_BUS_MAX = 13.0             # V, 12 V USB-PD contract at +5%
 N_TURNS = 10.0               # primary:secondary turns ratio
 V_F_RECT = 1.0                # V, rectifier forward drop assumption
 L_P = 10e-6                   # H, nominal primary inductance
@@ -89,16 +97,101 @@ R211 = 10.0                    # ohm, gate-drive resistor, turn-on only (sec:hv-
 R_INT = 1.5                    # ohm, LM5155 internal driver pull-down resistance (lm5155.pdf Sec 8.5)
 R214 = 3.3                     # ohm, turn-off speedup resistor, in series with D203 (sec:hv-switch)
 VF_D203 = 0.5                  # V, SB240S-E3/54 forward drop estimated at these currents (datasheet gives only 0.55V @ 2A)
-I_GATE_ON = (V_GATE_DRIVE - V_PLATEAU) / (R211 + R_INT)   # A, turn-on plateau current (unaffected by D203)
-I_GATE = (V_GATE_DRIVE - V_PLATEAU - VF_D203) / (R214 + R_INT)   # A, turn-off plateau current, via D203+R214
-I_GATE_PEAK_INITIAL = (V_GATE_DRIVE - VF_D203) / (R214 + R_INT)   # A, pre-plateau turn-off peak, checked against the LM5155's 1.5A driver rating
-T_OVL_TYP = Q_GD_TYP / I_GATE   # s, typical turn-off overlap (~36 ns)
-T_OVL_MAX = Q_GD_MAX / I_GATE   # s, worst-case turn-off overlap (~54 ns)
+
+
+def gate_currents(v_gate=None):
+    """Turn-on/turn-off gate currents and turn-off overlap at a given gate rail.
+
+    Everything the switching loss depends on is a function of the gate rail, so
+    the rail is a parameter rather than a constant: the case for the bias charge
+    pump rests entirely on what these become when the rail is allowed to sag
+    with the input.
+    """
+    v_gate = V_GATE_DRIVE if v_gate is None else v_gate
+    i_on = (v_gate - V_PLATEAU) / (R211 + R_INT)
+    i_off = (v_gate - V_PLATEAU - VF_D203) / (R214 + R_INT)
+    i_peak = (v_gate - VF_D203) / (R214 + R_INT)
+    return {
+        "v_gate": v_gate, "i_on": i_on, "i_off": i_off, "i_peak": i_peak,
+        "t_ovl_typ": Q_GD_TYP / i_off, "t_ovl_max": Q_GD_MAX / i_off,
+    }
+
+
+def r_dson_cold(v_gate=None):
+    """Datasheet R_DS(on) at 25 C, interpolated (or extrapolated) to a gate rail."""
+    v_gate = V_GATE_DRIVE if v_gate is None else v_gate
+    return R_DSON_5V_MAX - (v_gate - 5.0) / 5.0 * (R_DSON_5V_MAX - R_DSON_10V_MAX)
+
+
+_g = gate_currents()
+I_GATE_ON = _g["i_on"]                  # A, turn-on plateau current (unaffected by D203)
+I_GATE = _g["i_off"]                    # A, turn-off plateau current, via D203+R214
+I_GATE_PEAK_INITIAL = _g["i_peak"]      # A, pre-plateau turn-off peak, vs the 1.5 A driver rating
+T_OVL_TYP = _g["t_ovl_typ"]             # s, typical turn-off overlap (~36 ns)
+T_OVL_MAX = _g["t_ovl_max"]             # s, worst-case turn-off overlap (~54 ns)
 
 Q_G = 40e-9                    # C, gate charge at the 6.85 V VCC rail
-I_Q = 480e-6                   # A, LM5155 operating current (datasheet max)
+I_Q = 580e-6                   # A, BIAS operating current, max (lm5156h.pdf p.5)
+
+# ---------------------------------------------------------------------------
+# Auxiliary bias charge pump (sec:hv-house-pump)
+#
+# The internal VCC regulator's 6.85 V output is specified at V_BIAS = 8 V. Tied
+# straight to V_BUS, BIAS falls to 4.75 V at the bottom of the input window, the
+# regulator drops out, and the gate rail follows the input -- which triples
+# turn-off overlap, the converter's largest single loss. A capacitive charge
+# pump off the switch node holds BIAS above the regulator's dropout across the
+# whole window.
+#
+#   drain --C_PUMP-- Y --R_PUMP-- X --D_PUMP--> BIAS -- C_BIAS -- GND
+#                                 |             ^
+#                            D_RESET to GND     +-- D_START (Schottky) from V_BUS
+#
+# On-time: the drain sits near ground, D_RESET clamps X at -VF, and C_PUMP
+# resets to V_C = V_DS(on) + VF_RESET ~= 0.9 V.
+# Off-time: the drain steps to the reflected shelf V_BUS + V_refl, carrying Y
+# with it; D_PUMP conducts until X falls to BIAS + VF_PUMP.
+#
+# Per-cycle charge demand is fixed by the controller, not by the pump:
+#   Q_BIAS = Q_G + I_Q/f_sw
+# so the pump self-regulates. Its equilibrium output is
+#   BIAS = V_shelf - V_C_RESET - VF_PUMP - Q_BIAS/(k*C_PUMP)
+# with k = 1 - exp(-t_dem/(R_PUMP*C_PUMP)) the fraction of the packet actually
+# delivered inside the demagnetization window.
+#
+# NOTE ON EFFICIENCY: C_PUMP does not affect the pump's loss. The charge is
+# drawn from the switch node at V_shelf and leaves at the 6.85 V VCC rail, so
+# the overhead is Q_BIAS*f_sw*(V_shelf - 6.85) whatever C_PUMP is; a smaller
+# C_PUMP merely moves loss out of the internal LDO and into R_PUMP. Relative to
+# feeding BIAS from V_BUS the pump therefore costs I_BIAS * V_refl, flat across
+# the input window. C_PUMP is sized for delivery margin at the worst corner, and
+# BIAS is kept low to bound the controller's own internal dissipation, not to
+# save power.
+C_PUMP = 4.7e-9                # F, pump coupling capacitor (C0G)
+R_PUMP = 82.0                  # ohm, spike-rejection / peak-current-limit resistor
+V_C_RESET = 0.9                # V, C_PUMP voltage at the end of the on-time
+VF_PUMP = 0.7                  # V, D_PUMP forward drop
+VF_START = 0.4                 # V, D_START Schottky forward drop
+V_BIAS_DROPOUT = 8.0           # V, datasheet's specification point for the 6.85 V VCC output
+V_VCC = 6.85                   # V, regulated gate rail
+V_LDO_DROPOUT = 0.15           # V, assumed VCC regulator dropout once V_BIAS falls below its spec point
+
+Q_BIAS = Q_G + I_Q / F_SW      # C, charge the controller draws from BIAS each cycle
+I_BIAS = Q_BIAS * F_SW         # A
+
+
+def pump_bias(v_bus, v_refl, t_dem, c_pump=C_PUMP, q_bias=None):
+    """Equilibrium BIAS voltage, and whether the pump or D_START is the source."""
+    q_bias = Q_BIAS if q_bias is None else q_bias
+    v_shelf = v_bus + v_refl
+    k = 1.0 - 2.718281828459045 ** (-t_dem / (R_PUMP * c_pump))
+    v_pump = v_shelf - V_C_RESET - VF_PUMP - q_bias / (k * c_pump)
+    v_start = v_bus - VF_START
+    if v_pump > v_start:
+        return v_pump, "pump", v_shelf, k
+    return v_start, "D_START", v_shelf, k
 R212 = 30_000.0               # ohm, clamp resistor (sec:hv-clamp, sized for 20% switch-voltage margin at the current-limit corner)
-ESR_IN = 0.03                  # ohm, input bulk capacitor ESR
+ESR_IN = 0.04                  # ohm, input bulk capacitor ESR
 ESR_OUT = 0.496                # ohm, C204 (KEMET A759KS475M2EAAE496) ESR @ 100kHz/20C
 CORE_LOSS = 0.050              # W, fixed core-loss allowance
 
@@ -166,8 +259,29 @@ def clamp_voltage(i_pk, v_refl):
     e_lk_fsw = 0.5 * L_LK * i_pk ** 2 * F_SW
     return (v_refl + (v_refl ** 2 + 4 * e_lk_fsw * R212) ** 0.5) / 2
 
-def converge(p_out, v_bus, v_out, t_ovl=T_OVL_TYP, r_dson=R_DSON_COLD, eta0=0.85, iterations=8):
+def converge(p_out, v_bus, v_out, t_ovl=None, r_dson=None, eta0=0.85,
+             iterations=8, pump=True, v_gate=None):
+    """Converge the loss model at one operating point.
+
+    v_gate defaults to the regulated 6.85 V rail. Passing pump=False without a
+    v_gate models the rail the internal regulator actually produces when BIAS is
+    fed from V_BUS through D_START and the regulator drops out.
+    """
+    if v_gate is None:
+        v_gate = V_GATE_DRIVE if pump else min(V_GATE_DRIVE,
+                                               v_bus - VF_START - V_LDO_DROPOUT)
+    g = gate_currents(v_gate)
+    if t_ovl is None:
+        t_ovl = g["t_ovl_typ"]
+    if r_dson is None:
+        r_dson = r_dson_cold(v_gate)
+    q_g = Q_G * v_gate / V_GATE_DRIVE          # gate charge scales with the rail
+    i_bias = q_g * F_SW + I_Q
+
     eta = eta0
+    v_bias = v_bus - VF_START
+    bias_source = "D_START"
+    k_deliver = 0.0
     for _ in range(iterations):
         p_in = p_out / eta
         e_cyc = p_in / F_SW
@@ -185,7 +299,17 @@ def converge(p_out, v_bus, v_out, t_ovl=T_OVL_TYP, r_dson=R_DSON_COLD, eta0=0.85
         p_ovl = e_off * F_SW
 
         p_cond_pri = i_rms_pri ** 2 * (r_dson + R_201 + R_DCR_PRI)
-        p_gate = (Q_G * F_SW + I_Q) * v_bus
+
+        # Bias charge is drawn from whichever source wins the diode OR. Through
+        # the pump it enters at the switch node's shelf potential, so that, not
+        # V_BUS, is what the controller's draw is charged against.
+        if pump:
+            v_bias, bias_source, v_shelf, k_deliver = pump_bias(
+                v_bus, v_refl, t_dem, q_bias=q_g + I_Q / F_SW)
+        else:
+            v_bias, bias_source, v_shelf, k_deliver = v_bus - VF_START, "D_START", v_bus + v_refl, 0.0
+        v_bias_src = v_shelf if bias_source == "pump" else v_bus
+        p_gate = i_bias * v_bias_src
 
         v_cl = clamp_voltage(i_pk, v_refl)
         p_clamp = v_cl ** 2 / R212
@@ -209,6 +333,9 @@ def converge(p_out, v_bus, v_out, t_ovl=T_OVL_TYP, r_dson=R_DSON_COLD, eta0=0.85
         "p_ovl": p_ovl, "p_clamp": p_clamp, "p_cond_pri": p_cond_pri,
         "p_gate": p_gate, "p_core": CORE_LOSS, "p_cap": p_cap_in + p_cap_out,
         "p_rect": p_rect, "p_sec": p_sec, "p_loss": p_loss, "r_dson": r_dson,
+        "v_bias": v_bias, "bias_source": bias_source, "k_deliver": k_deliver,
+        "t_idle": 1 / F_SW - t_on - t_dem, "v_gate": v_gate, "t_ovl": t_ovl,
+        "i_gate_peak": g["i_peak"], "q_g": q_g,
     }
 
 # ---------------------------------------------------------------------------
@@ -274,12 +401,12 @@ def main():
     print(f"  R_DSON_COLD (25C, 6.85V, interpolated) = {R_DSON_COLD*1000:.1f} mOhm")
     print()
 
-    print("=== Design-max envelope: V_out = 191.5 V, typical T_OVL ===")
+    print("=== Design-max envelope: V_out = 191.5 V, V_BUS = 4.75 V, typical T_OVL ===")
     budget = total_output(191.5, digit_current_override=3.5e-3, colon_current_override=0.85e-3)
     for k, v in budget.items():
         unit = "A" if k.startswith("i_") else "W"
         print(f"  {k} = {v*1000:.2f} m{unit}")
-    r_dson_converged, r, t_j_converged = solve_r_dson(p_out=budget["p_out"], v_bus=8.5, v_out=191.5)
+    r_dson_converged, r, t_j_converged = solve_r_dson(p_out=budget["p_out"], v_bus=V_BUS_MIN, v_out=191.5)
     print(f"  R_DSON converged = {r_dson_converged*1000:.1f} mOhm at T_J = {t_j_converged:.0f} C "
           f"(factor {r_dson_temp_factor(t_j_converged):.3f}x cold)")
     print(f"  eta={r['eta']:.3f}, P_in={r['p_in']:.3f} W, I_pk={r['i_pk']:.2f} A")
@@ -289,6 +416,8 @@ def main():
           f"I_s_rms={r['i_s_rms']*1000:.1f} mA")
     print(f"  V_cl={r['v_cl']:.1f} V ({r['v_cl']/r['v_refl']:.1f}x v_refl), "
           f"V_com={r['v_com']:.1f} V")
+    print(f"  BIAS={r['v_bias']:.2f} V via {r['bias_source']} "
+          f"(delivery fraction k={r['k_deliver']:.3f}), t_idle={r['t_idle']*1e6:.2f} us")
     print("  Loss breakdown (mW):")
     for k in ("p_ovl", "p_clamp", "p_cond_pri", "p_gate", "p_core", "p_cap",
               "p_rect", "p_sec"):
@@ -299,39 +428,80 @@ def main():
           f"dT = {q201_diss_typ*THETA_JA_Q201:.0f} K")
     print()
 
-    print("=== Design-max envelope: V_out = 191.5 V, WORST-CASE T_OVL (Q201 thermal check) ===")
-    r_wc = converge(p_out=budget["p_out"], v_bus=8.5, v_out=191.5, t_ovl=T_OVL_MAX, r_dson=r_dson_converged)
+    print("=== Design-max envelope: WORST-CASE T_OVL (switch thermal check) ===")
+    r_wc = converge(p_out=budget["p_out"], v_bus=V_BUS_MIN, v_out=191.5, t_ovl=T_OVL_MAX, r_dson=r_dson_converged)
     print(f"  eta={r_wc['eta']:.3f}, I_pk={r_wc['i_pk']:.2f} A, p_ovl={r_wc['p_ovl']*1000:.0f} mW")
     q201_diss_wc = r_wc["p_cond_pri"] * (r_dson_converged / (r_dson_converged + R_201 + R_DCR_PRI)) + r_wc["p_ovl"]
     print(f"  Q201 dissipation (worst-case T_OVL) = {q201_diss_wc*1000:.0f} mW, "
           f"dT = {q201_diss_wc*THETA_JA_Q201:.0f} K")
     print()
 
-    print("=== Nominal point: V_out = 170 V (V_BUS = 9 V), typical T_OVL, design-max R_DSON reused ===")
+    print("=== Nominal point: V_out = 170 V, typical T_OVL, design-max R_DSON reused ===")
     budget_n = total_output(170.0)
     for k, v in budget_n.items():
         unit = "A" if k.startswith("i_") else "W"
         print(f"  {k} = {v*1000:.2f} m{unit}")
-    r_n = converge(p_out=budget_n["p_out"], v_bus=9.0, v_out=170.0, r_dson=r_dson_converged)
-    print(f"  eta={r_n['eta']:.3f}, P_in={r_n['p_in']:.3f} W, I_pk={r_n['i_pk']:.2f} A")
-    print(f"  t_on={r_n['t_on']*1e6:.2f} us, duty={r_n['duty']:.3f}, "
-          f"I_rms_pri={r_n['i_rms_pri']:.2f} A")
-    print(f"  I_in(avg)={r_n['p_in']/9.0*1000:.0f} mA")
+    nominal = {}
+    for vb in (V_BUS_MIN, 9.0, V_BUS_MAX):
+        rn = converge(p_out=budget_n["p_out"], v_bus=vb, v_out=170.0, r_dson=r_dson_converged)
+        nominal[vb] = rn
+        print(f"  V_BUS={vb:5.2f} V: eta={rn['eta']:.3f}, P_in={rn['p_in']:.3f} W, "
+              f"I_pk={rn['i_pk']:.2f} A, t_on={rn['t_on']*1e6:.2f} us, duty={rn['duty']:.3f}, "
+              f"I_rms_pri={rn['i_rms_pri']:.2f} A, I_in={rn['p_in']/vb*1000:.0f} mA, "
+              f"BIAS={rn['v_bias']:.1f} V ({rn['bias_source']})")
+    r_n = nominal[9.0]
     print()
 
-    print("=== Nominal point: V_out = 170 V (V_BUS = 12 V), typical T_OVL, design-max R_DSON reused ===")
-    r_n12 = converge(p_out=budget_n["p_out"], v_bus=12.0, v_out=170.0, r_dson=r_dson_converged)
-    print(f"  eta={r_n12['eta']:.3f}, P_in={r_n12['p_in']:.3f} W, I_pk={r_n12['i_pk']:.2f} A")
-    print(f"  t_on={r_n12['t_on']*1e6:.2f} us, duty={r_n12['duty']:.3f}, "
-          f"I_rms_pri={r_n12['i_rms_pri']:.2f} A")
-    print(f"  I_in(avg)={r_n12['p_in']/12.0*1000:.0f} mA")
+    print("=== Efficiency across the window at design-max load, pump vs no pump ===")
+    print("    (no-pump column lets the gate rail sag with the input, which is the point)")
+    for vb in (V_BUS_MIN, 5.0, 9.0, V_BUS_MAX):
+        rp = converge(p_out=budget["p_out"], v_bus=vb, v_out=191.5, r_dson=r_dson_converged)
+        rnp = converge(p_out=budget["p_out"], v_bus=vb, v_out=191.5, pump=False)
+        print(f"  V_BUS={vb:5.2f} V: pump eta={rp['eta']:.3f} "
+              f"(BIAS {rp['v_bias']:5.2f} V, gate {rp['v_gate']:.2f} V, "
+              f"t_ovl {rp['t_ovl']*1e9:3.0f} ns, p_gate {rp['p_gate']*1000:3.0f} mW, "
+              f"p_ovl {rp['p_ovl']*1000:3.0f} mW)")
+        print(f"                 no pump eta={rnp['eta']:.3f} "
+              f"(BIAS {rnp['v_bias']:5.2f} V, gate {rnp['v_gate']:.2f} V, "
+              f"t_ovl {rnp['t_ovl']*1e9:3.0f} ns, p_gate {rnp['p_gate']*1000:3.0f} mW, "
+              f"p_ovl {rnp['p_ovl']*1000:3.0f} mW, "
+              f"driver peak {rnp['i_gate_peak']:.2f} A)")
+    print(f"  pump overhead vs feeding BIAS from V_BUS at the same gate rail = "
+          f"I_BIAS * V_refl = {I_BIAS*1000:.2f} mA * 19.25 V = {I_BIAS*19.25*1000:.0f} mW, "
+          f"flat across the window")
     print()
 
-    print("=== DCM worst corner: L=11uH, V_BUS=8.5V, design-max load ===")
+    print("=== Charge pump sizing ===")
+    print(f"  Q_BIAS = Q_G + I_Q/f_sw = {Q_BIAS*1e9:.1f} nC/cycle, I_BIAS = {I_BIAS*1000:.2f} mA")
+    print(f"  tau = R_PUMP*C_PUMP = {R_PUMP*C_PUMP*1e9:.0f} ns "
+          f"(spike t1 ~ 10 ns; t_dem {r['t_dem']*1e9:.0f} ns at design-max)")
+    # Worst delivery corner: bottom of the input window at the lowest trim
+    # setpoint, where the reflected shelf, the load, and therefore both the
+    # pump's drive and its delivery window are all smallest. C_PUMP is taken at
+    # its -5% C0G tolerance limit.
+    r_lo = converge(p_out=total_output(164.8)["p_out"], v_bus=V_BUS_MIN,
+                    v_out=164.8, r_dson=r_dson_converged)
+    print(f"  worst corner load: {total_output(164.8)['p_out']:.3f} W, "
+          f"t_dem={r_lo['t_dem']*1e9:.0f} ns, V_refl={r_lo['v_refl']:.2f} V")
+    for c_tol, label in ((1.0, "nominal"), (0.95, "-5% C0G")):
+        vb_pump, src, v_shelf_lo, k_lo = pump_bias(V_BUS_MIN, r_lo["v_refl"],
+                                                   r_lo["t_dem"], c_pump=C_PUMP * c_tol)
+        print(f"  worst corner (V_BUS {V_BUS_MIN} V, V_out 164.8 V, C_PUMP {label}): "
+              f"k={k_lo:.3f}, BIAS={vb_pump:.2f} V via {src} "
+              f"vs {V_BIAS_DROPOUT} V spec point")
+    vb_hi, _, _, _ = pump_bias(V_BUS_MAX, (191.5 + V_F_RECT) / N_TURNS, r["t_dem"])
+    print(f"  highest BIAS (V_BUS {V_BUS_MAX} V, V_out 191.5 V): {vb_hi:.2f} V "
+          f"vs 60 V recommended max; internal LDO dissipation "
+          f"{(vb_hi - V_VCC)*I_BIAS*1000:.0f} mW")
+    i_pump_pk = (V_BUS_MAX + (191.5 + V_F_RECT) / N_TURNS - V_C_RESET - vb_hi - VF_PUMP) / R_PUMP
+    print(f"  peak pump current drawn from the switch node = {i_pump_pk*1000:.0f} mA")
+    print()
+
+    print(f"=== DCM worst corner: L=11uH, V_BUS={V_BUS_MIN}V, design-max load ===")
     e_cyc = budget["p_out"] / r["eta"] / F_SW
     l_max = 11e-6
     i_pk_dcm = (2 * e_cyc / l_max) ** 0.5
-    t_on_dcm = l_max * i_pk_dcm / 8.5
+    t_on_dcm = l_max * i_pk_dcm / V_BUS_MIN
     t_dem_dcm = N_TURNS * l_max * i_pk_dcm / (191.5 + V_F_RECT)
     period = 1 / F_SW
     print(f"  E_cyc={e_cyc*1e6:.2f} uJ, I_pk={i_pk_dcm:.2f} A")
@@ -377,7 +547,7 @@ def main():
     print("=== R201 dissipation, bus ripple, clamped-peak-vs-Isat (design-max, typ T_OVL) ===")
     r201_diss = r["i_rms_pri"] ** 2 * R_201
     print(f"  R201 dissipation = {r201_diss*1000:.0f} mW")
-    i_in_dm = r["p_in"] / 8.5
+    i_in_dm = r["p_in"] / V_BUS_MIN
     c_in = 105e-6
     dv_bus = (r["i_pk"]/2 - i_in_dm) * r["t_on"] / c_in + r["i_pk"] * ESR_IN
     print(f"  I_in(avg)={i_in_dm*1000:.0f} mA, bus ripple = {dv_bus*1000:.0f} mV pk-pk")

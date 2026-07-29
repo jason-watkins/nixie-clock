@@ -1,5 +1,18 @@
 (version 1)
 
+# Package-inherent pad spacing. Each of these footprints has a fixed pitch set
+# by the part, so the gap between its own pads cannot be widened by layout. The
+# rules apply only where both items belong to the footprint, so tracks routed
+# past these parts are still held to the netclass clearance.
+
 (rule "T1 fixed pin pitch, isolation rated by manufacturer"
   (condition "A.memberOfFootprint('T1') && B.memberOfFootprint('T1')")
   (constraint clearance (min 0.6mm)))
+
+(rule "U1 HTSSOP-14 pad gap is set by the 0.65 mm pitch"
+  (condition "A.memberOfFootprint('U1') && B.memberOfFootprint('U1')")
+  (constraint clearance (min 0.2mm)))
+
+(rule "Q2 TO-92 lead spacing is set by the package"
+  (condition "A.memberOfFootprint('Q2') && B.memberOfFootprint('Q2')")
+  (constraint clearance (min 0.2mm)))

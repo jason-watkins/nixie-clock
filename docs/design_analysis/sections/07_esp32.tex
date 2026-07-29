@@ -499,20 +499,20 @@ strapping set.
 \subsection{Power-good input}
 \label{sec:esp32-pgood}
 
-The flyback controller's PGOOD pin is open-drain, pulled up by R206 to this
+The flyback controller's PGOOD pin is open-drain, pulled up by \des{R}{HVPG} to this
 rail and sized in \cref{sec:hv-house-pgood}; an MCU GPIO configured as an
 input reads the same node. The pin releases to high impedance when the
 flyback's output is good and its supply and undervoltage-lockout conditions
-are met, and pulls low otherwise (\ds{lm5155.pdf}{22}), so the node reads high
+are met, and pulls low otherwise (\ds{lm5156h.pdf}{25}), so the node reads high
 for power-good.
 
 Both levels clear the MCU's input thresholds. High: with the pin released, the
-node sits at the rail less the drop across R206 from the GPIO's input leakage,
+node sits at the rail less the drop across \des{R}{HVPG} from the GPIO's input leakage,
 which is negligible against \SI{100}{\kilo\ohm}, so effectively \(V_{DD}\)
 against a \(V_{IH}\) of \(0.75\,V_{DD}\). Low: the controller sinks the
 pull-up current, \SI{33}{\micro\ampere}, at a saturation voltage far below the
 \(0.25\,V_{DD}\) input threshold. If the GPIO's internal
-\SI{45}{\kilo\ohm} pull-up is left enabled it parallels R206 to
+\SI{45}{\kilo\ohm} pull-up is left enabled it parallels \des{R}{HVPG} to
 \SI{31}{\kilo\ohm} and raises the sink current to
 \SI{106}{\micro\ampere}, still two orders of magnitude inside the controller's
 \SI{1}{\milli\ampere} sink limit, so the interface is correct whether or not

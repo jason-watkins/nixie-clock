@@ -32,19 +32,29 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 
+def _version_key(path):
+    """Numeric sort key for install directories named like '10.0' or '9.0'.
+
+    Sorting these as strings puts '9.0' above '10.0', which picks an older
+    CLI than the one installed and then fails to read files written by the
+    newer one. Non-numeric components sort last."""
+    return [int(part) if part.isdigit() else -1 for part in path.name.split(".")]
+
+
 def find_kicad_cli():
     env = os.environ.get("KICAD_CLI")
     if env:
         return env
-    found = shutil.which("kicad-cli")
-    if found:
-        return found
     base = Path(r"C:\Program Files\KiCad")
     if base.is_dir():
-        for ver in sorted(base.iterdir(), reverse=True):
+        installs = [p for p in base.iterdir() if p.is_dir()]
+        for ver in sorted(installs, key=_version_key, reverse=True):
             cli = ver / "bin" / "kicad-cli.exe"
             if cli.is_file():
                 return str(cli)
+    found = shutil.which("kicad-cli")
+    if found:
+        return found
     sys.exit("kicad-cli not found: install KiCad or set KICAD_CLI")
 
 
@@ -224,13 +234,20 @@ def cmd_pdf(args):
         sys.exit(f"file not found: {pdf}")
     cache = Path(tempfile.gettempdir()) / "kicad_sch_analysis" / (
         hashlib.md5(str(pdf.resolve()).lower().encode()).hexdigest()[:10] + ".txt")
+    # A form feed separates pages in the cache, so a hit's page number is just
+    # a count of the separators before it. Datasheet citations in the design
+    # document carry a page, so every lookup needs one.
     if cache.exists() and cache.stat().st_mtime >= pdf.stat().st_mtime:
         text = cache.read_text(encoding="utf-8")
     else:
         reader = pypdf.PdfReader(str(pdf))
-        text = "\n".join((p.extract_text() or "") for p in reader.pages)
+        text = "\f".join((p.extract_text() or "") for p in reader.pages)
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(text, encoding="utf-8")
+
+    def page_of(pos):
+        return text.count("\f", 0, pos) + 1
+
     for kw in args.keywords:
         print(f"\n===== {kw} =====")
         seen = set()
@@ -244,7 +261,7 @@ def cmd_pdf(args):
                 continue
             seen.add(key)
             hits += 1
-            print(" >>>", snippet)
+            print(" >>> [p%d]" % page_of(m.start()), snippet)
             if hits >= args.max_hits:
                 print(f" ... (capped at {args.max_hits} hits)")
                 break

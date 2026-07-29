@@ -799,7 +799,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:USB_C_Receptacle_JAE_DX07S016JA1R1500"
+	(footprint "0_nixie_clock:USB_C_Receptacle_JAE_DX07S016JA1R1500"
 		(layer "F.Cu")
 		(uuid "0277b044-9cec-41ce-bd1b-4528663be1f5")
 		(at 103.55 79.4 -90)
@@ -4115,7 +4115,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:VQFN-15_2.5x3mm_TI_RNM0015A"
+	(footprint "0_nixie_clock:VQFN-15_2.5x3mm_TI_RNM0015A"
 		(layer "F.Cu")
 		(uuid "1a599657-6009-4d06-8f7b-a0e97e02d3f2")
 		(at 132.5 71.9 90)
@@ -6215,7 +6215,7 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "nixie_clock:UQFN-10_1.5x2mm_P0.5mm_TI_RSE0010A"
+	(footprint "0_nixie_clock:UQFN-10_1.5x2mm_P0.5mm_TI_RSE0010A"
 		(layer "F.Cu")
 		(uuid "3d49603c-91dd-4e53-a747-d3b30f2f0d18")
 		(at 120.8 83.6 90)
@@ -7107,7 +7107,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:QFN-24-1EP_4x4mm_P0.5mm_EP2.75x2.75mm_ThermalVias"
+	(footprint "0_nixie_clock:QFN-24-1EP_4x4mm_P0.5mm_EP2.75x2.75mm_ThermalVias"
 		(layer "F.Cu")
 		(uuid "4f2c5392-07f8-41cd-be9c-dd7f3743f70f")
 		(at 116.55 74.5)
@@ -8797,7 +8797,7 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "nixie_clock:SW_Panasonic_EVQ_4.9x4.9mm"
+	(footprint "0_nixie_clock:SW_Panasonic_EVQ_4.9x4.9mm"
 		(layer "F.Cu")
 		(uuid "5a756b90-1d77-4fff-aa0e-9b58833f459d")
 		(at 155.2 112.6 90)
@@ -10743,7 +10743,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:L_Bourns_SRN5040TA"
+	(footprint "0_nixie_clock:L_Bourns_SRN5040TA"
 		(layer "F.Cu")
 		(uuid "715166ba-b069-459f-bd2d-af6b00174713")
 		(at 127.3 82.4 90)
@@ -11402,7 +11402,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:SW_Panasonic_EVQ_4.9x4.9mm"
+	(footprint "0_nixie_clock:SW_Panasonic_EVQ_4.9x4.9mm"
 		(layer "F.Cu")
 		(uuid "82efd67f-f967-45ef-9fbf-3acbf215352a")
 		(at 155.2 106.4 90)
@@ -12770,7 +12770,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:ESP32-S3-WROOM-1"
+	(footprint "0_nixie_clock:ESP32-S3-WROOM-1"
 		(layer "F.Cu")
 		(uuid "8d95180e-37ae-44e1-b65a-d8d912c9da03")
 		(at 133 109 180)
@@ -13842,7 +13842,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:Samtec_FTSH-105-01-L-DV-K_2x05_P1.27mm_Vertical_SMD"
+	(footprint "0_nixie_clock:Samtec_FTSH-105-01-L-DV-K_2x05_P1.27mm_Vertical_SMD"
 		(layer "F.Cu")
 		(uuid "931ac45c-3603-4d5c-9b04-19a43c512890")
 		(at 112.5 112)
@@ -14388,7 +14388,7 @@
 			)
 		)
 	)
-	(footprint "nixie_clock:L_Bourns_SRN5040TA"
+	(footprint "0_nixie_clock:L_Bourns_SRN5040TA"
 		(layer "F.Cu")
 		(uuid "99d82513-b17a-449c-8e02-57fa15764e2e")
 		(at 132.3 67.3)
