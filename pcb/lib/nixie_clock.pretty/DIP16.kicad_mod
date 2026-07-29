@@ -271,4 +271,15 @@
 		(uuid "d3728ae6-a6d7-4b2f-b010-8f67fb9fd002")
 	)
 	(embedded_fonts no)
+	(model "${KICAD10_3DMODEL_DIR}/Package_DIP.3dshapes/DIP-16_W7.62mm.step"
+		(offset
+			(xyz -8.89 -3.81 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 -90)
+		)
+	)
 )

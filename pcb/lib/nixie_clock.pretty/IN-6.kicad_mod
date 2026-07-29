@@ -1,12 +1,12 @@
 (footprint "IN-6"
-	(version 20241229)
+	(version 20260206)
 	(generator "pcbnew")
-	(generator_version "9.0")
+	(generator_version "10.0")
 	(layer "F.Cu")
 	(property "Reference" "REF**"
 		(at 0 -4.2 0)
 		(layer "F.SilkS")
-		(uuid "c8529387-c44c-440b-8052-e942b2dd312f")
+		(uuid "486c77be-21a5-40c4-9746-2316ec97becc")
 		(effects
 			(font
 				(size 1 1)
@@ -17,7 +17,7 @@
 	(property "Value" "IN-6"
 		(at 0 0 0)
 		(layer "F.Fab")
-		(uuid "9f1d3a1b-38cc-4e6f-b4b1-a912967871fd")
+		(uuid "06efbfbf-8817-4032-9c46-82a8efcea0d5")
 		(effects
 			(font
 				(size 1 1)
@@ -29,7 +29,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "554f45cf-f5dc-4d21-be1d-a52fb0b19f7f")
+		(uuid "dd47397a-cad8-4a0f-a41a-6161014d9ecb")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -41,7 +41,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "56de67c1-fff8-4717-9aba-f6e5d2217e7d")
+		(uuid "48a92ec5-fae1-43d5-896a-c8035245152f")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -50,6 +50,7 @@
 		)
 	)
 	(attr exclude_from_pos_files exclude_from_bom)
+	(duplicate_pad_numbers_are_jumpers no)
 	(fp_circle
 		(center 0 0)
 		(end 0 -2.55778)
@@ -59,31 +60,7 @@
 		)
 		(fill no)
 		(layer "F.SilkS")
-		(uuid "cb3ffacd-5ce6-42de-9ba9-e9d95caed824")
-	)
-	(pad "A" thru_hole circle
-		(at -1.5875 0)
-		(size 1.30556 1.30556)
-		(drill 0.79756)
-		(layers "*.Cu" "*.Mask")
-		(remove_unused_layers no)
-		(uuid "ca7dad83-0c61-44ec-a4a7-d3cdb1acf523")
-	)
-	(pad "K" thru_hole circle
-		(at 1.58496 0)
-		(size 1.30556 1.30556)
-		(drill 0.79756)
-		(layers "*.Cu" "*.Mask")
-		(remove_unused_layers no)
-		(uuid "a82e2baa-e013-445a-8267-37db47c2ea20")
-	)
-	(pad "KA" thru_hole circle
-		(at 3.429 0)
-		(size 1.30556 1.30556)
-		(drill 0.79756)
-		(layers "*.Cu" "*.Mask")
-		(remove_unused_layers no)
-		(uuid "5f2f7c41-9a83-4d6e-b1c0-3e0a9d21c611")
+		(uuid "d803c585-d059-4f84-b221-fa93f79836d0")
 	)
 	(fp_rect
 		(start -2.94 -2.94)
@@ -94,7 +71,42 @@
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "d3728ae6-a6d7-4b2f-b010-8f67fb9fd004")
+		(uuid "2e24a541-a9c2-420d-8627-3857c06fd06c")
+	)
+	(pad "A" thru_hole circle
+		(at -1.5875 0)
+		(size 1.30556 1.30556)
+		(drill 0.79756)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "efe51497-211f-44a8-a4b0-2404a6303cb5")
+	)
+	(pad "K" thru_hole circle
+		(at 1.58496 0)
+		(size 1.30556 1.30556)
+		(drill 0.79756)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "981d8ca6-20c5-4e82-a397-beda0a1d7e0d")
+	)
+	(pad "KA" thru_hole circle
+		(at 0 -1.5)
+		(size 1.30556 1.30556)
+		(drill 0.79756)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "d4fa27cf-4cb4-409c-b3f9-6419b30eacc9")
 	)
 	(embedded_fonts no)
+	(model "${KICAD10_3DMODEL_DIR}/LED_THT.3dshapes/LED_D5.0mm.step"
+		(offset
+			(xyz -1.27 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 )

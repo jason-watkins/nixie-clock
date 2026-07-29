@@ -305,6 +305,16 @@ rating is unremarkable; the module datasheet publishes no aggregate GPIO
 current limit against which to check the \SI{44.8}{\milli\ampere} total, so
 none is claimed.
 
+\paragraph{Cathode order is a firmware table.} The decoder's ten outputs are
+not wired to the tube cathodes in numerical order. The K155ID1's outputs
+emerge around its package in an order unrelated to the IN-12B's cathode order
+around its pin circle, so a straight-through mapping would force crossings
+that the spacing required between cathodes at the anode rail voltage cannot
+absorb on two layers. Each cathode is wired instead to whichever output the
+layout reaches most directly, and firmware applies a per-tube permutation from
+displayed digit to BCD code. The permutation is read from the schematic rather
+than assumed, and the four digit positions do not necessarily share one table.
+
 \paragraph{Interface state before firmware runs.} MCU GPIOs are
 high-impedance from reset until firmware configures them, leaving the driver
 inputs floating. A floating TTL input reads high, so all four BCD inputs read

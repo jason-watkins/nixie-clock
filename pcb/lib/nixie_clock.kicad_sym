@@ -24,7 +24,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:QFN-24-1EP_4x4mm_P0.5mm_EP2.75x2.75mm_ThermalVias"
+		(property "Footprint" "0_nixie_clock:QFN-24-1EP_4x4mm_P0.5mm_EP2.75x2.75mm_ThermalVias"
 			(at 0 -22.86 0)
 			(effects
 				(font
@@ -542,7 +542,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:DA2032-AL"
+		(property "Footprint" "0_nixie_clock:DA2032-AL"
 			(at 0 0 0)
 			(effects
 				(font
@@ -1214,7 +1214,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:ESP32-S3-WROOM-1"
+		(property "Footprint" "0_nixie_clock:ESP32-S3-WROOM-1"
 			(at 0 -35.56 0)
 			(effects
 				(font
@@ -2034,7 +2034,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-12-DSUB"
+		(property "Footprint" "0_nixie_clock:IN-12-DSUB"
 			(at 0.762 3.81 0)
 			(effects
 				(font
@@ -2375,7 +2375,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:IN-6"
+		(property "Footprint" "0_nixie_clock:IN-6"
 			(at 0.762 3.81 0)
 			(effects
 				(font
@@ -2680,7 +2680,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "nixie_clock:DIP16"
+		(property "Footprint" "0_nixie_clock:DIP16"
 			(at 0.762 3.81 0)
 			(effects
 				(font
@@ -3089,7 +3089,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:WSON-12-1EP_3x2mm_P0.5mm_EP1x2.65_ThermalVias"
+		(property "Footprint" "0_nixie_clock:WSON-12-1EP_3x2mm_P0.5mm_EP1x2.65_ThermalVias"
 			(at 0 0 0)
 			(effects
 				(font
@@ -3397,7 +3397,7 @@
 				)
 			)
 		)
-		(property "Footprint" "nixie_clock:Texas_HTSSOP-14-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3.155x3.255mm_ThermalVias"
+		(property "Footprint" "0_nixie_clock:Texas_HTSSOP-14-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3.155x3.255mm_ThermalVias"
 			(at 0 0 0)
 			(effects
 				(font
@@ -3983,7 +3983,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "nixie_clock:VQFN-15_2.5x3mm_TI_RNM0015A"
+		(property "Footprint" "0_nixie_clock:VQFN-15_2.5x3mm_TI_RNM0015A"
 			(at 0 -20.32 0)
 			(effects
 				(font

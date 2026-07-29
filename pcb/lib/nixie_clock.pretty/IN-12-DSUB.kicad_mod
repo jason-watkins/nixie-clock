@@ -243,4 +243,15 @@
 		(uuid "8ae921e6-2121-4b46-b3c5-8de504d7f377")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN-12B.wrl"
+		(offset
+			(xyz 3.819 -7.62 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
 )

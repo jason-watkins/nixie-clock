@@ -511,7 +511,7 @@
     "classes": [
       {
         "bus_width": 12,
-        "clearance": 0.2,
+        "clearance": 0.3,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -522,27 +522,37 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 2147483647,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.2,
+        "track_width": 0.25,
         "tuning_profile": "",
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
       },
       {
-        "clearance": 0.3,
-        "name": "CATH",
+        "clearance": 0.5,
+        "name": "Cathode",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 0,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.25,
         "tuning_profile": ""
       },
       {
         "clearance": 0.8,
         "name": "HV",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
+        "priority": 2,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.5,
+        "tuning_profile": ""
+      },
+      {
+        "clearance": 0.3,
+        "name": "Power",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 1.0,
         "tuning_profile": ""
       }
     ],
@@ -558,15 +568,19 @@
       },
       {
         "netclass": "HV",
-        "pattern": "A\\"
+        "pattern": "/?.*NX\\d+_{A}"
       },
       {
-        "netclass": "CATH",
+        "netclass": "Cathode",
         "pattern": "/?.*NX\\d+_{\\d}"
       },
       {
         "netclass": "HV",
         "pattern": "/?.*HV_{.*}"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+5V"
       }
     ]
   },
@@ -707,21 +721,21 @@
       {
         "filename": "face.kicad_sch",
         "name": "face",
-        "uuid": "00000000-0000-0000-0000-000000000000"
+        "uuid": "e9a806d6-34c6-4a58-8596-3336bf2feadc"
       }
     ],
-    "used_designators": "",
+    "used_designators": "C3,#PWR19-20",
     "variants": []
   },
   "sheets": [
     [
       "e9a806d6-34c6-4a58-8596-3336bf2feadc",
-      "Root"
+      "face"
     ]
   ],
   "text_variables": {
     "AUTHOR": "Jason Watkins",
-    "REV": "B",
+    "REV": "C",
     "TITLE": "4 Digit Nixie Clock (IN-12)"
   },
   "tuning_profiles": {
