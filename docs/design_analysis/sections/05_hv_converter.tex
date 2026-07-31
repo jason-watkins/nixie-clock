@@ -401,15 +401,15 @@ it as the design's largest identified efficiency lever.
 \subsubsection{Output setpoint}\label{sec:hv-ignition}
 
 The IN-12B's guaranteed $\le\SI{170}{\volt}$ ignition ceiling (\cref{sec:in12b})
-is the zero-margin floor for the converter's output (the IN-6's \SI{140}{\volt}
+is the zero-margin floor for the converter's output (the INS-1's \SI{90}{\volt}
 ceiling is never limiting). A flat \SI{15}{\volt} margin is added to cover
 strike-voltage spread and other uncertainty, so the converter must be tunable
 across a \SIrange{170}{185}{\volt} band. A single
 fixed ballast and divider holds the tube's current limits over only a few volts
 (\cref{sec:hv-load-digit}), so \cref{sec:hv-divider-split} tabulates
 ballast/\des{R}{HVD3} pairs to cover the range while keeping the IN-12 tubes
-within their rated current band. The IN-6 tubes are not current limited across
-the trim range, so a single ballast suffices.
+within their rated current band. The INS-1 tubes carry no rated current band at
+all, so a single ballast serves them across the trim range.
 
 \subsubsection{Interpretation of the datasheet's 200/250~V anode-supply figures}\label{sec:hv-anode-figures}
 
@@ -501,26 +501,36 @@ The IN-12B decimal-point cathode has no driver signal and carries no current.
 
 \subsubsection{Colon tubes (NX5--NX6, ballast \des{R}{BALCOL})}\label{sec:hv-load-colon}
 
-For the IN-6 the maintaining figure is \SI{90}{\volt}, the higher of the two the
-datasheet gives, since it minimizes the computed current and is therefore
-pessimistic for the lower current bound (\cref{sec:in6}). Unlike the digit
-ballasts, one resistor value serves.
+The INS-1's maintaining voltage is given only as a ceiling,
+$\leq\SI{55}{\volt}$ (\cref{sec:ins1}). Taking the ceiling minimizes the drop
+available across the ballast and so minimizes the computed current, which is the
+pessimistic choice for the lower current bound. Unlike the digit ballasts, one
+resistor value serves.
 
-Sized against the datasheet's wider \SIrange{0.45}{1.3}{\milli\ampere}
-operating-current rating (\cref{sec:in6}), which need only hold safely across
-the full \SIrange{164.8}{191.5}{\volt} achieved range
-(\cref{sec:hv-achieved-range}), the ballast drop runs \SI{72.3}{\volt} to
-\SI{99.0}{\volt} once $V_M$ and the driver's \SI{2.5}{\volt} are subtracted:
+The datasheet states no operating-current band, only that \SI{0.5}{\milli\ampere}
+is the optimum for brightness (\cref{sec:ins1}), so the ballast is sized to place
+the current there at the middle of the \SIrange{170}{185}{\volt} design range
+(\cref{sec:hv-ignition}). At \SI{177.5}{\volt}, with $V_M$ and the driver's
+\SI{2.5}{\volt} subtracted:
 \begin{align*}
-  R_A &\in \left[\frac{\SI{99.0}{\volt}}{\SI{1.3}{\milli\ampere}},\;
-               \frac{\SI{72.3}{\volt}}{\SI{0.45}{\milli\ampere}}\right]
-       = [\SI{76.2}{\kilo\ohm},\, \SI{160.7}{\kilo\ohm}].
+  R_A &= \frac{\SI{177.5}{\volt} - \SI{55}{\volt} - \SI{2.5}{\volt}}
+              {\SI{0.5}{\milli\ampere}}
+       = \SI{240}{\kilo\ohm}.
 \end{align*}
-\des{R}{BALCOL} $= \SI{120}{\kilo\ohm}$ sits near the middle of this band and
-keeps the current within the tighter recommended
-\SIrange{0.6}{0.85}{\milli\ampere} window (\cref{sec:in6}) across the narrower
-\SIrange{170}{185}{\volt} design range: $I = \SI{0.646}{\milli\ampere}$ at
-\SI{170}{\volt} and $I = \SI{0.771}{\milli\ampere}$ at \SI{185}{\volt}.
+Specification: \des{R}{BALCOL} $= \SI{240}{\kilo\ohm}$, a standard value with no
+rounding. Across the design range that gives $I = \SI{0.469}{\milli\ampere}$ at
+\SI{170}{\volt} and $I = \SI{0.531}{\milli\ampere}$ at \SI{185}{\volt}, and
+across the full \SIrange{164.8}{191.5}{\volt} achieved range
+(\cref{sec:hv-achieved-range}) \SIrange{0.447}{0.558}{\milli\ampere} --- within
+$\pm12\,\%$ of the optimum everywhere the trimmer can reach.
+
+That spread is the part of the result the datasheet bounds. The part it does not
+is the maintaining voltage itself: a tube maintaining below \SI{55}{\volt}
+leaves more drop across a fixed ballast and draws proportionally more current,
+\SI{0.60}{\milli\ampere} at the top of the achieved range if $V_M$ were
+\SI{45}{\volt}. The datasheet publishes no maximum current against which to
+check that, and the tube's own \SI{0.5}{\milli\ampere} optimum is the only
+figure available, so the excursion is recorded rather than bounded.
 
 \subsection{Feedback divider design}\label{sec:hv-divider}
 
@@ -1785,8 +1795,9 @@ Digit ballast \des{R}{BALDIG} & rated digit current at every trim setpoint &
 \SIrange{7.50}{13.00}{\kilo\ohm}, \des{R}{HVD3} matched per row
   (\cref{tab:hv-ballast-divider}) \\
 \hline
-Colon ballast \des{R}{BALCOL} & \SIrange{0.6}{0.85}{\milli\ampere} target band;
-  \SIrange{0.45}{1.3}{\milli\ampere} safe band & \SI{120}{\kilo\ohm} \\
+Colon ballast \des{R}{BALCOL} & \SI{0.5}{\milli\ampere} brightness optimum, no
+  rated band & \SI{240}{\kilo\ohm}; \SIrange{0.447}{0.558}{\milli\ampere}
+  across the achieved range \\
 \hline
 \des{R}{HVD1}/\des{R}{HVD2} element stress & $<\SI{250}{\volt}$ per DIN0207 element &
   \SI{95.25}{\volt} max at design-max \\
@@ -1937,7 +1948,7 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   \hline
   \des{R}{BALDIG} & Fixed resistor & \SIrange{7.50}{13.00}{\kilo\ohm} & 1\,\%; four, matched to one row of \cref{tab:hv-ballast-divider}; $\geq\SI{0.32}{\watt}$ (\cref{sec:hv-load-digit}) & DIN0207 minimum \\
   \hline
-  \des{R}{BALCOL} & Fixed resistor & \SI{120}{\kilo\ohm} & 1\,\%; two; $\geq\SI{0.17}{\watt}$; element voltage $\geq\SI{125}{\volt}$ (\cref{sec:hv-load-colon}) & DIN0207 minimum \\
+  \des{R}{BALCOL} & Fixed resistor & \SI{240}{\kilo\ohm} & 1\,\%; two; $\geq\SI{0.15}{\watt}$; element voltage $\geq\SI{168}{\volt}$ (\cref{sec:hv-load-colon}) & DIN0207 minimum \\
   \hline
   \des{R}{HVCS} & Current sense & \SI{39}{\milli\ohm} & 1\,\%; $\geq\SI{0.09}{\watt}$; low inductance (\cref{sec:hv-cs-sense}) & 2512 \\
   \hline

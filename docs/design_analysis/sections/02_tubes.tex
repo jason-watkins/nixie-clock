@@ -15,7 +15,7 @@ them:
 \hline
 NX1--NX4 & IN-12B digit tubes (HH:MM display) \\
 \hline
-NX5--NX6 & IN-6 colon tubes (colon separator) \\
+NX5--NX6 & INS-1 colon tubes (colon separator) \\
 \hline
 \end{tabular}
 \end{table}
@@ -108,69 +108,52 @@ digit of the actual tube stock strikes reliably, then setting the rail
 roughly \SI{10}{\volt} above that point) tests the uncertainty
 directly, whichever reading is correct.
 
-\subsection{IN-6 (colon tubes, NX5--NX6)}
-\label{sec:in6}
+\subsection{INS-1 (colon tubes, NX5--NX6)}
+\label{sec:ins1}
 
-Source: \texttt{IN-6.pdf} (original Soviet factory label sheet, GOST
-17821-75). The tube has three electrode leads: lead 1 is the anode
-(A), physically set apart from the other two and used as the
-numbering reference; lead 2 is the indicator cathode (K); lead 3 is
-the auxiliary priming cathode (KA). This assignment follows the
-datasheet's electrode table.
+Source: \texttt{INS-1.pdf} (original Soviet factory label sheet,
+ODO.334.095 TU). The tube has two electrode leads, counted from the
+indicator dot: lead 1 is the anode (A, the small cylinder) and lead 2
+the cathode (K, the large cylinder). This assignment follows the
+datasheet's electrode table. There is no auxiliary or priming
+electrode.
 
 {\footnotesize
 \begin{longtable}{|L{4.6cm}|c|c|c|c|L{3.6cm}|c|}
-\caption{IN-6 electrical and physical characteristics}\label{tab:in6}\\
+\caption{INS-1 electrical characteristics}\label{tab:ins1}\\
 \hline
 \textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
 \hline
 \endfirsthead
-\caption[]{IN-6 electrical and physical characteristics (continued)}\\
+\caption[]{INS-1 electrical characteristics (continued)}\\
 \hline
 \textbf{Parameter} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
 \hline
 \endhead
-Striking voltage, either gap (A--K or A--KA) & & & \num{140} & \si{\volt} & No test current given & 2 \\
+Striking voltage & \num{65} & & \num{90} & \si{\volt} & Discharge-onset voltage (``Напряжение возникновения разряда''); no test current given & 2 \\
 \hline
-Maintaining voltage, either gap & & & \num{88} & \si{\volt} & At \SI{0.7}{\milli\ampere}; ``basic electrical parameters'' & 2 \\
+Maintaining voltage & & & \num{55} & \si{\volt} & ``Напряжение поддержания разряда''; single-sided limit, no minimum given & 2 \\
 \hline
-Maintaining voltage, rated operating mode & & & \num{90} & \si{\volt} & At \SI{0.7}{\milli\ampere}; ``permissible operating modes'' & 3 \\
-\hline
-Operating current & \num{0.45} & & \num{1.3} & \si{\milli\ampere} & ``basic electrical parameters'' & 2 \\
-\hline
-Permissible anode current & \num{0.6} & & \num{0.85} & \si{\milli\ampere} & Rated/recommended operating range & 3 \\
-\hline
-Minimum indication current & \num{0.25} & & & \si{\milli\ampere} & Floor for reliable visible glow & 3 \\
-\hline
-Maximum discharge switching frequency & & & \num{0.5} & \si{\hertz} & & 3 \\
-\hline
-Example anode ballast resistor & & \num{200} & & \si{\kilo\ohm} & Manufacturer's example circuit, feeding a +180~V rail & 3 \\
+Optimal indication current & & \num{0.5} & & \si{\milli\ampere} & ``Оптимальным током, обеспечивающим достаточную яркость свечения''; a brightness recommendation, with no band around it & 3 \\
 \hline
 \end{longtable}
 }
 
-\paragraph{Not specified.} The datasheet gives no textual explanation
-of the auxiliary cathode's (KA) function or of its intended handling
-if left unconnected; its rating is otherwise symmetric with the
-indicator cathode (K). The manufacturer's example circuit routes one
-cathode to a direct ground reference and the other through an
-RC network to a sensed node, which is \emph{consistent with} KA
-serving a priming/keep-alive role. That reading is inferred from the
-circuit diagram and unconfirmed by the text. No interelectrode
-capacitance is given. Two maintaining-voltage figures appear for the
-same \SI{0.7}{\milli\ampere} test current (\SI{88}{\volt} under
-``basic parameters'' vs.\ \SI{90}{\volt} under ``permissible operating
-modes''); the source does not explain the 2~V discrepancy, which is
-small enough to be a nominal-vs.-rated distinction.
+\paragraph{Conditioning after storage.} The datasheet directs that an
+indicator taken out of long storage be run at its nominal discharge
+current for one to two minutes before normal service, and refers
+operation to GOST 11163-84 and OST 11~339.003-75. The IN-12B carries a
+comparable instruction (\cref{sec:in12b}).
 
-\paragraph{Maximum switching frequency.} The \SI{0.5}{\hertz} maximum
-discharge switching frequency bounds how fast this tube's gap may be
-toggled: a colon indicator blinking faster than \SI{0.5}{\hertz}
-exceeds the rating. It does not affect the converter's DC current
-budget, which uses only the permissible anode current above.
-
-\subsection{Handling of the auxiliary cathode (KA)}
-
-The KA electrode is left unconnected: in this design's always-on
-service a priming electrode has no role to serve, and the datasheet
-describes no failure mode for leaving KA floating.
+\paragraph{Not specified.} The sheet gives no minimum for the
+maintaining voltage, no rated operating-current band around the
+\SI{0.5}{\milli\ampere} brightness figure, no maximum discharge
+switching frequency, no interelectrode capacitance, no example ballast
+value, and no envelope dimensions. Two consequences follow for the
+derivations downstream. \Cref{sec:hv-load-colon} sizes the ballast
+against the single \SI{0.5}{\milli\ampere} figure and reports the
+spread the trim range produces around it, having no band to check
+against. And because \SI{55}{\volt} is a ceiling with no floor beneath
+it, a tube maintaining below that figure draws proportionally more
+current through a fixed ballast, which that section treats as the open
+side of the result.
