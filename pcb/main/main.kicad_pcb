@@ -94,7 +94,6 @@
 		)
 		(capping no)
 		(filling no)
-		(zone_defaults)
 		(pcbplotparams
 			(layerselection 0x00000000_00000000_55555555_5755f5ff)
 			(plot_on_all_layers_selection 0x00000000_00000000_00000000_00000000)
@@ -134,6 +133,7 @@
 	)
 	(property "AUTHOR" "Jason Watkins")
 	(property "REV" "C")
+	(property "STEP" "1")
 	(property "TITLE" "4 Digit Nixie Clock Controller")
 	(footprint "TestPoint:TestPoint_Pad_D1.0mm"
 		(layer "F.Cu")
@@ -23656,7 +23656,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "${TITLE}//REV ${REV}//${AUTHOR}\n"
+	(gr_text "${TITLE}//REV ${REV}${STEP}//${AUTHOR}\n"
 		(at 168 58 0)
 		(layer "B.SilkS")
 		(uuid "ae359edd-d3f8-4d7c-a43f-afda6ee621fe")

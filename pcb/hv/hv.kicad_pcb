@@ -1041,6 +1041,7 @@
 		(path "/1209e03a-8b93-4db8-8352-8068d8991fea")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -3.56 -2.04)
@@ -2341,6 +2342,7 @@
 		(path "/6e12e959-af87-433c-b6a7-ae0f93aafc1c")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 2.55 1.65)
@@ -4796,6 +4798,7 @@
 		(path "/a5ce70b6-7932-44ff-8007-c9c1e5db3ee1")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.91 1.28)
@@ -9354,6 +9357,7 @@
 		(path "/fd005c23-2d72-473f-8c4a-fdeec7220f0f")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -2.55 1.65)
@@ -10756,6 +10760,7 @@
 		(path "/9769e769-ef96-4448-9f71-ec0bf7e964ce")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -3.96 -2.96)
@@ -14572,6 +14577,7 @@
 		(path "/b58b0bf5-a297-4ea7-91ba-cdeb20c51220")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -2.55 -1.65)
@@ -15046,7 +15052,7 @@
 			(justify right bottom mirror)
 		)
 	)
-	(gr_text "${TITLE}//REV ${REV}//${AUTHOR}\njason@ak6te.com"
+	(gr_text "${TITLE}//REV ${REV}${STEP}//${AUTHOR}\njason@ak6te.com"
 		(at 162 98 0)
 		(layer "B.SilkS")
 		(uuid "dced07f1-208a-4c66-a789-0a60e87b7a40")

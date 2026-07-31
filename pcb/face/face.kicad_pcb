@@ -3570,6 +3570,7 @@
 		(path "/c0e1992a-878e-40cd-8d56-70e85b696b61")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -2.55 -1.6)
@@ -6800,6 +6801,7 @@
 		(path "/967ee61c-9aef-4677-b5bb-9521e4b16dca")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -2.55 -1.6)
@@ -8622,7 +8624,7 @@
 		(layer "Edge.Cuts")
 		(uuid "892b48da-c096-49de-a0ce-0d3121c5465e")
 	)
-	(gr_text "${TITLE}//REV ${REV}//${AUTHOR}\n"
+	(gr_text "${TITLE}//REV ${REV}${STEP}//${AUTHOR}\n"
 		(at 151 74 0)
 		(layer "B.SilkS")
 		(uuid "ee21b9cd-7f53-403f-803c-ef56963a41e7")
