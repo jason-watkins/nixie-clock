@@ -2,7 +2,7 @@
 
 # Nixie Clock
 
-USB-C powered nixie tube clock. Four IN-12B digits, two IN-6 colon lamps, K155ID1 BCD decoder/drivers.
+USB-C powered nixie tube clock. Four IN-12B digits, two INS-1 colon lamps, K155ID1 BCD decoder/drivers.
 
 ## Boards
 
@@ -48,7 +48,7 @@ docstring explains the revision rules it enforces.
 
 ## Credits
 
-The IN-12B and IN-6 symbols and footprints started as imports from
+The K155ID1 symbol and its DIP16 footprint started as imports from
 [judge2005's Eagle-and-KiCAD-Nixie-Libs](https://github.com/judge2005/Eagle-and-KiCAD-Nixie-Libs)
 and were modified here. The IN-12B tube model comes from
 [laurivosandi's nixiesp12](https://github.com/laurivosandi/nixiesp12), which credits miniwatt.info

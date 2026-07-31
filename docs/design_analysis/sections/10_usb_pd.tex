@@ -203,17 +203,17 @@ which are what select it.
 The three converters' input powers, each at the worst case its own section
 derives:
 \begin{align*}
-  P_{\mathrm{in,HV}} &= \SI{3.50}{\watt} && \text{(\cref{sec:hv-op}, design-max envelope, } \eta = 0.872), \\
+  P_{\mathrm{in,HV}} &= \SI{3.54}{\watt} && \text{(\cref{sec:hv-op}, design-max envelope, } \eta = 0.833), \\
   P_{\mathrm{in,5V}} &= \SI{0.588}{\watt} && \text{(\cref{sec:5v-ss}, \SI{0.50}{\watt} at } \eta = 0.85), \\
   P_{\mathrm{in,3V3}} &= \SI{1.39}{\watt} && \text{(\cref{sec:3v3-load}, \SI{1.18}{\watt} at } \eta = 0.85),
 \end{align*}
-summing worst-case additive to \SI{5.48}{\watt}. Referred to the contract
+summing worst-case additive to \SI{5.51}{\watt}. Referred to the contract
 voltages, and adding the controller's own \SI{10}{\milli\ampere}:
 \begin{align*}
-  I_{\mathrm{port}} &= \frac{5.48}{V_{\mathrm{BUS}}} + 0.010
-  &&\SI{8.5}{\volt}: \SI{0.655}{\ampere}; \quad
-    \SI{9}{\volt}: \SI{0.619}{\ampere}; \quad
-    \SI{12}{\volt}: \SI{0.467}{\ampere}.
+  I_{\mathrm{port}} &= \frac{5.51}{V_{\mathrm{BUS}}} + 0.010
+  &&\SI{8.5}{\volt}: \SI{0.659}{\ampere}; \quad
+    \SI{9}{\volt}: \SI{0.623}{\ampere}; \quad
+    \SI{12}{\volt}: \SI{0.469}{\ampere}.
 \end{align*}
 The \SI{8.5}{\volt} figure governs, being the bottom of the window
 \cref{sec:hv-converter,sec:5v-converter} derive against. Worst-case additive
@@ -290,14 +290,14 @@ operating current (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{13, 14}):
 coarse in \SI{1}{\ampere} steps from \SIrange{0}{5}{\ampere}, fine in the
 sequence \SI{0}{}, \SI{250}{}, \SI{500}{}, \SI{750}{}, \SI{900}{\milli\ampere}.
 The requirement is that the request cover \cref{sec:pd-load}'s
-\SI{0.655}{\ampere} while asking for no more than that, since every increment
+\SI{0.659}{\ampere} while asking for no more than that, since every increment
 above the requirement narrows the set of sources that can satisfy it: a source
 offering a voltage inside the window but a current below the request is a fault
 condition, not a degraded contract
 (\ds{infineon-cypd3176-24lqxq-datasheet-en.pdf}{14}).
 
 A single setting cannot serve both operating classes. Covering
-\cref{sec:pd-load}'s \SI{0.655}{\ampere} takes the \SI{750}{\milli\ampere} fine
+\cref{sec:pd-load}'s \SI{0.659}{\ampere} takes the \SI{750}{\milli\ampere} fine
 step, and a source offering \SI{5}{\volt} at \SI{500}{\milli\ampere}, which is
 what a USB~2.0 host port supplies, would then be refused: its voltage is inside
 the window and its current is below the request, so the contract does not close
@@ -395,7 +395,7 @@ depends on it.
     and the negotiated result over HPI (\cref{sec:pd-pins}).
   \item \textbf{Renegotiate.} If the source can supply full operation, the MCU
     requests \SI{750}{\milli\ampere} at a voltage in the window, covering
-    \cref{sec:pd-load}'s \SI{0.655}{\ampere} with \SI{15}{\percent} to spare.
+    \cref{sec:pd-load}'s \SI{0.659}{\ampere} with \SI{14}{\percent} to spare.
   \item \textbf{Release.} On a confirmed contract the MCU releases the display
     inhibit. On any other outcome it does not, and the board stays in limited
     operation for as long as that source is attached.
@@ -405,7 +405,7 @@ depends on it.
 voltage floor, not a contract check. It releases at \SI{8.12}{\volt} whatever
 current the contract allows, so on a \SI{9}{\volt} contract at
 \SI{500}{\milli\ampere} it would start the display into a contract short of the
-\SI{0.619}{\ampere} full operation draws at that voltage. Nothing about the
+\SI{0.623}{\ampere} full operation draws at that voltage. Nothing about the
 input voltage distinguishes the two cases, so the distinction has to be made by
 the only element that knows the contract, and it must default to inhibited so
 that the state before the MCU is running is the safe one.
@@ -481,7 +481,7 @@ answered under \emph{Gate network} below, because the network holds it well
 inside what the rail alone would impose. Unlike \cref{sec:3v3-diodeor}'s header
 switch, this one faces no low-drive constraint: the gate has the whole bus rail
 to work with, so threshold and on-resistance are not in tension here. Continuous
-current is \cref{sec:pd-load}'s \SI{0.655}{\ampere}, giving $I_D \geq
+current is \cref{sec:pd-load}'s \SI{0.659}{\ampere}, giving $I_D \geq
 \SI{1}{\ampere}$ derated.
 
 \paragraph{On-resistance.} The drop across the switch comes out of the margin
@@ -489,15 +489,15 @@ between what the source presents and the \SI{8.5}{\volt} floor the downstream
 derivations assume, and the two channels are in series so the budget is shared.
 Specification: $R_{DS(\mathrm{on})} \leq \SI{25}{\milli\ohm}$ per device at the
 gate drive the bus affords, \SI{50}{\milli\ohm} across the pair, which costs
-\SI{33}{\milli\volt} at \SI{0.655}{\ampere} and \SI{21}{\milli\watt}.
+\SI{33}{\milli\volt} at \SI{0.659}{\ampere} and \SI{21}{\milli\watt}.
 
 \emph{Assumption:} the \SI{8.5}{\volt} floor is the voltage at
 $V_{\mathrm{BUS}}$, and the budget between it and a \SI{9}{\volt} contract's
 $-5\,\%$ limit of \SI{8.55}{\volt} is \SI{50}{\milli\volt} in total. The switch
 consumes two thirds of that and the cable consumes the rest and more: a
 compliant Type-C cable may present up to \SI{250}{\milli\ohm} on the VBUS and
-ground conductors together, which at \SI{0.655}{\ampere} is
-\SI{164}{\milli\volt}. A worst-case source, a worst-case cable and a worst-case
+ground conductors together, which at \SI{0.659}{\ampere} is
+\SI{165}{\milli\volt}. A worst-case source, a worst-case cable and a worst-case
 load together put $V_{\mathrm{BUS}}$ near \SI{8.35}{\volt}, below the floor. The
 consequence is bounded: the flyback's UVLO does not release its falling
 threshold until \SI{7.14}{\volt} (\cref{sec:hv-uvlo}), so the converter
@@ -1051,8 +1051,8 @@ appears at its point of use above.
 \endhead
 \hline
 \endlastfoot
-Bus load & --- & \SI{5.48}{\watt} worst-case additive;
-  \SI{0.655}{\ampere} at \SI{8.5}{\volt} \\
+Bus load & --- & \SI{5.51}{\watt} worst-case additive;
+  \SI{0.659}{\ampere} at \SI{8.5}{\volt} \\
 \hline
 VBUS\_MAX & $\leq\SI{13}{\volt}$ at the converters; \SI{80}{\percent} of the
   TPS629203's \SI{18}{\volt} rating & \SI{12}{\volt} setting; \SI{12.6}{\volt}
@@ -1068,7 +1068,7 @@ Operating current, resistors & satisfiable by a \SI{5}{\volt} /
   coarse \SI{0}{\ampere} + fine \SI{500}{\milli\ampere};
   \SI{5.1}{\kilo\ohm}/\SI{2.4}{\kilo\ohm} \\
 \hline
-Operating current, run time & $\geq\SI{0.655}{\ampere}$ for full operation &
+Operating current, run time & $\geq\SI{0.659}{\ampere}$ for full operation &
   \SI{750}{\milli\ampere} requested over HPI before the display is released;
   SINK\_RDO\_REQUEST, not SELECT\_SINK\_PDO \\
 \hline
@@ -1088,7 +1088,7 @@ Display inhibit & default asserted; released only on a confirmed contract &
   P-channel devices, sources joined, gates driven together \\
 \hline
 \des{Q}{BUS} ratings & \des{D}{BUSTVS}'s \SI{24}{\volt} clamp on $V_{DS}$;
-  \des{D}{BUSG}'s \SI{10}{\volt} clamp on $V_{GS}$; \SI{0.655}{\ampere} &
+  \des{D}{BUSG}'s \SI{10}{\volt} clamp on $V_{GS}$; \SI{0.659}{\ampere} &
   $V_{DS}\geq\SI{30}{\volt}$; $|V_{GS}|\geq\SI{12.5}{\volt}$;
   $I_D\geq\SI{1}{\ampere}$ \\
 \hline

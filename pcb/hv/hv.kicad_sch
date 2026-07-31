@@ -35,7 +35,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nixie_clock:DA2032-AL"
+			(property "Footprint" "0_nixie_clock:DA2032-AL"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -719,7 +719,7 @@
 					)
 				)
 			)
-			(property "Footprint" "nixie_clock:Texas_HTSSOP-14-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3.155x3.255mm_ThermalVias"
+			(property "Footprint" "0_nixie_clock:Texas_HTSSOP-14-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3.155x3.255mm_ThermalVias"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)

@@ -8,14 +8,10 @@ Symbols in `nixie_clock.kicad_sym`, footprints in `nixie_clock.pretty/`,
 Source: <https://github.com/judge2005/Eagle-and-KiCAD-Nixie-Libs>
 (no license stated; used with attribution)
 
-- IN-12B symbol and IN-12-DSUB footprint
-- IN-6 symbol and footprint
 - K155ID1 symbol and DIP16 footprint (nixiemisc collection)
 
-Local changes: pin electrical types set to passive, courtyards added, IN-6 corrected to three
-electrodes (anode, cathode, auxiliary priming cathode) per the GOST datasheet. DIP16 carries the
-stock KiCad `DIP-16_W7.62mm` model, rotated to suit this footprint's horizontal, centre-origin pin
-layout.
+Local changes: pin electrical types set to passive, courtyard added. DIP16 carries the stock KiCad
+`DIP-16_W7.62mm` model, rotated to suit this footprint's horizontal, centre-origin pin layout.
 
 ## Imported from laurivosandi's nixiesp12
 
@@ -41,6 +37,8 @@ concentric.
 
 ## Drawn for this project
 
+- IN-12B symbol and IN-12-DSUB footprint, the tube socketed on D-SUB machined
+  pins.
 - INS-1 symbol and footprint. The label sheet in `docs/datasheets/INS-1.pdf`
   carries no mechanical drawing, so the 6.8 mm envelope diameter comes from
   distributor listings and the lead diameter, about 0.3 mm, from a photograph

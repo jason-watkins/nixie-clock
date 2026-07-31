@@ -201,11 +201,15 @@ CORE_LOSS = 0.050              # W, fixed core-loss allowance
 
 V_M_DIGIT = 145.0             # IN-12B maintaining voltage, typical
 V_K_EXPECTED = 1.0            # K155ID1 expected on-drop
+V_K_DRIVER_MAX = 2.5          # K155ID1 datasheet max on-drop (spec'd at 7 mA)
 R_A_DIGIT = 10.00e3           # specified digit ballast (ohm)
 
-V_M_COLON = 90.0              # IN-6 conservative maintaining voltage
-V_K_COLON = 2.5               # conservative driver drop used for colon (sec:hv-load-colon)
-R_A_COLON = 120e3             # specified colon ballast (ohm)
+# INS-1 colon lamps. The datasheet gives maintaining voltage only as a ceiling
+# (<= 55 V), which is the pessimistic choice for the computed current, and no
+# rated current band at all -- only a 0.5 mA brightness optimum. Their cathodes
+# return directly to ground, so no driver drop enters (sec:hv-load-colon).
+V_M_COLON = 55.0              # INS-1 maintaining-voltage ceiling
+R_A_COLON = 240e3             # specified colon ballast (ohm)
 
 R_BLEEDER = 1.5e6              # R202, sized in sec:hv-bleeder for 1.8s to 60V (IEC 62368-1 ES1)
 R_DIVIDER = 1.69e6 + 8.87e3   # R203+R204+R205 at the specified row's nominal point (approx, upper leg dominates)
@@ -216,8 +220,8 @@ def digit_current(v_out):
     return (v_out - V_M_DIGIT - V_K_EXPECTED) / R_A_DIGIT
 
 def colon_current(v_out):
-    """Per-tube colon anode current (A) at v_out (V), specified 120 kOhm ballast."""
-    return (v_out - V_M_COLON - V_K_COLON) / R_A_COLON
+    """Per-tube colon anode current (A) at v_out (V), specified 240 kOhm ballast."""
+    return (v_out - V_M_COLON) / R_A_COLON
 
 def bleeder_current(v_out):
     return v_out / R_BLEEDER
@@ -227,13 +231,12 @@ def divider_current(v_out):
 
 def total_output(v_out, digit_current_override=None, colon_current_override=None):
     """
-    Total load current/power at v_out. digit_current_override and
-    colon_current_override let the design-max point force each tube's
-    own rated maximum (3.5 mA/tube digit, 0.85 mA/tube colon) -- the
-    design-max envelope's defining condition, matching the document's
-    "every load element at its own individual maximum, non-simultaneous,
-    deliberately conservative" convention -- rather than the literal
-    per-ballast-formula current at that voltage.
+    Total load current/power at v_out. digit_current_override lets the
+    design-max point force every digit tube to its own rated maximum
+    (3.5 mA/tube), the design-max envelope's defining condition. The colons
+    have no rated maximum to force, so they follow their ballast at v_out;
+    colon_current_override exists only for sensitivity checks against a
+    maintaining voltage below the datasheet's 55 V ceiling.
     """
     i_digit = digit_current_override if digit_current_override is not None else digit_current(v_out)
     i_colon = colon_current_override if colon_current_override is not None else colon_current(v_out)
@@ -384,6 +387,160 @@ def solve_r_dson(p_out, v_bus, v_out, iterations=6):
     return r_dson, r, t_j
 
 # ---------------------------------------------------------------------------
+# Switching-frequency bracket (sec:hv-fsw-choice)
+#
+# Both bounds move with the load, so they are solved rather than assumed: DCM
+# margin closes from above (the conducting fraction grows as sqrt(f_sw)) and the
+# sense-resistor window closes from below (the power-delivery ceiling
+# 93mV/I_pk(Lmin) rises as sqrt(f_sw) toward the fixed 37.4 mOhm core-protection
+# floor). converge() reads F_SW from module scope, so the sweep sets it.
+# ---------------------------------------------------------------------------
+
+L_P_MAX = 11e-6           # H, +10% tolerance corner (binding for DCM)
+R_S_FLOOR = 0.0374        # ohm, core-protection floor (sec:hv-cs-sense)
+
+def _at_freq(f, p_out, v_out, r_dson):
+    global F_SW
+    f_save = F_SW
+    F_SW = f
+    try:
+        return converge(p_out=p_out, v_bus=V_BUS_MIN, v_out=v_out, r_dson=r_dson)
+    finally:
+        F_SW = f_save
+
+def dcm_idle_fraction(f, p_out, v_out, r_dson, l_p=L_P_MAX):
+    """Idle fraction of the period at the binding DCM corner (L+10%, V_BUS min)."""
+    r = _at_freq(f, p_out, v_out, r_dson)
+    e_cyc = r["p_in"] / f
+    i_pk = (2 * e_cyc / l_p) ** 0.5
+    t_on = l_p * i_pk / V_BUS_MIN
+    t_dem = N_TURNS * l_p * i_pk / (v_out + V_F_RECT)
+    return 1 - (t_on + t_dem) * f
+
+def rs_ceiling(f, p_out, v_out, r_dson):
+    """Power-delivery ceiling on R_HVCS, 93 mV / I_pk at minimum inductance."""
+    r = _at_freq(f, p_out, v_out, r_dson)
+    return CS_THRESH_MIN / (2 * (r["p_in"] / f) / L_P_MIN) ** 0.5
+
+def _solve(fn, target, lo, hi, iterations=60):
+    """Bisect a monotonically increasing fn for fn(x) = target."""
+    for _ in range(iterations):
+        mid = (lo + hi) / 2
+        if fn(mid) < target:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+def freq_bracket(p_out, v_out, r_dson):
+    """The four frequencies that bracket the switching-frequency choice."""
+    idle = lambda f: -dcm_idle_fraction(f, p_out, v_out, r_dson)
+    ceil = lambda f: rs_ceiling(f, p_out, v_out, r_dson)
+    return {
+        "f_dcm_fail": _solve(idle, 0.0, 100e3, 300e3),
+        "f_idle_5pct": _solve(idle, -0.05, 100e3, 300e3),
+        "f_rs_floor": _solve(ceil, R_S_FLOOR, 60e3, 300e3),
+        "f_rs_specified": _solve(ceil, R_201, 60e3, 300e3),
+    }
+
+# ---------------------------------------------------------------------------
+# Gate-rail bound (sec:hv-house-pump): the rail below which the loss/peak-current
+# loop pushes the commanded peak at minimum inductance past the guaranteed
+# minimum current limit, so the converter cannot deliver its rated load.
+# ---------------------------------------------------------------------------
+
+def i_pk_lmin_at_gate(v_gate, p_out, v_out):
+    r = converge(p_out=p_out, v_bus=V_BUS_MIN, v_out=v_out, pump=False, v_gate=v_gate)
+    return (2 * (r["p_in"] / F_SW) / L_P_MIN) ** 0.5
+
+def gate_rail_bound(p_out, v_out):
+    i_lim_min = CS_THRESH_MIN / (R_201 * (1 + R201_TOL))
+    v_gate = _solve(lambda v: -i_pk_lmin_at_gate(v, p_out, v_out), -i_lim_min, 3.6, 6.85)
+    r = converge(p_out=p_out, v_bus=V_BUS_MIN, v_out=v_out, pump=False, v_gate=v_gate)
+    return {"v_gate": v_gate, "t_ovl": r["t_ovl"], "i_lim_min": i_lim_min,
+            "v_drive_above_plateau": v_gate - V_PLATEAU - VF_D203}
+
+# ---------------------------------------------------------------------------
+# Shape of the efficiency curve (sec:hv-op-curve): loss splits into a term
+# rising with the commutation voltage, a term falling with duty, and a
+# peak-current term flat in line. Fitting A(V_BUS+V_refl) + B/V_BUS + C locates
+# the minimum-loss input voltage.
+# ---------------------------------------------------------------------------
+
+def loss_shape(p_out, v_out, r_dson, v_bus_points=(4.75, 7.0, 9.0, 11.0, 13.0)):
+    rows = []
+    for vb in v_bus_points:
+        r = converge(p_out=p_out, v_bus=vb, v_out=v_out, r_dson=r_dson)
+        rows.append({
+            "v_bus": vb, "duty": r["duty"], "eta": r["eta"], "p_loss": r["p_loss"],
+            "rising": r["p_ovl"] + r["p_gate"],
+            "falling": r["p_cond_pri"] + r["p_cap"],
+            "flat": r["p_clamp"] + r["p_core"] + r["p_rect"] + r["p_sec"],
+            "v_com": r["v_com"],
+        })
+    # least-squares fit of each group to its own functional form
+    a = (sum(x["rising"] * x["v_com"] for x in rows)
+         / sum(x["v_com"] ** 2 for x in rows))
+    b = (sum(x["falling"] / x["v_bus"] for x in rows)
+         / sum(1 / x["v_bus"] ** 2 for x in rows))
+    return rows, a, b, (b / a) ** 0.5
+
+# ---------------------------------------------------------------------------
+# Output bleed-down (sec:hv-bleeder-discharge)
+#
+# After shutdown the tubes discharge C_out themselves while they still conduct,
+# each behaving as its ballast in series with its own maintaining voltage, so
+# each group's branch pulls the rail toward that maintaining voltage and stops.
+# The INS-1's 55 V ceiling sits below the 60 V IEC 62368-1 ES1 limit, so the
+# colon branch carries the rail under ES1 on its own; the resistive path only
+# sets how fast. Both phases are single-pole decays toward the branch's own
+# asymptote.
+# ---------------------------------------------------------------------------
+
+def _decay_time(v_start, v_end, v_inf, tau):
+    from math import log
+    return tau * log((v_start - v_inf) / (v_end - v_inf))
+
+def bleed_down(c_out, r_resistive, v_start=170.0, v_target=60.0,
+               n_digit=4, r_digit=R_A_DIGIT, v_m_digit=V_M_DIGIT + V_K_DRIVER_MAX,
+               n_colon=2, r_colon=R_A_COLON, v_m_colon=V_M_COLON):
+    """Time from shutdown to the ES1 limit, in the two phases the loads impose.
+
+    The digit extinction point carries the K155ID1's drop; the colon cathodes
+    return straight to ground, so the colon branch stops at the tube's own
+    maintaining voltage.
+    """
+    g_res = 1 / r_resistive
+    g_digit, g_colon = n_digit / r_digit, n_colon / r_colon
+    # Phase 1: digits conducting, until the rail reaches their extinction point.
+    # The colon and resistive branches pull the asymptote below that point, so
+    # the digits do extinguish rather than approach it forever.
+    g1 = g_digit + g_colon + g_res
+    v_inf1 = (g_digit * v_m_digit + g_colon * v_m_colon) / g1
+    tau1, v_ext_digit = c_out / g1, v_m_digit
+    t1 = _decay_time(v_start, v_ext_digit, v_inf1, tau1)
+    # Phase 2: colons only, down through the ES1 limit.
+    g2 = g_colon + g_res
+    v_inf2 = g_colon * v_m_colon / g2
+    tau2 = c_out / g2
+    t2 = _decay_time(v_ext_digit, v_target, v_inf2, tau2)
+    return {"t_digit_phase": t1, "v_digit_ext": v_ext_digit, "tau_colon": tau2,
+            "v_inf_colon": v_inf2, "t_colon_phase": t2, "t_total": t1 + t2,
+            "tau_resistive_only": c_out * r_resistive}
+
+def bleed_down_resistive_only(c_out, r_resistive, v_start=170.0, v_target=60.0):
+    """Same discharge with no tubes installed -- the resistive path alone."""
+    return _decay_time(v_start, v_target, 0.0, c_out * r_resistive)
+
+# ---------------------------------------------------------------------------
+# Soft start (sec:hv-ss): t_rise nominal and at its own worst case
+# ---------------------------------------------------------------------------
+
+def t_rise(c_out, eta, v_out=170.0, i_lim=None):
+    i_lim = 0.100 / R_201 if i_lim is None else i_lim
+    return (0.5 * c_out * v_out ** 2) / (0.5 * L_P * i_lim ** 2 * F_SW * eta)
+
+# ---------------------------------------------------------------------------
 # Operating points
 # ---------------------------------------------------------------------------
 
@@ -402,7 +559,7 @@ def main():
     print()
 
     print("=== Design-max envelope: V_out = 191.5 V, V_BUS = 4.75 V, typical T_OVL ===")
-    budget = total_output(191.5, digit_current_override=3.5e-3, colon_current_override=0.85e-3)
+    budget = total_output(191.5, digit_current_override=3.5e-3)
     for k, v in budget.items():
         unit = "A" if k.startswith("i_") else "W"
         print(f"  {k} = {v*1000:.2f} m{unit}")
@@ -450,6 +607,39 @@ def main():
               f"I_rms_pri={rn['i_rms_pri']:.2f} A, I_in={rn['p_in']/vb*1000:.0f} mA, "
               f"BIAS={rn['v_bias']:.1f} V ({rn['bias_source']})")
     r_n = nominal[9.0]
+    print()
+
+    print("=== Shape of the efficiency curve across the input window (design-max) ===")
+    rows, a_fit, b_fit, v_min_loss = loss_shape(budget["p_out"], 191.5, r_dson_converged)
+    for row in rows:
+        print(f"  V_BUS={row['v_bus']:5.2f} V: duty={row['duty']:.3f}, "
+              f"loss={row['p_loss']*1000:.0f} mW, eta={row['eta']:.3f} "
+              f"(rising {row['rising']*1000:.0f}, falling {row['falling']*1000:.0f}, "
+              f"flat {row['flat']*1000:.0f})")
+    print(f"  fit: A={a_fit*1000:.1f} mW/V, B={b_fit*1000:.0f} mW.V, "
+          f"loss minimized at sqrt(B/A) = {v_min_loss:.1f} V")
+    print()
+
+    print("=== Switching-frequency bracket (design-max load) ===")
+    fb = freq_bracket(budget["p_out"], 191.5, r_dson_converged)
+    print(f"  DCM fails (idle = 0) at {fb['f_dcm_fail']/1e3:.0f} kHz; "
+          f"idle = 5% at {fb['f_idle_5pct']/1e3:.0f} kHz")
+    print(f"  R_S power-delivery ceiling meets the {R_S_FLOOR*1000:.1f} mOhm floor at "
+          f"{fb['f_rs_floor']/1e3:.0f} kHz; reaches the specified "
+          f"{R_201*1000:.0f} mOhm at {fb['f_rs_specified']/1e3:.0f} kHz")
+    for f in (fb["f_rs_floor"], fb["f_dcm_fail"]):
+        print(f"  eta at {f/1e3:.0f} kHz = {_at_freq(f, budget['p_out'], 191.5, r_dson_converged)['eta']:.3f}")
+    idle_nom = dcm_idle_fraction(F_SW, budget["p_out"], 191.5, r_dson_converged)
+    idle_dither = dcm_idle_fraction(F_SW * 1.078, budget["p_out"], 191.5, r_dson_converged)
+    print(f"  worst-corner idle fraction: {idle_nom*100:.1f}% at f_sw, "
+          f"{idle_dither*100:.1f}% at the top of the dither range")
+    print()
+
+    print("=== Gate-rail bound: the rail at which I_pk(Lmin) reaches I_lim_min ===")
+    gb = gate_rail_bound(budget["p_out"], 191.5)
+    print(f"  I_lim_min={gb['i_lim_min']:.3f} A -> v_gate={gb['v_gate']:.2f} V, "
+          f"t_ovl={gb['t_ovl']*1e9:.0f} ns, "
+          f"drive above plateau={gb['v_drive_above_plateau']:.2f} V")
     print()
 
     print("=== Efficiency across the window at design-max load, pump vs no pump ===")
@@ -607,10 +797,6 @@ def main():
         return (180 - math.degrees(math.atan(fc/f_p)) - 90
                 + math.degrees(math.atan(fc/f_z)) - math.degrees(math.atan(fc/f_hp)))
 
-    fc_validate = solve_fc(287.0)   # old G0, should reproduce doc's old 194 Hz / 52 deg
-    print(f"  VALIDATION at old G0=287: f_c={fc_validate:.0f} Hz "
-          f"(doc: 194 Hz), phi_m={phase_margin(fc_validate):.0f} deg (doc: 52 deg)")
-
     f_c = solve_fc(g0)
     phi_m = phase_margin(f_c)
     print(f"  f_z={f_z:.0f} Hz, f_hp={f_hp/1000:.1f} kHz, H=1/170")
@@ -620,16 +806,61 @@ def main():
 
     print("=== Soft start (design-max eta) ===")
     i_lim_typ = 0.100 / R_201
-    denom = 0.5 * L_P * i_lim_typ**2 * F_SW * r["eta"]
+    i_lim_min = CS_THRESH_MIN / (R_201 * (1 + R201_TOL))
     e_stored = 0.5 * c_out * 170.0**2
-    t_rise = e_stored / denom
-    print(f"  I_lim(typ)={i_lim_typ:.3f} A, denom={denom:.2f} W, t_rise={t_rise*1000:.1f} ms")
+    t_r = t_rise(c_out, r["eta"])
+    # Worst case: C_out at +20%, the current limit at its guaranteed minimum
+    # (which enters squared), efficiency at the pessimistic turn-off overlap.
+    t_r_wc = t_rise(c_out * 1.2, r_wc["eta"], i_lim=i_lim_min)
+    print(f"  I_lim(typ)={i_lim_typ:.3f} A, E_stored={e_stored*1000:.1f} mJ, "
+          f"t_rise={t_r*1000:.1f} ms")
+    print(f"  worst case (C+20%, I_lim {i_lim_min:.3f} A, eta {r_wc['eta']:.3f}): "
+          f"t_rise_max={t_r_wc*1000:.1f} ms -> C_SS_min={t_r*10e-6/1.0*1e9:.0f} nF nominal, "
+          f"{t_r_wc*10e-6/1.0*1e9:.0f} nF against the worst case")
+    for c_ss in (220e-9, 470e-9):
+        t_ss_min = c_ss * 0.9 * 0.99 / 11e-6
+        t_ss_max = c_ss * 1.1 * 1.01 / 9e-6
+        print(f"  C_SS={c_ss*1e9:.0f} nF: t_SS={c_ss*1.0/10e-6*1000:.1f} ms nominal, "
+              f"{t_ss_min*1000:.1f}-{t_ss_max*1000:.1f} ms worst-case-additive "
+              f"({(t_ss_min-t_r_wc)*1000:+.1f} ms vs t_rise_max)")
     print()
 
-    print("=== Bleeder minimum-load check (design-max eta) ===")
+    print("=== Bleeder: minimum load and bleed-down (design-max eta) ===")
     i_pk_min = 13 * 165e-9 / L_P
     p_min = 0.5 * L_P * i_pk_min**2 * F_SW * r["eta"]
     print(f"  I_pk_min={i_pk_min:.3f} A, P_min={p_min*1000:.1f} mW")
+    p_bleed = 170.0**2 / R_BLEEDER
+    p_div = 170.0 * divider_current(170.0)
+    print(f"  preload: bleeder {p_bleed*1000:.0f} mW + divider {p_div*1000:.0f} mW "
+          f"= {(p_bleed+p_div)*1000:.0f} mW ({(p_bleed+p_div)/p_min:.2f}x P_min); "
+          f"R_BLEED ceiling for preload = "
+          f"{170.0**2/(p_min - p_div)/1e6:.2f} MOhm")
+    r_par = 1 / (1 / R_BLEEDER + 1 / R_DIVIDER)
+    bd = bleed_down(c_out, r_par)
+    print(f"  R_BLEED || R_div = {r_par/1e3:.0f} kOhm")
+    print(f"  digit phase: {bd['t_digit_phase']*1000:.0f} ms to "
+          f"{bd['v_digit_ext']:.1f} V")
+    print(f"  colon phase: tau={bd['tau_colon']:.3f} s toward "
+          f"{bd['v_inf_colon']:.1f} V, {bd['t_colon_phase']:.2f} s to 60 V")
+    print(f"  total {bd['t_total']:.2f} s vs the 2 s ES1 window "
+          f"({(2-bd['t_total'])/2*100:.0f}% margin)")
+    bd_div = bleed_down(c_out, R_DIVIDER)
+    print(f"  divider alone (no bleeder): {bd_div['t_total']:.2f} s")
+    print(f"  no tubes installed, resistive path alone: "
+          f"{bleed_down_resistive_only(c_out, r_par):.2f} s")
+
+    print()
+    print("=== Efficiency lever: same switch at half the gate charge ===")
+    global Q_G
+    q_g_save = Q_G
+    Q_G = 20e-9
+    try:
+        r_half = converge(p_out=budget["p_out"], v_bus=V_BUS_MIN, v_out=191.5,
+                          t_ovl=T_OVL_TYP / 2, r_dson=r_dson_converged)
+    finally:
+        Q_G = q_g_save
+    print(f"  Q_G 20 nC, t_ovl {T_OVL_TYP/2*1e9:.0f} ns: eta={r_half['eta']:.3f} "
+          f"(vs {r['eta']:.3f} as specified)")
 
 
 if __name__ == "__main__":

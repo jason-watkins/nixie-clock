@@ -19,33 +19,32 @@ Source: `IN-12A_IN-12B.pdf` (original scan), `IN-12_english_gra-afch.pdf` (Engli
 **Ballast (digit anodes):** R = (170 − 145) / 3 mA ≈ 8.2 kΩ.
 At 2.5 mA use 10 kΩ. Dissipation ≈ 75 mW → 0.25 W part is fine.
 
-## IN-6 (ИН-6): colon dots NX5–NX6
+## INS-1 (ИНС-1): colon dots NX5–NX6
 
-Source: `IN-6.pdf` (original label sheet, GOST 17821-75).
+Source: `INS-1.pdf` (original label sheet, ODO.334.095 TU).
 
-**Three electrodes**:
-lead 1 = anode (A), lead 2 = indicator cathode (K), lead 3 = auxiliary
-priming cathode (KA). Lead 1 is the physically separate one; count from it.
+**Two electrodes**: lead 1 = anode (A, the small cylinder), lead 2 = cathode
+(K, the large cylinder, the one the glow forms on). Count leads from the
+indicator dot.
 
 | Parameter | Value |
 |---|---|
-| Ignition voltage (either gap) | ≤ 140 V |
-| Maintaining voltage @ 0.7 mA | ≤ 88–90 V |
-| Permissible anode current | 0.6–0.85 mA |
-| Indication current, min | 0.25 mA |
-| Factory reference circuit | 200 kΩ from +180 V |
+| Striking voltage | 65–90 V |
+| Maintaining voltage | ≤ 55 V (no minimum given) |
+| Optimal indication current | 0.5 mA |
 
-**Ballast (colon anodes):** R = (170 − 88) / 0.7 mA ≈ 117 kΩ → **120 kΩ**
-gives ~0.68 mA, mid-range of permissible. Dissipation ≈ 56 mW.
+No rated operating-current band, no maximum switching frequency, and no
+envelope dimensions are given.
+
+**Ballast (colon anodes):** cathodes go straight to ground, so there is no
+driver drop: R = (177.5 − 55) / 0.5 mA = 245 kΩ → **240 kΩ**, sized at the
+middle of the 170–185 V trim range. That passes 0.48–0.54 mA across it and
+0.46–0.57 mA across the wider achieved range. Dissipation ≈ 78 mW worst case.
 One resistor per tube; never share ballast between gas tubes.
-
-**KA handling:** auxiliary cathode exists to prime fast switching; unused in
-always-on service. Leave NC (no-connect flag). Alternative if the third lead
-is unwanted: clip it at the tube and leave the KA pad empty.
 
 ## Supply-rail note
 
 IN-12 ignition worst case may approach the +170 V rail (some sources quote
 up to ~200 V for aged/dark tubes). The HV rail is trimmable 160–196 V for
 this reason: strike is calibrated against the actual tube stock, then the
-rail is set about 10 V above. IN-6 strikes at ≤140 V and is not a concern.
+rail is set about 10 V above. INS-1 strikes at ≤90 V and is not a concern.

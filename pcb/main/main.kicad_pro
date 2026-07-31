@@ -746,6 +746,7 @@
   "text_variables": {
     "AUTHOR": "Jason Watkins",
     "REV": "C",
+    "STEP": "1",
     "TITLE": "4 Digit Nixie Clock Controller"
   },
   "tuning_profiles": {

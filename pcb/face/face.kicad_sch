@@ -6624,7 +6624,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "120k"
+		(property "Value" "240k"
 			(at 210.82 54.6099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6668,7 +6668,18 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FRF52-120K"
+		(property "MFG Part No" "CFR-25JR-52-240K"
+			(at 208.28 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
 			(at 208.28 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -10713,7 +10724,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "120k"
+		(property "Value" "240k"
 			(at 210.82 31.7499 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10757,7 +10768,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FRF52-120K"
+		(property "MFG Part No" "CFR-25JR-52-240K"
 			(at 208.28 30.48 0)
 			(hide yes)
 			(show_name no)

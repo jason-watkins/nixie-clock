@@ -6,24 +6,39 @@ The design is several independently fabricated boards, one KiCad project
 each, discovered as pcb/<name>/<name>.kicad_pro. Each board carries its
 own revision and is released on its own schedule.
 
-A release requires a clean git tree, passing ERC and DRC, and a revision
-with no existing release tag. The revision is the project text variable
-REV (Board Setup -> Text Variables); title blocks and silkscreen render it
-as ${REV}. A release exports to fab/<name>/rev<REV>/ and tags HEAD as
-<name>-rev<REV>. If that tag exists at another commit, the release fails:
-bump REV, commit, rerun. Rerunning at the tagged commit rebuilds the same
-release.
+An export is identified by two project text variables (Board Setup -> Text
+Variables). REV is the design revision, bumped when the board is respun.
+STEP is a positive integer counting the exports of that revision, because a
+revision gets sent out several times while it is brought up. Together they
+name the export: rev C step 2 is "C2", which becomes fab/<name>/revC2/ and
+the tag <name>-revC2. Title blocks and silkscreen should render ${REV} and
+${STEP} so a board in hand names the commit it was built from.
+
+An export requires ERC and DRC to pass, its sources to be committed, and
+its step to be unspent. Unspent means no <name>-rev<REV><STEP> tag exists
+at a different commit; if one does, the export fails, because two different
+sets of files would otherwise carry one name. Bump STEP, commit, rerun.
+Rerunning at the tagged commit rebuilds the same export, which is the only
+case where an existing directory is overwritten.
+
+"Sources committed" is scoped to the board rather than to the repository:
+its project directory, the shared library directory pcb/lib/, and this
+script -- everything whose content can change the exported files. Work in
+progress on the design document, on another board, or on an unrelated
+script cannot reach these outputs and does not block them.
 
 The design-analysis LaTeX document (docs/design_analysis/) covers all the
 boards at once, so it records every board's revision. Those come from a
 small generated file (docs/design_analysis/revision.tex) rather than being
 hand-maintained: one \\Rev<Name> macro per board, plus \\DesignRev, which
 collapses to a bare revision letter while the boards agree and expands to
-a per-board list once they diverge. A release fails if that file does not
-match the current revisions of every board -- not only the one being
-released -- so the document can never describe a board it has fallen
-behind. Run --sync-doc-rev to regenerate it, commit, and rerun. Between
-releases the document keeps showing the previous revisions, which is
+a per-board list once they diverge. These carry REV alone: the document
+describes a revision of the design, not one export of it, so STEP does not
+appear there and bumping it never disturbs the document. An export fails if
+that file does not match the current revisions of every board -- not only
+the one being exported -- so the document can never describe a board it has
+fallen behind. Run --sync-doc-rev to regenerate it, commit, and rerun.
+Between respins the document keeps showing the previous revisions, which is
 expected. The document separately stamps its own compile date via LaTeX's
 \\today, independent of this script.
 
@@ -32,20 +47,25 @@ Usage:
     python scripts/make_release.py                 # release every board
     python scripts/make_release.py main            # release one board
     python scripts/make_release.py main hv         # release a subset
-    python scripts/make_release.py --no-tag         # export only; repeatable test runs
     python scripts/make_release.py --sync-doc-rev  # regenerate revision.tex, exit
+    python scripts/make_release.py --no-tag --output ../scratch   # trial run
 
-Output tree:
-    fab/<name>/rev<REV>/
-        gerbers/                         gerber and drill files
-        <name>-rev<REV>-gerbers.zip      upload this to the fab
-        bom.csv                          assembly BOM, fab column format
-        positions.csv                    pick-and-place, fab column format
-        erc.rpt, drc.rpt                 reports from the release checks
+Output tree (rooted at --output, default fab/):
+    <root>/<name>/rev<REV><STEP>/
+        erc.rpt, drc.rpt                  reports from the export checks
+        <fab>/
+            gerbers/                      gerber and drill files
+            <name>-rev<REV><STEP>-<fab>-gerbers.zip   upload this to the fab
+            bom.csv                       assembly BOM, fab column format
+            positions.csv                 pick-and-place, fab column format
 
-Fab-specific settings live in FabProfile instances. To add a fab, copy the
-JLCPCB definition, adjust the kicad-cli arguments and CSV mappings, and
-add it to PROFILES.
+ERC and DRC check the design rather than any one fab, so they run once per
+board and their reports sit above the per-fab directories.
+
+Fab-specific settings live in FabProfile instances, collected in PROFILES.
+Every profile is exported by default; --profile narrows that to a subset.
+To add a fab, copy the JLCPCB definition, adjust the kicad-cli arguments
+and CSV mappings, and add it to PROFILES -- nothing else needs to change.
 
 Limitations:
 
@@ -110,7 +130,29 @@ class FabProfile:
         bom_value_prefixes: Designator prefixes exempt from the above: their
                        comment stays the Value, because "10k" reads better
                        than an order code for parts identified by value.
-        bom_part_label: Output header for the part-number column.
+        bom_columns:   The assembly BOM's columns, as (output header, source)
+                       pairs in output order. Sources are named in
+                       BOM_SOURCES; fabs disagree about both which columns
+                       they want and what to call them, so the whole shape
+                       is stated per profile rather than only its labels.
+        purchase_columns: Same, for a parts-order BOM listing what to buy,
+                       or () for a fab that procures the parts itself. This
+                       file stays out of the gerber archive: it is for the
+                       distributor, not the fab.
+        board_qty:     Boards per order, the quantity the parts-order BOM
+                       multiplies by. The fab's usual minimum unless there
+                       is a reason to build more.
+        overage_rules: (footprint-name pattern, extra pieces) pairs, first
+                       match wins. A consigning fab loses parts to feeder
+                       setup and tuning, so it demands spares on top of the
+                       board count. Empty when the fab buys the parts.
+        overage_default: Extra pieces for a part no rule matches.
+        zip_extras:    Generated file names to put in the gerber archive
+                       alongside the gerbers, for fabs that want one upload.
+        mount_type_names: KiCad's footprint attribute -> the fab's word for
+                       it. Every house names these differently ("SMT" and
+                       "Surface mount" for the same parts), and the column
+                       is read by a person, so it uses their vocabulary.
         pos_shift_fields: (x, y) symbol field names holding per-part
                        placement corrections in mm, stated in KiCad's
                        board coordinates (+Y down the screen).
@@ -134,7 +176,13 @@ class FabProfile:
     bom_part_fields: tuple[str, ...]
     bom_comment_fields: tuple[str, ...]
     bom_value_prefixes: tuple[str, ...]
-    bom_part_label: str
+    bom_columns: tuple[tuple[str, str], ...]
+    purchase_columns: tuple[tuple[str, str], ...]
+    board_qty: int
+    overage_rules: tuple[tuple[str, int], ...]
+    overage_default: int
+    zip_extras: tuple[str, ...]
+    mount_type_names: dict[str, str]
     pos_shift_fields: tuple[str, str]
     pos_rotate_field: str
     bom_strip_lib_prefix: bool
@@ -192,7 +240,28 @@ JLCPCB = FabProfile(
     # Parts identified by value rather than by order code. "10k" is what a
     # human wants to read here; the order code is already in its own column.
     bom_value_prefixes=("C", "L", "R"),
-    bom_part_label="LCSC Part #",
+    # JLC maps columns by header rather than by position, so the quantity
+    # column it would otherwise derive from the designator list is harmless
+    # to state, and stating it lets the same file feed a distributor's
+    # list-import tool, which requires a quantity column and derives nothing.
+    bom_columns=(
+        ("Comment", "comment"),
+        ("Designator", "designator"),
+        ("Footprint", "footprint"),
+        ("LCSC Part #", "part"),
+        ("Quantity", "quantity"),
+    ),
+    # Turnkey: JLC buys the parts, so there is nothing to order separately
+    # and no overage to carry.
+    purchase_columns=(),
+    board_qty=5,
+    overage_rules=(),
+    overage_default=0,
+    # JLC takes the BOM and placement file as separate uploads on the order
+    # page, so the archive stays gerbers-only.
+    zip_extras=(),
+    # No type column on this BOM: JLC resolves parts from the LCSC code.
+    mount_type_names={},
     # Per-part placement corrections, for packages whose JLC library model is
     # anchored or oriented differently from the KiCad footprint.
     pos_shift_fields=("shift_x", "shift_y"),
@@ -217,7 +286,159 @@ JLCPCB = FabProfile(
     ),
 )
 
-PROFILES: dict[str, FabProfile] = {p.name: p for p in (JLCPCB,)}
+PCBUNLIMITED = FabProfile(
+    name="pcbunlimited",
+    gerber_layer_patterns=(".Cu", ".SilkS", ".Mask", ".Paste", "Edge.Cuts"),
+    gerber_args=("--no-x2", "--no-netlist", "--subtract-soldermask"),
+    drill_args=(
+        "--format", "excellon",
+        "--excellon-units", "mm",
+        "--excellon-zeros-format", "decimal",
+        "--excellon-separate-th",
+        "--drill-origin", "absolute",
+    ),
+    pos_args=("--format", "csv", "--units", "mm", "--side", "both", "--exclude-dnp"),
+    # Consigned assembly: the parts are bought here and shipped to them, so
+    # the LCSC code has no meaning in this file. No fallback either -- a row
+    # reaching them with an empty part number is a part nobody can identify,
+    # and a blank cell says that plainly where a stray order code would not.
+    bom_part_fields=("MFG Part No",),
+    bom_comment_fields=("MFG Part No", "Value"),
+    bom_value_prefixes=("C", "L", "R"),
+    # Their checklist names the columns it wants: reference designators,
+    # quantity, manufacturer part number, part description, type and package.
+    bom_columns=(
+        ("Reference Designators", "designator"),
+        ("Quantity", "quantity"),
+        ("Manufacturer Part Number", "part"),
+        ("Description", "description"),
+        ("Type", "type"),
+        ("Package", "footprint"),
+    ),
+    # What to buy, including their overage. Manufacturer part number and
+    # quantity lead, because those are the two columns a distributor's
+    # list-import tool needs; the rest is there to check the order by eye.
+    purchase_columns=(
+        ("Manufacturer Part Number", "part"),
+        ("Quantity", "order_qty"),
+        ("Description", "comment"),
+        ("Package", "footprint"),
+        ("Per Board", "quantity"),
+        ("Reference Designators", "designator"),
+    ),
+    # Their stated minimum on the assembly quote form.
+    board_qty=4,
+    # "Extra parts will be required on small builds (1 to 25 boards) as
+    # follows: 0201 to 0603 size: Minimum extra quantity 50 plus required
+    # quantity. 0805 to 1206 size: Minimum extra quantity 25 plus required
+    # quantity." Flat counts, not per board -- the loss is in feeder setup,
+    # which happens once. Elsewhere on the same page the figures are given
+    # as 25 and 10; these are the larger pair, since arriving short stops
+    # the build and arriving long costs a few dollars of passives.
+    overage_rules=(
+        (r"_(0201|0402|0603)_", 50),
+        (r"_(0805|1206)_", 25),
+    ),
+    # "Larger components: 1-2 extra parts sufficient", which also covers
+    # every through-hole part.
+    overage_default=2,
+    # They ask for gerbers, centroid and BOM as a single archive.
+    zip_extras=("bom.csv", "positions.csv"),
+    # Their checklist's vocabulary: "Type (SMT, Thru-Hole, Fine-pitch, BGA,
+    # etc.)". The finer two are not derivable from the footprint attribute
+    # and no part on these boards is either.
+    mount_type_names={"smd": "SMT", "through_hole": "Thru-Hole"},
+    pos_shift_fields=("shift_x", "shift_y"),
+    pos_rotate_field="rotate",
+    bom_strip_lib_prefix=True,
+    pos_columns={
+        "Designator": "Ref",
+        "Mid X": "PosX",
+        "Mid Y": "PosY",
+        "Layer": "Side",
+        "Rotation": "Rot",
+    },
+    pos_side_names={"top": "Top", "front": "Top", "bottom": "Bottom", "back": "Bottom"},
+    upload_notes=(
+        "PCB Unlimited order (consigned assembly):\n"
+        "  1. Upload the single gerbers zip; it already carries bom.csv and\n"
+        "     positions.csv, which they want in the same archive.\n"
+        "  2. Buy the parts from parts-order.csv and ship them the kit. The\n"
+        "     quantities there already include their overage.\n"
+        "  3. Passives must arrive on continuous strip or reel, not loose\n"
+        "     and not in cut segments.\n"
+        "  4. DNP parts are excluded from the BOM rather than flagged in a\n"
+        "     column, so every row listed is a row to populate."
+    ),
+)
+
+PCBWAY = FabProfile(
+    name="pcbway",
+    # They ask for silkscreen, copper and solder paste as a minimum.
+    gerber_layer_patterns=(".Cu", ".SilkS", ".Mask", ".Paste", "Edge.Cuts"),
+    # RS-274X, which is what --no-x2 leaves.
+    gerber_args=("--no-x2", "--no-netlist", "--subtract-soldermask"),
+    drill_args=(
+        "--format", "excellon",
+        "--excellon-units", "mm",
+        "--excellon-zeros-format", "decimal",
+        "--excellon-separate-th",
+        "--drill-origin", "absolute",
+    ),
+    pos_args=("--format", "csv", "--units", "mm", "--side", "both", "--exclude-dnp"),
+    # Turnkey: they source from Digi-Key, Mouser and Arrow, none of which
+    # know an LCSC code.
+    bom_part_fields=("MFG Part No",),
+    bom_comment_fields=("MFG Part No", "Value"),
+    bom_value_prefixes=("C", "L", "R"),
+    # Their file-requirements page names these columns verbatim. Two more
+    # that page lists for turnkey orders are absent here: "Manufacturers
+    # Name" and "Distributors Part Number". No symbol field holds either,
+    # and an empty column reads as missing data rather than as a question
+    # their sourcing team can answer from the part number.
+    bom_columns=(
+        ("Line#", "line"),
+        ("Quantity Per Part Number", "quantity"),
+        ("Reference Designator", "designator"),
+        ("Part Number", "part"),
+        ("Part Description", "description"),
+        ("Package", "footprint"),
+        ("Type (Surface mount, Thru-hole or Hybrid)", "type"),
+    ),
+    purchase_columns=(),
+    # Their quantity ladder for assembly starts at 5.
+    board_qty=5,
+    overage_rules=(),
+    overage_default=0,
+    zip_extras=(),
+    mount_type_names={"smd": "Surface mount", "through_hole": "Thru-hole"},
+    pos_shift_fields=("shift_x", "shift_y"),
+    pos_rotate_field="rotate",
+    bom_strip_lib_prefix=True,
+    pos_columns={
+        "Designator": "Ref",
+        "Mid X": "PosX",
+        "Mid Y": "PosY",
+        "Layer": "Side",
+        "Rotation": "Rot",
+    },
+    pos_side_names={"top": "Top", "front": "Top", "bottom": "Bottom", "back": "Bottom"},
+    upload_notes=(
+        "PCBWay order (turnkey):\n"
+        "  1. Upload the gerbers zip, then bom.csv and positions.csv as\n"
+        "     separate files on the assembly page.\n"
+        "  2. The centroid lists through-hole parts as well as SMD ones, so\n"
+        "     it agrees designator for designator with the BOM.\n"
+        "  3. DNP parts are excluded from both files rather than flagged."
+    ),
+)
+
+# Every profile here is exported by default, each into its own subdirectory of
+# the revision, so one commit can be quoted at several houses without a rerun.
+# Definition order is the order they run in.
+PROFILES: dict[str, FabProfile] = {
+    p.name: p for p in (JLCPCB, PCBUNLIMITED, PCBWAY)
+}
 
 
 # --------------------------------------------------------------------------
@@ -314,23 +535,113 @@ def find_boards(wanted: list[str] | None = None) -> list[Project]:
     return [found[n] for n in wanted]
 
 
+def _within(path: Path, root: Path) -> bool:
+    """True if path is root or sits beneath it. Both must be resolved."""
+    return path == root or root in path.parents
+
+
+def _display_path(path: Path, root: Path) -> Path:
+    """Repo-relative when the path is inside the repo, absolute otherwise:
+    --output can point anywhere on the filesystem."""
+    try:
+        return path.relative_to(root)
+    except ValueError:
+        return path
+
+
 # --------------------------------------------------------------------------
 # Release gates.  Each returns None on success or raises ReleaseError.
 # --------------------------------------------------------------------------
 
-def gate_git_clean(root: Path) -> None:
-    """Require a clean working tree so the release is reproducible from a
-    commit. Repo-wide, so it is checked once rather than per board."""
-    status = run(["git", "status", "--porcelain"], cwd=root).stdout
+LIB_URI_RE = re.compile(r'\(\s*uri\s+"([^"]*)"\s*\)')
+
+# The vendored symbol and footprint libraries every board draws on.
+SHARED_LIB_DIR = Path("pcb/lib")
+
+
+def gate_lib_scope(project: Project) -> None:
+    """Refuse a lib table pointing at an in-repo library that export_sources
+    does not cover.
+
+    That scope is stated as whole directories, which is what keeps it simple
+    to reason about; the cost is that a library placed somewhere else would
+    go unguarded with nothing saying so. Naming it here turns that into a
+    failure at the gate instead of a quietly weaker check."""
+    root = project.root.resolve()
+    proj_dir = project.pro.parent.resolve()
+    lib_dir = (root / SHARED_LIB_DIR).resolve()
+    for table in ("fp-lib-table", "sym-lib-table"):
+        table_file = proj_dir / table
+        if not table_file.is_file():
+            continue
+        for uri in LIB_URI_RE.findall(table_file.read_text(encoding="utf-8")):
+            if "${KIPRJMOD}" not in uri:
+                continue  # a global library is not this repository's to vouch for
+            target = Path(uri.replace("${KIPRJMOD}", str(proj_dir)))
+            if not target.exists():
+                continue
+            target = target.resolve()
+            if not _within(target, root):
+                continue  # outside the repository: no commit to hold it to
+            if _within(target, proj_dir) or _within(target, lib_dir):
+                continue
+            raise ReleaseError(
+                f"board {project.name!r}: {table} points at "
+                f"{_display_path(target, root)}, which the source-cleanliness "
+                f"check does not cover.\nMove the library under "
+                f"{SHARED_LIB_DIR.as_posix()}/ or widen export_sources()."
+            )
+
+
+def export_sources(project: Project) -> list[Path]:
+    """Every path whose content decides this board's exported files: the
+    board's project directory, the shared library directory, and this script.
+
+    The library and the script are both shared, so either can change a
+    board's output while its project directory sits untouched -- a check
+    scoped to pcb/<name>/ alone would let an edited footprint or an edited
+    BOM column reach a tagged export.
+
+    The library is taken whole rather than entry by entry from the lib
+    tables. A footprint is then in scope from the moment it lands in the
+    directory, which is what makes the rule statable: three directories,
+    no dependence on which of them a board happens to reference today."""
+    root = project.root.resolve()
+    found = [project.pro.parent.resolve(),
+             (root / SHARED_LIB_DIR).resolve(),
+             Path(__file__).resolve()]
+    return [p for p in found if p.exists() and _within(p, root)]
+
+
+def gate_git_clean(project: Project) -> None:
+    """Require this board's sources to be committed, so its tag names a
+    commit that reproduces the exported files.
+
+    Scoped to the board, not the repository: work on the design document,
+    on another board, or on an unrelated script cannot change these outputs
+    and so must not block the export. export_sources() defines the scope."""
+    gate_lib_scope(project)
+    paths = [str(p) for p in export_sources(project)]
+    status = run(["git", "status", "--porcelain", "--", *paths],
+                 cwd=project.root).stdout
     if status.strip():
         listing = "\n".join(status.splitlines()[:10])
-        raise ReleaseError("working tree is not clean; commit or stash first:\n" + listing)
+        raise ReleaseError(
+            f"board {project.name!r} has uncommitted changes in its sources; "
+            f"commit or stash first:\n{listing}"
+        )
+
+
+def read_text_var(project: Project, name: str) -> str:
+    """One project text variable (Board Setup -> Text Variables)."""
+    text_vars = json.loads(project.pro.read_text(encoding="utf-8")).get("text_variables", {})
+    return text_vars.get(name, "").strip()
 
 
 def read_rev(project: Project) -> str:
-    """Read the REV text variable that the silkscreen and title blocks show."""
-    text_vars = json.loads(project.pro.read_text(encoding="utf-8")).get("text_variables", {})
-    rev = text_vars.get("REV", "").strip()
+    """The REV text variable: the design revision, bumped when the board is
+    respun. Title blocks and silkscreen render it as ${REV}."""
+    rev = read_text_var(project, "REV")
     if not rev:
         raise ReleaseError(
             f"text variable 'REV' is not set on board {project.name!r}.\n"
@@ -345,8 +656,39 @@ def read_rev(project: Project) -> str:
     return rev
 
 
+def read_step(project: Project) -> str:
+    """The STEP text variable: which export of this revision is being built.
+
+    A revision is exported several times while it is brought up, and those
+    exports have to be told apart -- on the bench as much as in git. STEP is
+    a source field rather than a number this script allocates, precisely so
+    the board can print it: render ${REV}${STEP} on the silkscreen and a
+    board in hand names the commit it was built from."""
+    step = read_text_var(project, "STEP")
+    if not step:
+        raise ReleaseError(
+            f"text variable 'STEP' is not set on board {project.name!r}.\n"
+            "Define it in Board Setup -> Text Variables (e.g. STEP = 1); the\n"
+            "silkscreen and title blocks should reference it as ${REV}${STEP}."
+        )
+    if not step.isdigit() or step != str(int(step)) or int(step) < 1:
+        raise ReleaseError(
+            f"board {project.name!r}: STEP {step!r} is not a positive integer "
+            f"without leading zeros ('1' and '01' would name two exports)."
+        )
+    return step
+
+
+def read_export_id(project: Project) -> str:
+    """REV and STEP joined, e.g. 'C2'. Names the output directory and tag."""
+    return read_rev(project) + read_step(project)
+
+
 def read_revs(boards: list[Project]) -> dict[str, str]:
-    """Every board's REV, keyed by board name."""
+    """Every board's REV, keyed by board name.
+
+    REV alone, without STEP: this feeds the design document, which describes
+    a revision of the design rather than one export of it."""
     return {b.name: read_rev(b) for b in boards}
 
 
@@ -393,26 +735,31 @@ def sync_doc_rev(root: Path, revs: dict[str, str]) -> Path:
     return path
 
 
-def release_tag(project: Project, rev: str) -> str:
+def release_tag(project: Project, export_id: str) -> str:
     """Tags are per board, so boards can be respun independently."""
-    return f"{project.name}-rev{rev}"
+    return f"{project.name}-rev{export_id}"
 
 
-def gate_ledger(project: Project, rev: str) -> None:
-    """Fail if this board's revision was already released from a different
-    commit."""
-    tag = release_tag(project, rev)
+def gate_ledger(project: Project, export_id: str) -> None:
+    """Fail if this export identifier was already spent at another commit.
+
+    STEP is what moves here. The tag binds REV+STEP to one commit, so
+    exporting changed sources under the same STEP would give two different
+    sets of files the same name -- which is the thing the step number
+    exists to prevent."""
+    tag = release_tag(project, export_id)
     probe = run(["git", "rev-parse", "-q", "--verify", f"refs/tags/{tag}^{{commit}}"],
                 cwd=project.root, ok_codes=(0, 1))
     if probe.returncode == 1:
-        return  # tag absent: rev unreleased
+        return  # tag absent: this step is unspent
     tagged, head = probe.stdout.strip(), run(["git", "rev-parse", "HEAD"], cwd=project.root).stdout.strip()
     if tagged != head:
         raise ReleaseError(
-            f"{project.name} rev {rev} was already released (tag {tag} -> {tagged[:10]}).\n"
-            f"Bump REV in Board Setup -> Text Variables, commit, and rerun."
+            f"{project.name} rev {export_id} was already exported "
+            f"(tag {tag} -> {tagged[:10]}).\n"
+            f"Bump STEP in Board Setup -> Text Variables, commit, and rerun."
         )
-    # Tag points at HEAD: rebuilding the same release is fine.
+    # Tag points at HEAD: rebuilding the same export is fine.
 
 
 def gate_erc(kicad_cli: str, project: Project, report: Path) -> None:
@@ -611,9 +958,86 @@ def export_positions(kicad_cli: str, project: Project, profile: FabProfile,
             )
 
 
+FOOTPRINT_BLOCK_RE = re.compile(r'\n\s*\(footprint\s')
+FOOTPRINT_ATTR_RE = re.compile(r'\(attr\s+([^)]*)\)')
+FOOTPRINT_REF_RE = re.compile(r'\(property\s+"Reference"\s+"([^"]+)"')
+
+# KiCad's footprint attributes that state how a part is mounted.
+MOUNT_ATTRS = ("smd", "through_hole")
+
+
+def footprint_types(project: Project) -> dict[str, str]:
+    """KiCad's mounting attribute per designator, read from the board.
+
+    KiCad records this on every footprint as (attr smd) or (attr
+    through_hole), which is the same flag its own SMD/THT filters use, so
+    the board answers the question directly and no symbol field has to
+    restate it. A footprint carrying neither -- KiCad's "other" type -- is
+    left out rather than guessed at.
+
+    The values are KiCad's; profile.mount_type_names turns them into the
+    words a given fab uses. This does not distinguish the finer categories
+    some fabs list, such as fine-pitch or BGA: those need pad geometry, and
+    no part on these boards is either."""
+    text = project.pcb.read_text(encoding="utf-8")
+    types: dict[str, str] = {}
+    for block in FOOTPRINT_BLOCK_RE.split(text)[1:]:
+        ref = FOOTPRINT_REF_RE.search(block)
+        attr = FOOTPRINT_ATTR_RE.search(block)
+        if not ref or not attr:
+            continue
+        for flag in attr.group(1).split():
+            if flag in MOUNT_ATTRS:
+                types[ref.group(1)] = flag
+                break
+    return types
+
+
+def overage(profile: FabProfile, footprint: str) -> int:
+    """Spare pieces the fab wants beyond the boards being built."""
+    for pattern, extra in profile.overage_rules:
+        if re.search(pattern, footprint):
+            return extra
+    return profile.overage_default
+
+
+def _refs(cell: str) -> list[str]:
+    """Split a BOM row's designator cell. One row carries many designators;
+    --ref-range-delimiter "" in export_bom guarantees they are spelled out
+    rather than collapsed into ranges, so a plain split counts parts."""
+    return [ref.strip() for ref in cell.split(",") if ref.strip()]
+
+
+# Values a profile may put in a BOM column, as named in bom_columns and
+# purchase_columns. Keeping the vocabulary closed means a typo in a profile
+# fails at the gate rather than writing a column of blanks.
+BOM_SOURCES = {
+    "line": "1-based row number, for fabs that want the BOM numbered",
+    "comment": "identifying text, for a row the fab has to match by hand",
+    "designator": "every reference designator on the row, comma separated",
+    "footprint": "package name",
+    "part": "first non-empty of profile.bom_part_fields",
+    "quantity": "designators on this row, i.e. pieces per board",
+    "description": "the symbol's Description field",
+    "type": "SMT or Thru-Hole, read from the board",
+    "order_qty": "pieces to buy: quantity x board_qty, plus overage",
+}
+
+PURCHASE_BOM = "parts-order.csv"
+
+
+def _write_columns(path: Path, columns: tuple[tuple[str, str], ...],
+                   records: list[dict[str, str]]) -> None:
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([header for header, _ in columns])
+        for record in records:
+            writer.writerow([record[source] for _, source in columns])
+
+
 def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
-               out_csv: Path) -> set[str]:
-    """Export the BOM in the fab's column format.
+               out_csv: Path, purchase_csv: Path | None = None) -> set[str]:
+    """Export the assembly BOM, and the parts-order BOM if the fab consigns.
 
     One row per part type. The part-number column tries
     profile.bom_part_fields in order and keeps the first non-empty value.
@@ -626,47 +1050,54 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
     sees, so a generic library symbol name there ("Q_Dual_PMOS_...") wastes
     the one chance to identify the part.
 
+    Both files are built from one pass over the same rows, so the parts
+    ordered and the parts placed can never describe different boards.
+
     Returns every designator the BOM offers, which export_positions uses to
     hold the placement file to the same set."""
+    wanted = {source for _, source in profile.bom_columns + profile.purchase_columns}
+    unknown = sorted(wanted - set(BOM_SOURCES))
+    if unknown:
+        raise ReleaseError(
+            f"profile {profile.name!r} asks for unknown BOM column(s) {unknown}; "
+            f"known sources: {', '.join(sorted(BOM_SOURCES))}"
+        )
     part_fields = list(profile.bom_part_fields)
     comment_fields = list(profile.bom_comment_fields)
-    # Value is always exported (it is the fallback for both columns); the
-    # rest are whatever the two priority lists between them ask for.
-    extra = [f for f in dict.fromkeys(part_fields + comment_fields) if f != "Value"]
-    run(
-        [
-            kicad_cli,
-            "sch",
-            "export",
-            "bom",
-            "-o",
-            str(out_csv),
-            "--fields",
-            ",".join(["Value", "Reference", "Footprint"] + extra),
-            "--labels",
-            ",".join(["Comment", "Designator", "Footprint"] + extra),
-            "--group-by",
-            ",".join(["Value", "Footprint"] + extra),
-            "--exclude-dnp",
-            # Spell every reference out. kicad-cli defaults to collapsing
-            # runs into ranges ("C1-C3"), which an assembly house reads as
-            # one literal designator matching nothing in the placement file,
-            # so those parts silently go unassembled.
-            "--ref-range-delimiter",
-            "",
-            str(project.sch),
-        ]
-    )
-    rows = list(csv.reader(out_csv.open(encoding="utf-8")))
+    # Value is always exported (it is the fallback for both text columns); the
+    # rest are whatever the priority lists and the column specs ask for.
+    extra = [f for f in dict.fromkeys(
+        part_fields + comment_fields + (["Description"] if "description" in wanted else [])
+    ) if f != "Value"]
+    with tempfile.TemporaryDirectory() as tmp:
+        raw = Path(tmp) / "bom.csv"
+        run(
+            [
+                kicad_cli, "sch", "export", "bom", "-o", str(raw),
+                "--fields", ",".join(["Value", "Reference", "Footprint"] + extra),
+                "--labels", ",".join(["Comment", "Designator", "Footprint"] + extra),
+                "--group-by", ",".join(["Value", "Footprint"] + extra),
+                "--exclude-dnp",
+                # Spell every reference out. kicad-cli defaults to collapsing
+                # runs into ranges ("C1-C3"), which an assembly house reads as
+                # one literal designator matching nothing in the placement
+                # file, so those parts silently go unassembled.
+                "--ref-range-delimiter", "",
+                str(project.sch),
+            ]
+        )
+        rows = list(csv.reader(raw.open(encoding="utf-8")))
     header, body = rows[0], rows[1:]
     # "Value" is exported under the label "Comment", so it is column 0.
     col = {"Value": 0}
     col.update({f: header.index(f) for f in extra})
     fp_col = header.index("Footprint")
-    out_rows = [["Comment", "Designator", "Footprint", profile.bom_part_label]]
-    for row in body:
-        if profile.bom_strip_lib_prefix:
-            row[fp_col] = row[fp_col].split(":")[-1]
+    types = footprint_types(project) if "type" in wanted else {}
+
+    records: list[dict[str, str]] = []
+    for line, row in enumerate(body, start=1):
+        footprint = row[fp_col].split(":")[-1] if profile.bom_strip_lib_prefix else row[fp_col]
+        refs = _refs(row[1])
 
         def first(fields, _row=row):
             return next((_row[col[f]] for f in fields
@@ -675,34 +1106,66 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
         # Grouping keys include Value and the part fields, so every designator
         # on a row is the same part type and the first one's prefix speaks for
         # all of them.
-        prefix = re.match(r"[A-Za-z]+", row[1].split(",")[0].strip())
+        prefix = re.match(r"[A-Za-z]+", refs[0]) if refs else None
         if prefix and prefix.group(0) in profile.bom_value_prefixes:
             comment = row[col["Value"]].strip() or first(comment_fields)
         else:
             comment = first(comment_fields)
-        out_rows.append([comment, row[1], row[fp_col], first(part_fields)])
-    with out_csv.open("w", newline="", encoding="utf-8") as f:
-        csv.writer(f).writerows(out_rows)
-    # One BOM row carries many designators; --ref-range-delimiter "" above
-    # guarantees they are spelled out rather than collapsed into ranges.
-    return {ref.strip() for row in out_rows[1:]
-            for ref in row[1].split(",") if ref.strip()}
+        records.append({
+            "line": str(line),
+            "comment": comment,
+            "designator": row[1],
+            "footprint": footprint,
+            "part": first(part_fields),
+            "quantity": str(len(refs)),
+            "description": row[col["Description"]] if "Description" in col else "",
+            "type": profile.mount_type_names.get(types.get(refs[0], ""), "") if refs else "",
+            "order_qty": str(len(refs) * profile.board_qty
+                             + overage(profile, footprint)),
+        })
+
+    if "type" in wanted:
+        # An assembly house routes SMT and through-hole down different lines,
+        # so a blank here is a question they have to come back and ask. It
+        # means a footprint set to KiCad's "other" type; fix it in the
+        # footprint properties rather than in this file.
+        untyped = [r["designator"] for r in records if not r["type"]]
+        if untyped:
+            raise ReleaseError(
+                f"board {project.name!r}: no SMD or through-hole attribute on "
+                f"the footprint(s) for {', '.join(untyped)}.\n"
+                "Set the footprint type in Footprint Properties so the BOM can "
+                "state it."
+            )
+    _write_columns(out_csv, profile.bom_columns, records)
+    if profile.purchase_columns and purchase_csv is not None:
+        _write_columns(purchase_csv, profile.purchase_columns, records)
+    return {ref for record in records for ref in _refs(record["designator"])}
 
 
-def make_zip(gerber_dir: Path, zip_path: Path) -> None:
+def make_zip(gerber_dir: Path, zip_path: Path, extras: tuple[Path, ...] = ()) -> None:
+    """Archive the gerbers, plus any files a fab wants in the same upload."""
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for f in sorted(gerber_dir.iterdir()):
             zf.write(f, f.name)
+        for f in extras:
+            zf.write(f, f.name)
 
 
-def create_tag(project: Project, rev: str, profile: FabProfile) -> None:
-    tag = release_tag(project, rev)
+def create_tag(project: Project, export_id: str) -> None:
+    """Tag the commit this export was built from.
+
+    The message names no fab: the tag pins a commit, and a later export for
+    a second fab reuses this same tag rather than replacing it, so anything
+    it said about which fabs had run would go stale. The directory listing
+    answers that question."""
+    tag = release_tag(project, export_id)
     exists = run(["git", "rev-parse", "-q", "--verify", f"refs/tags/{tag}"],
                  cwd=project.root, ok_codes=(0, 1))
     if exists.returncode == 0:
         return  # tag already points at HEAD (same-commit rebuild)
     run(["git", "tag", "-a", tag, "-m",
-         f"Fab release {project.name} rev {rev} ({profile.name})"],
+         f"Fab export {project.name} rev {export_id}"],
         cwd=project.root)
 
 
@@ -724,13 +1187,12 @@ def preflight(kicad_cli: str, boards: list[Project], all_boards: list[Project]) 
     """Run every gate and print each result; return overall pass/fail.
 
     A release stops at the first failure; preflight reports all of them.
-    The repo-wide gates are evaluated once. The document-revision gate
-    reads every board, not just the ones being released."""
+    The document-revision gate reads every board, not just the ones being
+    released; every other gate is per board."""
     root = all_boards[0].root
-    passed = _report("git tree clean", lambda: gate_git_clean(root))
     try:
         revs = read_revs(all_boards)
-        passed &= _report("doc rev in sync", lambda: gate_doc_revision(root, revs))
+        passed = _report("doc rev in sync", lambda: gate_doc_revision(root, revs))
     except ReleaseError as err:
         passed = False
         print(f"  [FAIL] doc rev in sync: {err}")
@@ -738,77 +1200,117 @@ def preflight(kicad_cli: str, boards: list[Project], all_boards: list[Project]) 
     with tempfile.TemporaryDirectory() as tmp:
         for board in boards:
             try:
-                rev = read_rev(board)
+                export_id = read_export_id(board)
             except ReleaseError as err:
                 passed = False
-                print(f"\n{board.name}:\n  [FAIL] REV defined: {err}")
+                print(f"\n{board.name}:\n  [FAIL] REV/STEP defined: {err}")
                 continue
-            print(f"\n{board.name} (REV = {rev}):")
-            passed &= _report("rev unspent", lambda b=board, r=rev: gate_ledger(b, r))
+            print(f"\n{board.name} (rev {export_id}):")
+            passed &= _report("sources committed", lambda b=board: gate_git_clean(b))
+            passed &= _report("step unspent",
+                              lambda b=board, e=export_id: gate_ledger(b, e))
             passed &= _report("ERC clean", lambda b=board:
                               gate_erc(kicad_cli, b, Path(tmp) / f"{b.name}-erc.rpt"))
             passed &= _report("DRC clean", lambda b=board:
                               gate_drc(kicad_cli, b, Path(tmp) / f"{b.name}-drc.rpt"))
-    print("\npreflight: " + ("ready to release" if passed else "not ready; fix the items above"))
+    print("\npreflight: " + ("ready to release" if passed
+                             else "not ready; fix the items above"))
     return passed
 
 
-def release(kicad_cli: str, project: Project, profile: FabProfile,
-            revs: dict[str, str], tag: bool = True) -> None:
-    rev = revs[project.name]
-    gate_doc_revision(project.root, revs)
-    gate_git_clean(project.root)
-    gate_ledger(project, rev)
+def profile_stages(kicad_cli: str, project: Project, profile: FabProfile,
+                   out_dir: Path, export_id: str) -> list[tuple[str, object]]:
+    """The labelled steps that fill one fab's directory.
 
-    out_dir = project.root / "fab" / project.name / f"rev{rev}"
+    The gerber zip carries the fab name because it is the one file that
+    leaves this directory: three identically named archives in a downloads
+    folder is a good way to send a board to the wrong house."""
     gerber_dir = out_dir / "gerbers"
-    if out_dir.exists():
-        shutil.rmtree(out_dir)  # same-commit re-release: rebuild from scratch
-    out_dir.mkdir(parents=True)
-
     assembled: set[str] = set()
-    steps = [
-        ("ERC", lambda: gate_erc(kicad_cli, project, out_dir / "erc.rpt")),
+    bom_label = "bom.csv" + (f" + {PURCHASE_BOM}" if profile.purchase_columns else "")
+    return [
         (
-            "DRC + schematic parity",
-            lambda: gate_drc(kicad_cli, project, out_dir / "drc.rpt"),
-        ),
-        (
-            "gerbers + drill",
+            f"{profile.name}: gerbers + drill",
             lambda: export_gerbers_and_drill(kicad_cli, project, profile, gerber_dir),
         ),
         # The BOM runs first: it decides which designators are offered for
         # assembly, and the placement file is then held to that same set.
         (
-            "bom.csv",
+            f"{profile.name}: {bom_label}",
             lambda: assembled.update(
-                export_bom(kicad_cli, project, profile, out_dir / "bom.csv")
+                export_bom(kicad_cli, project, profile, out_dir / "bom.csv",
+                           out_dir / PURCHASE_BOM)
             ),
         ),
         (
-            "positions.csv",
+            f"{profile.name}: positions.csv",
             lambda: export_positions(
                 kicad_cli, project, profile, out_dir / "positions.csv", assembled
             ),
         ),
+        # Last, so the files a fab wants bundled already exist. The
+        # parts-order BOM is never among them: it is for the distributor.
         (
-            "zip",
+            f"{profile.name}: zip",
             lambda: make_zip(
-                gerber_dir, out_dir / f"{project.name}-rev{rev}-gerbers.zip"
+                gerber_dir,
+                out_dir / f"{project.name}-rev{export_id}-{profile.name}-gerbers.zip",
+                tuple(out_dir / name for name in profile.zip_extras),
             ),
         ),
     ]
+
+
+def release(kicad_cli: str, project: Project, profiles: list[FabProfile],
+            revs: dict[str, str], out_root: Path, tag: bool = True) -> None:
+    """Export one board for every fab profile, under
+    out_root/<name>/rev<REV><STEP>/<fab>/.
+
+    Each step gets its own directory and its own tag, so repeated exports of
+    one revision accumulate side by side instead of overwriting each other.
+    The only directory this rebuilds in place is the one whose tag already
+    points at HEAD, where the rebuild reproduces what it replaces.
+
+    ERC and DRC run once for the board, not once per fab: they check the
+    design, and their reports sit at the revision directory above the
+    per-fab ones. Only the profiles being exported are cleared, so quoting a
+    second fab later leaves the first one's files where they are -- they
+    describe the same commit and are still current."""
+    export_id = read_export_id(project)
+    gate_doc_revision(project.root, revs)
+    gate_git_clean(project)
+    gate_ledger(project, export_id)
+
+    rev_dir = out_root / project.name / f"rev{export_id}"
+    rev_dir.mkdir(parents=True, exist_ok=True)
+    for profile in profiles:
+        fab_dir = rev_dir / profile.name
+        if fab_dir.exists():
+            shutil.rmtree(fab_dir)  # same-commit rebuild: start from scratch
+        fab_dir.mkdir()
+
+    stages = [
+        ("ERC", lambda: gate_erc(kicad_cli, project, rev_dir / "erc.rpt")),
+        (
+            "DRC + schematic parity",
+            lambda: gate_drc(kicad_cli, project, rev_dir / "drc.rpt"),
+        ),
+    ]
+    for profile in profiles:
+        stages += profile_stages(kicad_cli, project, profile,
+                                 rev_dir / profile.name, export_id)
     if tag:
-        steps.append((f"git tag {release_tag(project, rev)}",
-                      lambda: create_tag(project, rev, profile)))
-    total = len(steps)
-    for i, (label, step) in enumerate(steps, start=1):
+        stages.append((f"git tag {release_tag(project, export_id)}",
+                       lambda: create_tag(project, export_id)))
+    total = len(stages)
+    for i, (label, stage) in enumerate(stages, start=1):
         print(f"  [{i}/{total}] {label}")
-        step()
+        stage()
 
     tag_note = "" if tag else "  (no tag created)"
-    print(f"\nreleased {project.name} rev {rev} -> "
-          f"{out_dir.relative_to(project.root)}{tag_note}")
+    fabs = ", ".join(p.name for p in profiles)
+    print(f"\nexported {project.name} rev {export_id} for {fabs} -> "
+          f"{_display_path(rev_dir, project.root)}{tag_note}")
 
 
 def main() -> int:
@@ -818,12 +1320,18 @@ def main() -> int:
     )
     parser.add_argument("boards", nargs="*", metavar="BOARD",
                         help="board name(s) to act on (default: every board)")
-    parser.add_argument("--profile", default="jlcpcb", choices=sorted(PROFILES),
-                        help="fab house output format (default: %(default)s)")
+    parser.add_argument("--profile", nargs="+", metavar="NAME",
+                        default=list(PROFILES), choices=sorted(PROFILES),
+                        help="fab house output formats to export "
+                             f"(default: all of {', '.join(PROFILES)})")
     parser.add_argument("--check", action="store_true",
                         help="preflight only: evaluate all release gates, produce no outputs")
     parser.add_argument("--no-tag", action="store_true",
-                        help="skip the git tag step, for repeatable test runs")
+                        help="skip the git tag step; requires --output, since an "
+                             "untagged export may not enter fab/")
+    parser.add_argument("--output", metavar="DIR", default=None,
+                        help="root for the exported tree (default: fab/); "
+                             "outputs land in DIR/<board>/rev<REV><STEP>/")
     parser.add_argument("--sync-doc-rev", action="store_true",
                         help="regenerate docs/design_analysis/revision.tex from REV, then exit")
     parser.add_argument("--kicad-cli", default=None,
@@ -847,15 +1355,35 @@ def main() -> int:
         if args.check:
             return 0 if preflight(kicad_cli, boards, all_boards) else 1
 
+        fab_root = (root / "fab").resolve()
+        out_root = Path(args.output).resolve() if args.output else fab_root
+        # Every directory under fab/ is meant to be reachable from a tag that
+        # names the commit it was built from. An untagged export there would
+        # break that, so it has to go somewhere else. Checked after --check,
+        # which writes nothing and so needs no destination.
+        untagged = args.no_tag or out_root != fab_root
+        if untagged and _within(out_root, fab_root):
+            raise ReleaseError(
+                "--no-tag may not write into fab/: every export there is "
+                "reachable from a tag naming its commit.\n"
+                "Pass --output with a directory outside the fab tree."
+            )
+        if untagged:
+            print("no tag will be created "
+                  f"({'--no-tag' if args.no_tag else '--output'})")
+
+        # dict.fromkeys: a repeated --profile must not export twice.
+        profiles = [PROFILES[n] for n in dict.fromkeys(args.profile)]
         revs = read_revs(all_boards)
         for board in boards:
             print(f"\n{board.name}:")
-            release(kicad_cli, board, PROFILES[args.profile], revs,
-                    tag=not args.no_tag)
-        print("\n" + PROFILES[args.profile].upload_notes)
+            release(kicad_cli, board, profiles, revs, out_root, tag=not untagged)
+        if not untagged:
+            for profile in profiles:
+                print("\n" + profile.upload_notes)
         return 0
     except ReleaseError as err:
-        print(f"\nrelease blocked: {err}", file=sys.stderr)
+        print(f"\nexport blocked: {err}", file=sys.stderr)
         return 1
 
 

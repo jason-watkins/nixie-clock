@@ -27,6 +27,7 @@
 			)
 		)
 	)
+	(attr through_hole)
 	(fp_rect
 		(start -3.56 -2.04)
 		(end 3.56 2.04)

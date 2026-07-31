@@ -130,22 +130,22 @@ band. Two constraints bracket it, both scaling as $\sqrt{f_{\mathrm{sw}}}$.
 $t_{\mathrm{on}}$ and $t_{\mathrm{dem}}$ both follow $I_{\mathrm{pk}} \propto
 f_{\mathrm{sw}}^{-1/2}$ while the period falls as $f_{\mathrm{sw}}^{-1}$, so the
 conducting fraction of the period grows as $\sqrt{f_{\mathrm{sw}}}$: from
-$0.91\,T$ at the worst corner of \cref{sec:hv-dcm}, DCM fails at
-\SI{179}{\kilo\hertz} and idle is down to $5\,\%$ by \SI{162}{\kilo\hertz}. At
+$0.89\,T$ at the worst corner of \cref{sec:hv-dcm}, DCM fails at
+\SI{185}{\kilo\hertz} and idle is down to $5\,\%$ by \SI{168}{\kilo\hertz}. At
 the low end the sense-resistor window closes (\cref{sec:hv-cs-sense}): core
 protection holds \des{R}{HVCS} at or above \SI{37.4}{\milli\ohm} at any
 frequency, while the power-delivery ceiling,
 $\SI{93}{\milli\volt}/I_{\mathrm{pk}}^{(L\min)}$, rises as
-$\sqrt{f_{\mathrm{sw}}}$; the two cross at \SI{131}{\kilo\hertz}, and the
-specified \SI{39}{\milli\ohm} reaches its own ceiling at \SI{143}{\kilo\hertz}.
+$\sqrt{f_{\mathrm{sw}}}$; the two cross at \SI{126}{\kilo\hertz}, and the
+specified \SI{39}{\milli\ohm} reaches its own ceiling at \SI{138}{\kilo\hertz}.
 
 Nothing inside the bracket selects a value: design-max efficiency runs
-\SI{83.9}{\percent} at \SI{131}{\kilo\hertz} against \SI{82.8}{\percent} at
-\SI{179}{\kilo\hertz}. \SI{150}{\kilo\hertz} is adopted, near the geometric
+\SI{83.8}{\percent} at \SI{126}{\kilo\hertz} against \SI{82.5}{\percent} at
+\SI{185}{\kilo\hertz}. \SI{150}{\kilo\hertz} is adopted, near the geometric
 centre that equalizes the two relative margins (\SI{153}{\kilo\hertz} across
-  \SIrange{131}{179}{\kilo\hertz}, \SI{152}{\kilo\hertz} across the tighter
-\SIrange{143}{162}{\kilo\hertz}). At the \SI{149.4}{\kilo\hertz} realized below
-the commanded peak is \SI{2.21}{\ampere}, $74\,\%$ of $I_{\mathrm{sat}}$;
+  \SIrange{126}{185}{\kilo\hertz}, \SI{152}{\kilo\hertz} across the tighter
+\SIrange{138}{168}{\kilo\hertz}). At the \SI{149.4}{\kilo\hertz} realized below
+the commanded peak is \SI{2.18}{\ampere}, $73\,\%$ of $I_{\mathrm{sat}}$;
 raising the frequency buys current-limit margin and spends DCM idle.
 
 \subsubsection{RT resistor}\label{sec:hv-fsw}
@@ -266,7 +266,7 @@ The dither costs DCM idle time. The loop holds output power constant, so
 $I_{\mathrm{pk}}$ falls only as $\sqrt{f_{\mathrm{sw}}}$: at the top of the
 dither range $t_{\mathrm{on}}+t_{\mathrm{dem}}$ shrinks $3.7\,\%$ while the
 period shrinks $7.2\,\%$, taking the worst-corner DCM idle fraction from
-$9.1\,\%$ to $5.6\,\%$ (\cref{sec:hv-dcm}), with no offsetting benefit to this
+$10.5\,\%$ to $7.0\,\%$ (\cref{sec:hv-dcm}), with no offsetting benefit to this
 design. DITHOFF ties to VCC; dithering is disabled.
 
 \subsubsection{Auxiliary bias charge pump}\label{sec:hv-house-pump}
@@ -281,9 +281,12 @@ budget closes on itself: loss raises input power, input power raises the energy
 packet, and the packet raises the commanded peak current, which must stay inside
 the \SI{2.36}{\ampere} guaranteed-minimum current limit
 (\cref{sec:hv-cs-sense}) for the converter to deliver its rated load at all.
-Solving that loop for the gate rail bounds overlap at \SI{92}{\nano\second},
-which takes \SI{1.31}{\volt} of drive above the plateau and therefore a rail of
-at least \SI{4.81}{\volt}, above the \SI{4.75}{\volt} minimum input.
+Solving that loop for the gate rail bounds overlap at \SI{118}{\nano\second},
+which takes \SI{1.02}{\volt} of drive above the plateau and therefore a rail of
+at least \SI{4.52}{\volt}. A BIAS pin fed from $V_{\mathrm{BUS}}$ cannot hold
+that at the bottom of the input window: a Schottky drop into the pin and the
+VCC regulator's own dropout leave \SI{4.20}{\volt} of gate drive there, which
+puts the commanded peak past the limit.
 
 BIAS is therefore fed from the switch node. During the off-time that node
 stands one tenth of the output above
@@ -330,22 +333,22 @@ minimum during start-up.
 \SI{10}{\nano\second} leakage spike (\cref{sec:hv-clamp}) and short against
 $t_{\mathrm{dem}}$, so the packet completes inside the shelf. $\des{R}{HVPUMP} =
 \SI{82}{\ohm}$ gives $\tau = \SI{385}{\nano\second}$, between that spike and a
-$\ge\SI{952}{\nano\second}$ window, and limits the current drawn from the switch
+$\ge\SI{940}{\nano\second}$ window, and limits the current drawn from the switch
 node to \SI{118}{\milli\ampere}.
 
 \des{C}{HVPUMP} is set by the worst delivery corner, the bottom of the input
 window at the lowest trim setpoint (\SI{164.8}{\volt},
 \cref{tab:hv-ballast-divider}), where the reflected shelf and the load are both
-smallest, shortening $t_{\mathrm{dem}}$ to \SI{952}{\nano\second} and $k$ to
-\num{0.93}. BIAS must stay at or above \SI{8}{\volt}, the condition at which the
+smallest, shortening $t_{\mathrm{dem}}$ to \SI{940}{\nano\second} and $k$ to
+\num{0.92}. BIAS must stay at or above \SI{8}{\volt}, the condition at which the
 datasheet specifies the \SI{6.85}{\volt} VCC output, and $\des{C}{HVPUMP} =
-\SI{4.7}{\nano\farad}$ holds \SI{9.12}{\volt} there even at the $-5\,\%$ limit
+\SI{4.7}{\nano\farad}$ holds \SI{9.09}{\volt} there even at the $-5\,\%$ limit
 of a C0G tolerance. The dielectric is specified because the pump meters charge:
 a class-II part's voltage coefficient would change the delivered packet with
 operating point.
 
 Across the rest of the window BIAS rises with the input, reaching
-\SI{20.81}{\volt} at \SI{13}{\volt} in, well inside the pin's \SI{60}{\volt}
+\SI{20.79}{\volt} at \SI{13}{\volt} in, well inside the pin's \SI{60}{\volt}
 recommended range. \des{D}{HVZ}, a \SI{30}{\volt} zener, bounds a fault that
 drives the reflected voltage above that range and conducts nothing in normal
 operation. \des{Q}{HVSW} bounds the fault in turn: the drain reaches its
@@ -360,7 +363,7 @@ charging $C_{\mathrm{out}}$ to \SI{520}{\volt} at the current limit takes about
 
 \des{C}{HVBIAS} carries the controller between packets, at a droop of
 $I_{\mathrm{BIAS}}/(\des{C}{HVBIAS} f_{\mathrm{sw}}) = \SI{88}{\milli\volt}$ for
-\SI{0.5}{\micro\farad}, negligible against the regulator's \SI{2.3}{\volt} of
+\SI{0.5}{\micro\farad}, negligible against the regulator's \SI{2.2}{\volt} of
 headroom at the worst corner, so \SI{0.5}{\micro\farad} \emph{effective} is the
 floor. A class-II ceramic at \SI{21}{\volt} of bias retains well over half its
 value on a \SI{50}{\volt} rating, so \SI{1}{\micro\farad} X7R keeps that floor.
@@ -391,7 +394,7 @@ constant across the input window because the shelf tracks $V_{\mathrm{BUS}}$.
 \des{C}{HVPUMP} redistributes that loss without changing it: a larger value
 settles BIAS higher, moving dissipation out of \des{R}{HVPUMP} and into the
 controller's internal regulator. At \SI{13}{\volt} in, the split is
-\SI{92}{\milli\watt} inside the package and the remainder in \des{R}{HVPUMP}.
+\SI{91}{\milli\watt} inside the package and the remainder in \des{R}{HVPUMP}.
 Gate charge is the one term that reduces it, the pump supplying that charge from
 the shelf potential well above $V_{\mathrm{BUS}}$; \cref{sec:hv-summary} carries
 it as the design's largest identified efficiency lever.
@@ -501,36 +504,53 @@ The IN-12B decimal-point cathode has no driver signal and carries no current.
 
 \subsubsection{Colon tubes (NX5--NX6, ballast \des{R}{BALCOL})}\label{sec:hv-load-colon}
 
+Each INS-1 anode is fed from $V_{\mathrm{HV}}$ through its ballast, and its
+cathode returns directly to ground. The colons carry no driver, so they light
+whenever the rail is up, and the ballast equation has no on-state drop to
+subtract. Unlike the digit ballasts, one resistor value serves.
+
 The INS-1's maintaining voltage is given only as a ceiling,
-$\leq\SI{55}{\volt}$ (\cref{sec:ins1}). Taking the ceiling minimizes the drop
-available across the ballast and so minimizes the computed current, which is the
-pessimistic choice for the lower current bound. Unlike the digit ballasts, one
-resistor value serves.
-
-The datasheet states no operating-current band, only that \SI{0.5}{\milli\ampere}
-is the optimum for brightness (\cref{sec:ins1}), so the ballast is sized to place
-the current there at the middle of the \SIrange{170}{185}{\volt} design range
-(\cref{sec:hv-ignition}). At \SI{177.5}{\volt}, with $V_M$ and the driver's
-\SI{2.5}{\volt} subtracted:
+$V_M \leq \SI{55}{\volt}$ (\cref{sec:ins1}). Taking the ceiling minimizes the
+drop available across the ballast and so minimizes the computed current, which
+is the pessimistic choice for the lower current bound. The datasheet states no
+operating-current band either, only that \SI{0.5}{\milli\ampere} is the optimum
+for brightness, so the ballast is sized to place the current there at the middle
+of the \SIrange{170}{185}{\volt} design range (\cref{sec:hv-ignition}). At
+\SI{177.5}{\volt}:
 \begin{align*}
-  R_A &= \frac{\SI{177.5}{\volt} - \SI{55}{\volt} - \SI{2.5}{\volt}}
-              {\SI{0.5}{\milli\ampere}}
-       = \SI{240}{\kilo\ohm}.
+  R_A &= \frac{\SI{177.5}{\volt} - \SI{55}{\volt}}{\SI{0.5}{\milli\ampere}}
+       = \SI{245}{\kilo\ohm}.
 \end{align*}
-Specification: \des{R}{BALCOL} $= \SI{240}{\kilo\ohm}$, a standard value with no
-rounding. Across the design range that gives $I = \SI{0.469}{\milli\ampere}$ at
-\SI{170}{\volt} and $I = \SI{0.531}{\milli\ampere}$ at \SI{185}{\volt}, and
+Specification: \des{R}{BALCOL} $= \SI{240}{\kilo\ohm}$, the nearest standard
+value. Across the design range that gives $I = \SI{0.479}{\milli\ampere}$ at
+\SI{170}{\volt} and $I = \SI{0.542}{\milli\ampere}$ at \SI{185}{\volt}, and
 across the full \SIrange{164.8}{191.5}{\volt} achieved range
-(\cref{sec:hv-achieved-range}) \SIrange{0.447}{0.558}{\milli\ampere} --- within
-$\pm12\,\%$ of the optimum everywhere the trimmer can reach.
+(\cref{sec:hv-achieved-range}) \SIrange{0.458}{0.569}{\milli\ampere}: from
+$8.5\,\%$ under the optimum to $14\,\%$ over it, everywhere the trimmer can
+reach.
 
-That spread is the part of the result the datasheet bounds. The part it does not
-is the maintaining voltage itself: a tube maintaining below \SI{55}{\volt}
-leaves more drop across a fixed ballast and draws proportionally more current,
-\SI{0.60}{\milli\ampere} at the top of the achieved range if $V_M$ were
-\SI{45}{\volt}. The datasheet publishes no maximum current against which to
-check that, and the tube's own \SI{0.5}{\milli\ampere} optimum is the only
-figure available, so the excursion is recorded rather than bounded.
+The datasheet bounds that spread. It does not bound the maintaining voltage: a
+tube maintaining below \SI{55}{\volt} leaves more drop across a fixed ballast
+and draws proportionally more current, \SI{0.61}{\milli\ampere} at the top of
+the achieved range if $V_M$ were \SI{45}{\volt}. No maximum current is published
+to check that against, and the \SI{0.5}{\milli\ampere} optimum is the only
+figure the sheet offers, so the excursion is recorded here and left unbounded.
+It compounds the trim range's own spread, since both effects raise the current
+as the drop across the ballast grows.
+
+\paragraph{Ballast tolerance.} \des{R}{BALCOL} is specified at $5\,\%$, looser
+than every other resistor in this section, because no requirement here rewards a
+tighter part. A $5\,\%$ part moves the current $\mp5\,\%$, widening the
+achieved-range spread from \SIrange{0.458}{0.569}{\milli\ampere} to
+\SIrange{0.436}{0.599}{\milli\ampere}, which crosses no rated band; the
+datasheet states none. Tolerance matters for one thing here: matching between
+the two lamps. Parts at opposing $5\,\%$ extremes differ by
+\SI{10.5}{\percent} of current, against $2\,\%$ for $1\,\%$ parts. The datasheet
+bounds neither the brightness difference that produces nor the tube-to-tube
+spread it competes with, and \SI{5}{\volt} of $V_M$ difference between two lamps
+is itself $4\,\%$ of current at mid-trim. These two resistors sit on the visible
+face of the clock, where \cref{sec:hv-parts}'s construction preference selects a
+carbon film body.
 
 \subsection{Feedback divider design}\label{sec:hv-divider}
 
@@ -540,8 +560,9 @@ Two bounds constrain the divider current.
 
 \textbf{Lower bound on resistance: power cost.} The divider loads
 $V_{\mathrm{HV}}$ whenever the converter runs, tube state notwithstanding.
-Against the \SI{13}{\milli\ampere} of tube current in \cref{sec:hv-load}, a
-divider current a thousand times smaller costs nothing worth recovering.
+Against the \SIrange{10.6}{15.1}{\milli\ampere} of tube current in
+\cref{sec:hv-load}, a divider current a hundred times smaller costs nothing
+worth recovering.
 
 \textbf{Upper bound on resistance: feedback-node integrity.} Raising the
 resistance to shave that cost pushes setpoint error the wrong way twice: FB bias
@@ -661,17 +682,17 @@ requirements.
 NX1--NX4 digit cathodes & $4 \times 2.40 = \SI{9.60}{\milli\ampere}$
   & $4 \times 3.50 = \SI{14.00}{\milli\ampere}$ \\
 \hline
-NX5--NX6 colon anodes & $2 \times 0.65 = \SI{1.29}{\milli\ampere}$
-  & $2 \times 0.85 = \SI{1.70}{\milli\ampere}$ \\
+NX5--NX6 colon anodes & $2 \times 0.479 = \SI{0.96}{\milli\ampere}$
+  & $2 \times 0.569 = \SI{1.14}{\milli\ampere}$ \\
 \hline
 Bleeder \des{R}{HVBLEED} (\SI{1.5}{\mega\ohm}) & \SI{0.11}{\milli\ampere} & \SI{0.13}{\milli\ampere} \\
 
 \hline
 Feedback divider ($\approx\SI{1.70}{\mega\ohm}$) & \SI{0.10}{\milli\ampere} & \SI{0.11}{\milli\ampere} \\
 \hline
-Total $I_{\mathrm{out}}$ & \SI{11.10}{\milli\ampere} & \SI{15.94}{\milli\ampere} \\
+Total $I_{\mathrm{out}}$ & \SI{10.77}{\milli\ampere} & \SI{15.38}{\milli\ampere} \\
 \hline
-$P_{\mathrm{out}} = V_{\mathrm{out}} I_{\mathrm{out}}$ & \SI{1.89}{\watt} & \SI{3.05}{\watt} \\
+$P_{\mathrm{out}} = V_{\mathrm{out}} I_{\mathrm{out}}$ & \SI{1.83}{\watt} & \SI{2.94}{\watt} \\
 \hline
 \end{tabular}
 \end{table}
@@ -685,9 +706,9 @@ either operating point, as \cref{sec:hv-divider-current} assumed.
 \textbf{The design-max column is a reachable operating point.} A builder who
 selects the \SI{13.00}{\kilo\ohm} ballast and trims to its
 $V_{\max} = \SI{191.5}{\volt}$ puts every digit tube at exactly
-\SI{3.5}{\milli\ampere}; the colons follow their own ballast to
-\SI{0.83}{\milli\ampere} there, against the \SI{0.85}{\milli\ampere} carried
-above.
+\SI{3.5}{\milli\ampere}. The digit column is therefore a rated maximum forced
+on all four tubes at once, while the colon column is what \des{R}{BALCOL} passes
+at that voltage; the INS-1 has no rated maximum to force (\cref{sec:ins1}).
 
 \subsection{Operating point and efficiency}\label{sec:hv-op}
 
@@ -819,23 +840,23 @@ convergence. The loss models and their inputs:
 
 \subsubsection{Converged operating point (design-max envelope)}\label{sec:hv-op-converge}
 
-Iterating at the design-max envelope ($P_{\mathrm{out}} = \SI{3.05}{\watt}$,
+Iterating at the design-max envelope ($P_{\mathrm{out}} = \SI{2.94}{\watt}$,
 $V_{\mathrm{BUS}} = \SI{4.75}{\volt}$, $V_{\mathrm{out}} = \SI{191.5}{\volt}$,
 reflected voltage $V_{\mathrm{refl}} = (191.5+1)/10 = \SI{19.25}{\volt}$,
 $t_{\mathrm{ovl}} = t_{\mathrm{ovl}}^{\mathrm{typ}} = \SI{36}{\nano\second}$),
-the loop converges to $\eta = \SI{83.5}{\percent}$:
+the loop converges to $\eta = \SI{83.3}{\percent}$:
 \begin{align*}
-  P_{\mathrm{in}} &= \frac{3.052}{0.835} = \SI{3.66}{\watt}, &
-  E_{\mathrm{cyc}} &= \frac{3.65}{149.4\times10^{3}} = \SI{24.4}{\micro\joule},\\
-  I_{\mathrm{pk}} &= \sqrt{\frac{2 \times 24.4\,\si{\micro\joule}}
-  {\SI{10}{\micro\henry}}} = \SI{2.21}{\ampere}, &
+  P_{\mathrm{in}} &= \frac{2.945}{0.833} = \SI{3.54}{\watt}, &
+  E_{\mathrm{cyc}} &= \frac{3.54}{149.4\times10^{3}} = \SI{23.7}{\micro\joule},\\
+  I_{\mathrm{pk}} &= \sqrt{\frac{2 \times 23.7\,\si{\micro\joule}}
+  {\SI{10}{\micro\henry}}} = \SI{2.18}{\ampere}, &
   t_{\mathrm{on}} &= \frac{L_p I_{\mathrm{pk}}}{V_{\mathrm{BUS}}}
-                   = \frac{10\,\si{\micro\henry} \times 2.21}{4.75}
-                   = \SI{4.65}{\micro\second},\\
-                   D &= t_{\mathrm{on}} f_{\mathrm{sw}} = 0.70, &
-                   I_{\mathrm{rms,pri}} &= I_{\mathrm{pk}}\sqrt{D/3} = \SI{1.06}{\ampere},\\
+                   = \frac{10\,\si{\micro\henry} \times 2.18}{4.75}
+                   = \SI{4.58}{\micro\second},\\
+                   D &= t_{\mathrm{on}} f_{\mathrm{sw}} = 0.68, &
+                   I_{\mathrm{rms,pri}} &= I_{\mathrm{pk}}\sqrt{D/3} = \SI{1.04}{\ampere},\\
                    I_{\mathrm{in}} &= \frac{P_{\mathrm{in}}}{V_{\mathrm{BUS}}}
-                   = \SI{770}{\milli\ampere}.
+                   = \SI{744}{\milli\ampere}.
 \end{align*}
 Converged loss budget at this point:
 
@@ -850,29 +871,29 @@ Converged loss budget at this point:
 Bias draw through the charge pump (\cref{sec:hv-house-pump}) & \SI{157}{\milli\watt} \\
 
 \hline
-MOSFET turn-off overlap ($t_{\mathrm{ovl}}=\SI{36}{\nano\second}$) & \SI{142}{\milli\watt} \\
+MOSFET turn-off overlap ($t_{\mathrm{ovl}}=\SI{36}{\nano\second}$) & \SI{140}{\milli\watt} \\
 
 \hline
-Primary conduction (FET 63, \des{R}{HVCS} 44, DCR 15) & \SI{122}{\milli\watt} \\
+Primary conduction (FET 60, \des{R}{HVCS} 42, DCR 14) & \SI{116}{\milli\watt} \\
 
 \hline
-RCD clamp (\des{R}{HVCL}) & \SI{88}{\milli\watt} \\
+RCD clamp (\des{R}{HVCL}) & \SI{86}{\milli\watt} \\
 
 \hline
 Core allowance (uncharacterized) & \SI{50}{\milli\watt} \\
 \hline
-Capacitor ESR (input + output) & \SI{23}{\milli\watt} \\
+Capacitor ESR (input + output) & \SI{22}{\milli\watt} \\
 
 \hline
-Rectifier \des{D}{HVRECT} conduction & \SI{16}{\milli\watt} \\
+Rectifier \des{D}{HVRECT} conduction & \SI{15}{\milli\watt} \\
 
 \hline
 Secondary DCR & \SI{4}{\milli\watt} \\
 \hline
-Total & \SI{603}{\milli\watt} \\
+Total & \SI{590}{\milli\watt} \\
 
 \hline
-$\eta = 3.052/(3.052+0.603)$ & \SI{83.5}{\percent} \\
+$\eta = 2.945/(2.945+0.590)$ & \SI{83.3}{\percent} \\
 
 \hline
 \end{tabular}
@@ -884,13 +905,13 @@ With the gate rail held constant (\cref{sec:hv-house-pump}) every term above
 falls into one of three groups, and between them they hold efficiency nearly
 flat across a $2.7:1$ input range. Turn-off overlap and the bias draw both scale
 with $V_{\mathrm{BUS}} + V_{\mathrm{refl}}$, rising
-\SIrange{299}{403}{\milli\watt}. Primary conduction and input ESR scale with
-duty, falling \SIrange{145}{60}{\milli\watt}. The clamp, core, rectifier, and
+\SIrange{297}{400}{\milli\watt}. Primary conduction and capacitor ESR scale with
+duty, falling \SIrange{138}{57}{\milli\watt}. The clamp, core, rectifier, and
 secondary DCR terms depend only on peak current and hold at
-\SI{158}{\milli\watt}. Writing the total as
+\SI{155}{\milli\watt}. Writing the total as
 $A(V_{\mathrm{BUS}} + V_{\mathrm{refl}}) + B/V_{\mathrm{BUS}} + C$ with
-$A = \SI{12.5}{\milli\watt\per\volt}$ and $B = \SI{746}{\milli\watt\volt}$, loss
-is minimized at $\sqrt{B/A} = \SI{7.7}{\volt}$:
+$A = \SI{12.4}{\milli\watt\per\volt}$ and $B = \SI{683}{\milli\watt\volt}$, loss
+is minimized at $\sqrt{B/A} = \SI{7.4}{\volt}$:
 
 {\footnotesize
   \begin{table}[htbp]
@@ -901,13 +922,13 @@ is minimized at $\sqrt{B/A} = \SI{7.7}{\volt}$:
       $V_{\mathrm{BUS}}$ & \SI{4.75}{\volt} & \SI{7}{\volt} & \SI{9}{\volt} &
       \SI{11}{\volt} & \SI{13}{\volt} \\
       \hline
-      Duty & 0.70 & 0.47 & 0.37 & 0.30 & 0.26 \\
+      Duty & 0.68 & 0.46 & 0.36 & 0.30 & 0.25 \\
       \hline
-      Total loss & \SI{603}{\milli\watt} & \SI{589}{\milli\watt} &
-      \SI{593}{\milli\watt} & \SI{605}{\milli\watt} & \SI{621}{\milli\watt} \\
+      Total loss & \SI{590}{\milli\watt} & \SI{578}{\milli\watt} &
+      \SI{583}{\milli\watt} & \SI{596}{\milli\watt} & \SI{612}{\milli\watt} \\
       \hline
-      $\eta$ & \SI{83.5}{\percent} & \SI{83.8}{\percent} & \SI{83.7}{\percent} &
-      \SI{83.5}{\percent} & \SI{83.1}{\percent} \\
+      $\eta$ & \SI{83.3}{\percent} & \SI{83.6}{\percent} & \SI{83.5}{\percent} &
+      \SI{83.2}{\percent} & \SI{82.8}{\percent} \\
       \hline
     \end{tabular}
   \end{table}
@@ -915,41 +936,41 @@ is minimized at $\sqrt{B/A} = \SI{7.7}{\volt}$:
 
 The convergence above uses $t_{\mathrm{ovl}}^{\mathrm{typ}}$; across the
 \SIrange{36}{54}{\nano\second} spread the design-max efficiency band runs
-\SIrange{81.7}{83.5}{\percent}. \Cref{sec:hv-switch} checks \des{Q}{HVSW}'s
+\SIrange{81.4}{83.3}{\percent}. \Cref{sec:hv-switch} checks \des{Q}{HVSW}'s
 dissipation at $t_{\mathrm{ovl}}^{\max}$, and \cref{sec:hv-cs-sense} folds the
 same spread into its current-limit margin as a tolerance term.
 
 Both of the two largest terms scale with \des{Q}{HVSW}'s gate charge: the bias
 draw directly, and turn-off overlap through $Q_{GD}$. Together they are
-\SI{299}{\milli\watt} of the \SI{603}{\milli\watt} budget. Neither figure is
+\SI{297}{\milli\watt} of the \SI{590}{\milli\watt} budget. Neither figure is
 tabulated; both are derived (\cref{sec:hv-op-losses}), so a bench efficiency
 measurement is the most informative single check on the budget.
 
 \subsubsection{Nominal-point efficiency}\label{sec:hv-op-nominal}
 
-The same procedure at the nominal point ($\SI{1.89}{\watt}$, \SI{170}{\volt})
+The same procedure at the nominal point ($\SI{1.83}{\watt}$, \SI{170}{\volt})
 gives, at each contract:
 
 {\footnotesize
   \begin{table}[htbp]
     \centering
-    \caption{Nominal-point ($\SI{1.89}{\watt}$, \SI{170}{\volt}) operating figures}\label{tab:hv-nominal-line}
+    \caption{Nominal-point ($\SI{1.83}{\watt}$, \SI{170}{\volt}) operating figures}\label{tab:hv-nominal-line}
     \begin{tabular}{|l|c|c|c|}
       \hline
       $V_{\mathrm{BUS}}$ & \SI{4.75}{\volt} & \SI{9}{\volt} & \SI{13}{\volt} \\
       \hline
-      $\eta$ & \SI{80.9}{\percent} & \SI{80.4}{\percent} & \SI{79.2}{\percent} \\
+      $\eta$ & \SI{80.6}{\percent} & \SI{80.0}{\percent} & \SI{78.8}{\percent} \\
       \hline
-      $P_{\mathrm{in}}$ & \SI{2.33}{\watt} & \SI{2.35}{\watt} & \SI{2.38}{\watt} \\
+      $P_{\mathrm{in}}$ & \SI{2.27}{\watt} & \SI{2.29}{\watt} & \SI{2.32}{\watt} \\
       \hline
-      $I_{\mathrm{pk}}$ & \SI{1.77}{\ampere} & \SI{1.77}{\ampere} & \SI{1.78}{\ampere} \\
+      $I_{\mathrm{pk}}$ & \SI{1.74}{\ampere} & \SI{1.75}{\ampere} & \SI{1.76}{\ampere} \\
       \hline
-      Duty & 0.56 & 0.29 & 0.21 \\
+      Duty & 0.55 & 0.29 & 0.20 \\
       \hline
-      $I_{\mathrm{rms,pri}}$ & \SI{0.76}{\ampere} & \SI{0.55}{\ampere} & \SI{0.47}{\ampere} \\
+      $I_{\mathrm{rms,pri}}$ & \SI{0.75}{\ampere} & \SI{0.54}{\ampere} & \SI{0.46}{\ampere} \\
       \hline
-      $I_{\mathrm{in}}$ average & \SI{491}{\milli\ampere} & \SI{261}{\milli\ampere} &
-      \SI{183}{\milli\ampere} \\
+      $I_{\mathrm{in}}$ average & \SI{478}{\milli\ampere} & \SI{254}{\milli\ampere} &
+      \SI{179}{\milli\ampere} \\
       \hline
     \end{tabular}
   \end{table}
@@ -958,13 +979,13 @@ gives, at each contract:
 Nominal efficiency is \emph{lower} than at design-max: the dominant losses scale
 as $I_{\mathrm{pk}} \propto \sqrt{P}$ rather than $P$, and the bias draw does not
 scale with load at all, so the same \SIrange{157}{211}{\milli\watt} is charged
-against \SI{1.89}{\watt} of output instead of \SI{3.05}{\watt}. That second
-effect dominates, putting the nominal points \SIrange{2.6}{4.0}{\percent} below
+against \SI{1.83}{\watt} of output instead of \SI{2.94}{\watt}. That second
+effect dominates, putting the nominal points \SIrange{2.7}{4.0}{\percent} below
 their design-max counterparts.
 
 The $I_{\mathrm{in}}$ row is what \cref{sec:hv-inhibit}'s current test is against.
-A \SI{5}{\volt} contract must carry \SI{491}{\milli\ampere} at the nominal point
-and \SI{770}{\milli\ampere} at the design-max envelope, so a
+A \SI{5}{\volt} contract must carry \SI{478}{\milli\ampere} at the nominal point
+and \SI{744}{\milli\ampere} at the design-max envelope, so a
 \SI{3}{\ampere} \SI{5}{\volt} contract qualifies and a default
 \SI{500}{\milli\ampere} port does not.
 
@@ -973,9 +994,9 @@ and \SI{770}{\milli\ampere} at the design-max envelope, so a
 With the minimum-tolerance inductance ($L_p = \SI{9}{\micro\henry}$ at rated peak
 current, \cref{sec:da2032}), the same energy packet requires
 \begin{align*}
-  I_{\mathrm{pk}}^{(L\min)} &= \sqrt{\frac{2 \times 24.4\,\si{\micro\joule}}
+  I_{\mathrm{pk}}^{(L\min)} &= \sqrt{\frac{2 \times 23.7\,\si{\micro\joule}}
                                           {\SI{9}{\micro\henry}}}
-                             = \SI{2.33}{\ampere},
+                             = \SI{2.29}{\ampere},
 \end{align*}
 the worst-case commanded peak used in \cref{sec:hv-cs}.
 
@@ -990,42 +1011,42 @@ The binding corner maximizes $t_{\mathrm{on}} + t_{\mathrm{dem}}$: maximum
 inductance ($\SI{11}{\micro\henry}$, $+10\,\%$), minimum input
 (\SI{4.75}{\volt}), design-max load:
 \begin{align*}
-  I_{\mathrm{pk}} &= \sqrt{\frac{2\times24.4\,\si{\micro\joule}}{\SI{11}{\micro\henry}}}
-  = \SI{2.11}{\ampere},\\
-  t_{\mathrm{on}} &= \frac{11\,\si{\micro\henry}\times 2.11}{4.75}
-  = \SI{4.88}{\micro\second}, &
-  t_{\mathrm{dem}} &= \frac{10 \times 11\,\si{\micro\henry} \times 2.11}{192.5}
-  = \SI{1.21}{\micro\second},\\
-  t_{\mathrm{on}} + t_{\mathrm{dem}} &= \SI{6.09}{\micro\second}
-  = 0.91\,T, &
-  t_{\mathrm{idle}} &= \SI{0.60}{\micro\second}.
+  I_{\mathrm{pk}} &= \sqrt{\frac{2\times23.7\,\si{\micro\joule}}{\SI{11}{\micro\henry}}}
+  = \SI{2.07}{\ampere},\\
+  t_{\mathrm{on}} &= \frac{11\,\si{\micro\henry}\times 2.07}{4.75}
+  = \SI{4.80}{\micro\second}, &
+  t_{\mathrm{dem}} &= \frac{10 \times 11\,\si{\micro\henry} \times 2.07}{192.5}
+  = \SI{1.19}{\micro\second},\\
+  t_{\mathrm{on}} + t_{\mathrm{dem}} &= \SI{5.99}{\micro\second}
+  = 0.89\,T, &
+  t_{\mathrm{idle}} &= \SI{0.71}{\micro\second}.
 \end{align*}
 
-\textbf{DCM holds, but with a $9\,\%$ idle fraction this is the thinnest margin
-in the section.} Demagnetization is set by the secondary and is
+\textbf{DCM holds, but with a $10.5\,\%$ idle fraction this is the thinnest
+margin in the section.} Demagnetization is set by the secondary and is
 line-independent, while on-time scales as $1/V_{\mathrm{BUS}}$, so the bottom of
 the window stretches $t_{\mathrm{on}}$ to four times $t_{\mathrm{dem}}$ and
 leaves the idle interval whatever remains. Away from this corner the margin
-grows quickly: duty falls to 0.26 at \SI{13}{\volt} input, and at lighter load
+grows quickly: duty falls to 0.25 at \SI{13}{\volt} input, and at lighter load
 the current the ballasts draw falls faster than the demagnetization slope
 degrades.
 
 Crossing into CCM would invalidate this section outright: the
 energy-packet loss model, the single-pole plant of \cref{sec:hv-comp}, the
 absence of rectifier recovery loss (\cref{sec:hv-rect}), and the
-slope-compensation argument below all assume DCM. \SI{0.60}{\micro\second} is
+slope-compensation argument below all assume DCM. \SI{0.71}{\micro\second} is
 also short enough that turn-on lands at an arbitrary point on the drain's
 ring-down, costing a few milliwatts at most since turn-on in DCM is at zero
 current.
 
-The 0.73 duty cycle does not bear on stability: the $D > 0.5$ threshold for
+The 0.72 duty cycle does not bear on stability: the $D > 0.5$ threshold for
 subharmonic oscillation is a CCM result, depending on a peak-current
 perturbation propagating into the next cycle through a nonzero starting current,
 and in DCM the current returns to zero every cycle. The omission of $R_{SL}$
 (\cref{sec:hv-cs}) therefore stands for as long as DCM does.
 
 Duty at the worst corner remains under the controller's $\approx$0.91 maximum
-near this frequency, and $t_{\mathrm{on}} \ge \SI{4.9}{\micro\second}$ is well
+near this frequency, and $t_{\mathrm{on}} \ge \SI{4.8}{\micro\second}$ is well
 above the $\approx\SI{165}{\nano\second}$ minimum on-time (\cref{sec:lm5156h}).
 
 \subsection{Current sensing and current limit}\label{sec:hv-cs}
@@ -1090,14 +1111,14 @@ constraints:
 \begin{align*}
   \text{power delivery:}\quad
     R_{S} &< \frac{\SI{93}{\milli\volt}}{I_{\mathrm{pk}}^{(L\min)}}
-          = \frac{93\,\si{\milli\volt}}{2.33\,\si{\ampere}} = \SI{39.9}{\milli\ohm},\\
+          = \frac{93\,\si{\milli\volt}}{2.29\,\si{\ampere}} = \SI{40.6}{\milli\ohm},\\
   \text{core protection:}\quad
     R_{S} &> \frac{\SI{107}{\milli\volt}}{I_{\mathrm{sat}} - \Delta I_{\mathrm{ovs}}}
           = \frac{107\,\si{\milli\volt}}{3.0 - 0.14\,\si{\ampere}} = \SI{37.4}{\milli\ohm},
 \end{align*}
-a \SI{2.5}{\milli\ohm} nominal window; neither bound depends on
+a \SI{3.2}{\milli\ohm} nominal window; neither bound depends on
 $V_{\mathrm{out}}$. \SI{39}{\milli\ohm} (declared in \cref{sec:hv-op-inputs})
-sits inside it, \SI{0.9}{\milli\ohm} under the power-delivery ceiling and
+sits inside it, \SI{1.6}{\milli\ohm} under the power-delivery ceiling and
 \SI{1.6}{\milli\ohm} above the core-protection floor. Both bounds are
 worst-case-additive: minimum datasheet threshold, \des{R}{HVCS} at its own
 tolerance extreme, and, on the power-delivery side, $L_p$ at its $-10\,\%$
@@ -1118,33 +1139,34 @@ the others.
 
 Isolating each contributor's effect on the margin
 $M = I_{\mathrm{lim,min}} - I_{\mathrm{pk}}^{(L\min)}$ one at a time from the
-all-nominal baseline ($M_{\mathrm{nom}} = \SI{0.352}{\ampere}$, using
+all-nominal baseline ($M_{\mathrm{nom}} = \SI{0.389}{\ampere}$, using
 $\SI{100}{\milli\volt}/\SI{39}{\milli\ohm}$ against $I_{\mathrm{pk}}$ at
 $L_p=\SI{10}{\micro\henry}$, $t_{\mathrm{ovl}}=t_{\mathrm{ovl}}^{\mathrm{typ}}$):
 \begin{align*}
   \Delta_{\mathrm{threshold}} &= \SI{-0.180}{\ampere}, &
   \Delta_{R_S} &= \SI{-0.025}{\ampere}, &
-  \Delta_{L_p} &= \SI{-0.120}{\ampere}, &
+  \Delta_{L_p} &= \SI{-0.118}{\ampere}, &
   \Delta_{t_{\mathrm{ovl}}} &= \SI{-0.026}{\ampere}.
 \end{align*}
-Worst-case-additive sums these directly: $M_{\mathrm{wc}} = 0.352 - 0.180 - 0.025
-- 0.120 - 0.026 = \SI{+0.001}{\ampere}$ ($+0.1\,\%$ of $I_{\mathrm{lim,min}}$).
+Worst-case-additive sums these directly: $M_{\mathrm{wc}} = 0.389 - 0.180 - 0.025
+- 0.118 - 0.026 = \SI{+0.040}{\ampere}$ ($+1.7\,\%$ of $I_{\mathrm{lim,min}}$).
 RSS combines the same four in quadrature:
 \begin{align*}
   M_{\mathrm{RSS}} &= M_{\mathrm{nom}} - \sqrt{\Delta_{\mathrm{threshold}}^2 +
     \Delta_{R_S}^2 + \Delta_{L_p}^2 + \Delta_{t_{\mathrm{ovl}}}^2}
-    = 0.352 - 0.219 = \SI{+0.133}{\ampere}
-    \quad (+5.6\,\% \text{ of } I_{\mathrm{lim,min}}),
+    = 0.389 - 0.218 = \SI{+0.171}{\ampere}
+    \quad (+7.2\,\% \text{ of } I_{\mathrm{lim,min}}),
 \end{align*}
 The threshold specification dominates the combination. \textbf{The RSS treatment
 is scoped to this one check}; every voltage- and thermal-rating margin elsewhere
 remains worst-case-additive, because those checks guard against destructive
 outcomes.
 
-At \SI{+0.001}{\ampere} the two treatments disagree about whether there is a
-margin at all, which puts the weight of the result on the RSS argument. What
-consumes the margin is the bias draw of \cref{sec:hv-house-pump}: it raises
-input power, and with it the commanded peak the limit must sit above.
+Both treatments leave a margin, so the result does not rest on the choice
+between them; what the choice sets is how much. The margin is nonetheless the
+narrowest current-mode result in the section, and what consumes it is the bias
+draw of \cref{sec:hv-house-pump}: it raises input power, and with it the
+commanded peak the limit must sit above.
 
 \paragraph{What hiccup changes about that.}\label{sec:hv-cs-hiccup}
 On the LM51561H, sixty-four \emph{consecutive} limited cycles trip the fault
@@ -1172,8 +1194,8 @@ rating: a 3\,\% margin, acceptable because the \SI{3.0}{\ampere} figure is a
 soft-saturation point, with $L$ already specified at \SI{9}{\micro\henry}
 there.
 
-\des{R}{HVCS} dissipation is $I_{\mathrm{rms}}^2 R_S = 1.06^2 \times 0.039 =
-\SI{44}{\milli\watt}$ at the design-max envelope, trivial in a 2512.
+\des{R}{HVCS} dissipation is $I_{\mathrm{rms}}^2 R_S = 1.04^2 \times 0.039 =
+\SI{42}{\milli\watt}$ at the design-max envelope, trivial in a 2512.
 
 \subsection{RCD clamp}\label{sec:hv-clamp}
 
@@ -1194,10 +1216,10 @@ Per cycle the leakage inductance delivers $E_{\mathrm{lk}} = \tfrac{1}{2}
 L_{\mathrm{lk}} I_{\mathrm{pk}}^2$ into the clamp. Two currents matter:
 \begin{itemize}[nosep]
   \item \textbf{Normal design-max operation}, $I_{\mathrm{pk}} =
-    \SI{2.21}{\ampere}$ (\cref{sec:hv-op-converge}):
-    $E_{\mathrm{lk}} = \tfrac{1}{2}\times\SI{0.15}{\micro\henry}\times 2.21^2
-    \approx \SI{0.366}{\micro\joule}$, $E_{\mathrm{lk}} f_{\mathrm{sw}}
-    \approx \SI{54.7}{\milli\watt}$. This sets the clamp's steady dissipation
+    \SI{2.18}{\ampere}$ (\cref{sec:hv-op-converge}):
+    $E_{\mathrm{lk}} = \tfrac{1}{2}\times\SI{0.15}{\micro\henry}\times 2.18^2
+    \approx \SI{0.355}{\micro\joule}$, $E_{\mathrm{lk}} f_{\mathrm{sw}}
+    \approx \SI{53.0}{\milli\watt}$. This sets the clamp's steady dissipation
     carried in the loss budget (\cref{sec:hv-op-losses}).
   \item \textbf{Worst case}: the current limit bounds the current at turn-off,
     so the sizing case is the guaranteed-maximum
@@ -1288,16 +1310,16 @@ at each of the two operating points,
     - E_{\mathrm{lk}} f_{\mathrm{sw}} \des{R}{HVCL} = 0
   \;\Longrightarrow\;
   V_{\mathrm{cl}}^{\mathrm{lim}} = \SI{63.8}{\volt}, \qquad
-  V_{\mathrm{cl}}^{\mathrm{dm}} = \SI{51.3}{\volt}
+  V_{\mathrm{cl}}^{\mathrm{dm}} = \SI{50.7}{\volt}
 \end{align*}
 (sustained current-limit corner and normal design-max operation
 respectively). At the corner, switch stress is
 $V_{DS,\mathrm{pk}} = 13 + 63.8 + 1.5 = \SI{78.3}{\volt}$ against the
 \SI{100}{\volt} rating: $21.7\,\%$ margin, meeting the $20\,\%$ target. In
-normal operation the clamp rests at \SI{51.3}{\volt},
+normal operation the clamp rests at \SI{50.7}{\volt},
 $2.6\times$ the reflected voltage, still above the $2\times$ effectiveness
 floor, dissipating $V_{\mathrm{cl}}^2/\des{R}{HVCL} \approx
-\SI{87.7}{\milli\watt}$: the figure carried in the loss budget
+\SI{85.5}{\milli\watt}$: the figure carried in the loss budget
 (\cref{sec:hv-op-losses}). At the current-limit corner dissipation rises to
 \SI{136}{\milli\watt}, but hiccup holds that condition to a $0.2\,\%$ duty
 (\cref{sec:hv-ss}), so its average contribution is under a milliwatt and normal
@@ -1369,23 +1391,23 @@ current-limit corner the clamp is sized at (\cref{sec:hv-clamp}):
 \end{align*}
 a $21.7\,\%$ margin against the IRL540N's \SI{100}{\volt} rating, meeting by
 construction the $20\,\%$ derating target the clamp was sized to. In normal
-design-max operation the drain peaks at $13 + 51.3 + 1.5 \approx \SI{66}{\volt}$
-($34\,\%$ margin), and the part is avalanche-rated besides. Peak current
+design-max operation the drain peaks at $13 + 50.7 + 1.5 \approx \SI{65}{\volt}$
+($35\,\%$ margin), and the part is avalanche-rated besides. Peak current
 \SIrange{2.2}{2.9}{\ampere} against \SI{36}{\ampere} leaves more than an order
 of magnitude. The \SI{6.85}{\volt} gate rail fully enhances a logic-level gate
 specified at \SI{5}{\volt}, well inside the $\pm\SI{16}{\volt}$ $V_{GS}$ rating.
 
 Total switch dissipation at design-max, at the typical turn-off overlap
 ($t_{\mathrm{ovl}}^{\mathrm{typ}}=\SI{36}{\nano\second}$, \cref{sec:hv-op-losses}):
-conduction \SI{63}{\milli\watt} + turn-off \SI{142}{\milli\watt} + $C_{oss}$ few
-\si{\milli\watt} $\approx \SI{0.21}{\watt}$, a rise of $\approx\SI{13}{\kelvin}$
+conduction \SI{60}{\milli\watt} + turn-off \SI{140}{\milli\watt} + $C_{oss}$ few
+\si{\milli\watt} $\approx \SI{0.20}{\watt}$, a rise of $\approx\SI{12}{\kelvin}$
 on a free-standing vertical TO-220 at $\theta_{JA} \approx
 \SI{62}{\kelvin\per\watt}$. Because this check bears on thermal survival rather
 than typical operation, it is repeated at the guaranteed-worst-case turn-off
 overlap ($t_{\mathrm{ovl}}^{\max}=\SI{54}{\nano\second}$): conduction rises
-slightly with the higher commanded peak current to \SI{65}{\milli\watt},
-turn-off to \SI{218}{\milli\watt}, for a total $\approx\SI{0.28}{\watt}$ and a
-rise of $\approx\SI{18}{\kelvin}$: thermally unremarkable either way.
+slightly with the higher commanded peak current to \SI{62}{\milli\watt},
+turn-off to \SI{215}{\milli\watt}, for a total $\approx\SI{0.28}{\watt}$ and a
+rise of $\approx\SI{17}{\kelvin}$: thermally unremarkable either way.
 
 \textbf{Turn-off overlap remains the single largest loss in the converter}
 despite the speedup network. \des{D}{HVGOFF} and \des{R}{HVGOFF} cut the
@@ -1408,10 +1430,10 @@ at the design-max envelope (\cref{sec:hv-achieved-range}; this rating assumes th
 builder never tunes past $V_{\mathrm{max}}$, per \cref{sec:hv-divider-split}),
 plus secondary-side ring, under \SI{345}{\volt} against the UF4005's
 \SI{600}{\volt}: margin $\ge 42\,\%$.
-Forward stress: $I_{F,\mathrm{avg}} = \SI{16}{\milli\ampere}$ (\cref{sec:hv-budget})
+Forward stress: $I_{F,\mathrm{avg}} = \SI{15}{\milli\ampere}$ (\cref{sec:hv-budget})
 and $I_{F,\mathrm{pk}} = I_{\mathrm{pk}}/n = \SI{0.22}{\ampere}$ against a
 \SI{1}{\ampere} average rating. Conduction loss $\approx V_F I_{\mathrm{out}}
-= \SI{16}{\milli\watt}$. The $\approx\SI{75}{\nano\second}$ recovery is
+= \SI{15}{\milli\watt}$. The $\approx\SI{75}{\nano\second}$ recovery is
 immaterial: in DCM the diode current reaches zero and the junction sweeps out
 during the idle interval, so the switch never hard-commutates it.
 
@@ -1423,8 +1445,8 @@ during the idle interval, so the switch never hard-commutates it.
 bulk reservoir for the pulsed primary current; \des{C}{HVI2}
 (\SI{4.7}{\micro\farad} ceramic) closes the high-frequency primary loop;
 \des{C}{HVBIAS} serves the BIAS pin (\cref{sec:hv-house-bias}). The primary
-draws triangular pulses of RMS \SI{1.06}{\ampere} (\cref{sec:hv-op-converge})
-against a \SI{0.77}{\ampere} DC average, leaving $\sqrt{1.06^2 - 0.77^2} =
+draws triangular pulses of RMS \SI{1.04}{\ampere} (\cref{sec:hv-op-converge})
+against a \SI{0.74}{\ampere} DC average, leaving $\sqrt{1.04^2 - 0.74^2} =
 \SI{0.73}{\ampere}$ RMS of ripple in the capacitor bank. A polymer part carries
 that at milliohm ESR; \textbf{a general-purpose aluminum electrolytic would not:
 its \SI{150}{\kilo\hertz}
@@ -1435,8 +1457,8 @@ so the polymer family is a requirement here.} Bus ripple:
   \Delta V \approx
   \frac{(I_{\mathrm{pk}}/2 - I_{\mathrm{in}})\,t_{\mathrm{on}}}{C_{\mathrm{in}}}
   + I_{\mathrm{pk}}\,\mathrm{ESR}
-  \approx \frac{\SI{1.57}{\micro\coulomb}}{\SI{105}{\micro\farad}} + 2.21\times0.04
-  \approx \SI{103}{\milli\volt}\ \text{pk--pk},
+  \approx \frac{\SI{1.57}{\micro\coulomb}}{\SI{105}{\micro\farad}} + 2.18\times0.04
+  \approx \SI{102}{\milli\volt}\ \text{pk--pk},
 \end{align*}
 unobjectionable on a USB-PD input.
 
@@ -1451,7 +1473,7 @@ Capacitive ripple per cycle:
 \begin{align*}
   \Delta V_{\mathrm{cap}} &=
   \frac{I_{\mathrm{out}}\,(T - t_{\mathrm{dem}})}{C_{\mathrm{out}}}
-  = \frac{15.9\,\si{\milli\ampere} \times 5.6\,\si{\micro\second}}
+  = \frac{15.4\,\si{\milli\ampere} \times 5.6\,\si{\micro\second}}
          {\SI{4.8}{\micro\farad}}
   = \SI{18}{\milli\volt},
 \end{align*}
@@ -1463,7 +1485,7 @@ Through a \SI{10}{\kilo\ohm} ballast (\cref{sec:hv-load-digit}) this modulates
 tube current by $\sim$\SI{11}{\micro\ampere} at \SI{150}{\kilo\hertz},
 optically invisible. The small capacitance is sufficient, and beneficial: it
 keeps the stored energy at \SI{69}{\milli\joule}, the start-up rise time at
-\SI{22}{\milli\second} (\cref{sec:hv-ss}), and the bleed-down inside seconds
+\SI{17}{\milli\second} (\cref{sec:hv-ss}), and the bleed-down inside seconds
 (\cref{sec:hv-bleeder}).
 
 \textbf{\des{C}{HVO1}'s voltage rating must be specified deliberately.} Polymer
@@ -1483,45 +1505,55 @@ converter loaded enough to avoid pulse-skipping at light load.
 
 Stored energy is modest, $\tfrac{1}{2} C_{\mathrm{out}} V^2 =
 \tfrac{1}{2}\times\SI{4.8}{\micro\farad}\times 170^2 = \SI{69}{\milli\joule}$
-(\cref{sec:hv-caps}), but the node must still bleed down after shutdown. The
-tubes do most of the work themselves: holding the rail near their maintaining
-voltages while conducting collapses it to $\approx\SI{148}{\volt}$ (digit
-extinction) in $\sim$\SI{10}{\milli\second} and to $\approx\SI{92}{\volt}$
-(colon extinction) in $\sim$\SI{0.2}{\second}. Below that only the resistive
-path, $\des{R}{HVBLEED} \parallel R_{\mathrm{div}}$, remains.
+(\cref{sec:hv-caps}), but the node must still bleed down after shutdown.
 
 IEC 62368-1 classifies $\le\SI{60}{\volt}\,\mathrm{dc}$ as ES1, safe for an
 ordinary person to touch, and requires a capacitor's stored voltage to decay to
-that limit within \SI{2}{\second} of disconnection. Targeting
-\SI{1.8}{\second} leaves the resistive decay from the \SI{92}{\volt}
-colon-extinction point \SI{1.6}{\second} to reach \SI{60}{\volt}:
-\begin{align*}
-  \tau_{\mathrm{target}} = \frac{\SI{1.6}{\second}}{\ln(92/60)} \approx
-  \SI{3.74}{\second}, \qquad
-  R_{\mathrm{total,target}} = \frac{\tau_{\mathrm{target}}}{C_{\mathrm{out}}}
-  \approx \SI{780}{\kilo\ohm}.
-\end{align*}
-Against the feedback divider ($R_{\mathrm{div}} \approx \SI{1.70}{\mega\ohm}$,
-\cref{sec:hv-divider}), $\des{R}{HVBLEED} \parallel R_{\mathrm{div}} =
-\SI{780}{\kilo\ohm}$ requires $\des{R}{HVBLEED} \approx \SI{1.44}{\mega\ohm}$; the nearest
-standard value, $\des{R}{HVBLEED} = \SI{1.5}{\mega\ohm}$, gives:
+that limit within \SI{2}{\second} of disconnection. The tubes do most of the
+work themselves, each conducting branch behaving as its ballast in series with
+its own maintaining voltage and so pulling the rail toward that voltage until it
+stops conducting. The digits go first, at
+$\SI{145}{\volt} + \SI{2.5}{\volt} \approx \SI{148}{\volt}$, four
+\SI{10}{\kilo\ohm} ballasts taking the rail there in \SI{28}{\milli\second}.
+The colons carry it the rest of the way: with the INS-1 maintaining at or below
+\SI{55}{\volt} (\cref{sec:ins1}) and its cathode grounded, the colon branch
+stops \emph{below} the \SI{60}{\volt} ES1 limit. The tubes alone therefore
+determine whether the limit is reached, and the resistive path
+$\des{R}{HVBLEED} \parallel R_{\mathrm{div}}$ sets only how fast.
+
+Two \SI{240}{\kilo\ohm} ballasts against $\des{R}{HVBLEED} = \SI{1.5}{\mega\ohm}$
+in parallel with the feedback divider ($R_{\mathrm{div}} \approx
+\SI{1.70}{\mega\ohm}$, \cref{sec:hv-divider}) give
 \begin{align*}
   \des{R}{HVBLEED} \parallel R_{\mathrm{div}} &= 1.5\,\si{\mega\ohm} \parallel
     1.70\,\si{\mega\ohm} = \SI{797}{\kilo\ohm}, \\
-  \tau &= \SI{797}{\kilo\ohm} \times \SI{4.8}{\micro\farad} =
-    \SI{3.82}{\second}, \qquad
-  t_{92\rightarrow 60\,\mathrm{V}} = \tau \ln\frac{92}{60} =
-    \SI{1.63}{\second}.
+  \tau &= \frac{C_{\mathrm{out}}}{2/\SI{240}{\kilo\ohm} + 1/\SI{797}{\kilo\ohm}}
+       = \SI{0.50}{\second}, &
+  V_\infty &= \frac{2\times\SI{55}{\volt}/\SI{240}{\kilo\ohm}}
+                   {2/\SI{240}{\kilo\ohm} + 1/\SI{797}{\kilo\ohm}}
+            = \SI{47.8}{\volt},\\
+  t_{148\rightarrow 60\,\mathrm{V}} &= \tau
+    \ln\frac{148 - 47.8}{60 - 47.8} = \SI{1.05}{\second}.
 \end{align*}
 Total elapsed time from shutdown to \SI{60}{\volt} is
-$0.2 + 1.63 \approx \SI{1.83}{\second}$, an \SI{8}{\percent} margin under IEC
-62368-1's \SI{2}{\second} window. Dissipation, $170^2/\SI{1.5}{\mega\ohm} =
-\SI{19}{\milli\watt}$ at nominal and \SI{24}{\milli\watt} at the design-max
-envelope, is negligible against any axial part. The standing voltage is the
-constraint. \des{R}{HVBLEED} sits across the whole rail, so the figure that
-matters is the design-max envelope's \SI{191.5}{\volt}, and the
-\SI{20}{\percent} derating applied elsewhere in this section puts the
-requirement at $\ge\SI{239}{\volt}$ of limiting element voltage. That is past
+$0.03 + 1.05 \approx \SI{1.08}{\second}$, a \SI{46}{\percent} margin under IEC
+62368-1's \SI{2}{\second} window. That figure is for a populated board. With no
+tubes in their sockets the resistive path is the whole discharge and takes
+\SI{4.0}{\second}, which is the condition a builder is in while bench-trimming
+the rail with the tubes removed (\cref{sec:hv-divider-split}).
+
+The discharge requirement does not select \des{R}{HVBLEED} here. Even the
+divider alone, with no bleeder at all, reaches \SI{60}{\volt} in
+\SI{1.33}{\second}; what sets the value is the minimum-load requirement below,
+which caps \des{R}{HVBLEED} at \SI{2.47}{\mega\ohm}. \SI{1.5}{\mega\ohm} is the
+standard value under that cap, and clears both requirements.
+Dissipation, $170^2/\SI{1.5}{\mega\ohm} = \SI{19}{\milli\watt}$ at nominal and
+\SI{24}{\milli\watt} at the design-max envelope, is negligible against any axial
+part. The standing voltage is the constraint. \des{R}{HVBLEED} sits across the
+whole rail, so the figure that matters is the design-max envelope's
+\SI{191.5}{\volt}, and the \SI{20}{\percent} derating applied elsewhere in this
+section puts the requirement at $\ge\SI{239}{\volt}$ of limiting element
+voltage. That is past
 what a DIN0207 element is normally rated for, so a DIN0309 body is specified
 --- the only resistor in this section selected on element voltage.
 
@@ -1535,14 +1567,17 @@ The controller cannot deliver less than one minimum-width pulse per cycle. At
     = \SI{0.21}{\ampere},\\
   P_{\min} &= \tfrac{1}{2} L_p (I_{\mathrm{pk}}^{\min})^2 f_{\mathrm{sw}}\,\eta
     \approx \tfrac{1}{2}\times\SI{10}{\micro\henry}\times 0.046 \times
-      149.4\,\si{\kilo\hertz} \times 0.835
+      149.4\,\si{\kilo\hertz} \times 0.833
       \approx \SI{29}{\milli\watt}.
 \end{align*}
 Below this load the output would creep upward, or the controller would skip
 pulses. The fixed preload, bleeder $170^2/\SI{1.5}{\mega\ohm} =
 \SI{19}{\milli\watt}$ plus divider \SI{17}{\milli\watt}
-(\cref{sec:hv-divider}), totals \SI{36}{\milli\watt}, a $1.25\times$ margin over
-$P_{\min}$: the rail stays regulated even before the tubes strike.
+(\cref{sec:hv-divider}), totals \SI{36}{\milli\watt}, a $1.26\times$ margin over
+$P_{\min}$: the rail stays regulated even before the tubes strike. This is the
+binding requirement on \des{R}{HVBLEED}: the divider's \SI{17}{\milli\watt}
+alone falls short, and covering the remainder takes
+$170^2/\SI{12}{\milli\watt} = \SI{2.47}{\mega\ohm}$ or less.
 
 \subsection{Loop compensation}\label{sec:hv-comp}
 
@@ -1550,8 +1585,8 @@ $P_{\min}$: the rail stays regulated even before the tubes strike.
 
 A peak-current-mode DCM flyback is, to first order, a controlled current source
 into $C_{\mathrm{out}} \parallel R_L$. At the nominal point $R_L =
-V_{\mathrm{out}}/I_{\mathrm{out}} = 170/\SI{11.10}{\milli\ampere} =
-\SI{15.3}{\kilo\ohm}$ (\cref{sec:hv-budget}) and $C_{\mathrm{out}} =
+V_{\mathrm{out}}/I_{\mathrm{out}} = 170/\SI{10.77}{\milli\ampere} =
+\SI{15.8}{\kilo\ohm}$ (\cref{sec:hv-budget}) and $C_{\mathrm{out}} =
 \des{C}{HVO1} + \des{C}{HVO2} = \SI{4.8}{\micro\farad}$ (\cref{sec:hv-caps}).
 
 Modulator gain: the controller's PWM comparator sees COMP through its internal
@@ -1572,20 +1607,20 @@ follow:
 \begin{align*}
   \frac{\partial I_{\mathrm{out}}}{\partial I_{\mathrm{pk}}}
     &= \frac{2 I_{\mathrm{out}}}{I_{\mathrm{pk}}}
-     = \frac{2 \times 11.10\,\si{\milli\ampere}}{1.77}
-     = 12.5\,\si{\milli\ampere\per\ampere},\\
-     g_{ps} &= 12.5\,\si{\milli\ampere\per\ampere} \times \SI{3.11}{\ampere\per\volt}
-     = \SI{39.0}{\milli\siemens} \text{ (per volt of COMP)},
+     = \frac{2 \times 10.77\,\si{\milli\ampere}}{1.75}
+     = 12.3\,\si{\milli\ampere\per\ampere},\\
+     g_{ps} &= 12.3\,\si{\milli\ampere\per\ampere} \times \SI{3.11}{\ampere\per\volt}
+     = \SI{38.3}{\milli\siemens} \text{ (per volt of COMP)},
 \end{align*}
 and because $I_{\mathrm{out}} \propto 1/V_{\mathrm{out}}$ at fixed peak current,
 the converter presents its own output resistance equal to $R_L$, so the loaded
 plant sees $R_L/2$ and one dominant pole:
 \begin{align*}
-  G_0 &= g_{ps}\,\frac{R_L}{2} = 0.0390 \times 7650 = 299\ (\SI{49.5}{\decibel}),
+  G_0 &= g_{ps}\,\frac{R_L}{2} = 0.0383 \times 7890 = 302\ (\SI{49.6}{\decibel}),
   &
   f_p &= \frac{2}{2\pi R_L C_{\mathrm{out}}}
-       = \frac{2}{2\pi \times 15.3\,\si{\kilo\ohm} \times \SI{4.8}{\micro\farad}}
-       = \SI{4.3}{\hertz}.
+       = \frac{2}{2\pi \times 15.8\,\si{\kilo\ohm} \times \SI{4.8}{\micro\farad}}
+       = \SI{4.2}{\hertz}.
 \end{align*}
 The DCM right-half-plane zero and the output capacitor's ESR zero
 ($\approx\SI{67}{\kilo\hertz}$ at \des{C}{HVO1}'s \SI{0.5}{\ohm}) both lie far
@@ -1593,7 +1628,7 @@ above the crossover derived below and are neglected.
 
 \subsubsection{Compensator and loop}
 
-The target crossover $f_c$ sits above the plant pole $f_p = \SI{4.3}{\hertz}$
+The target crossover $f_c$ sits above the plant pole $f_p = \SI{4.2}{\hertz}$
 and below $f_{\mathrm{sw}}/10 \approx \SI{15}{\kilo\hertz}$, standard
 peak-current-mode practice. The load is quasi-static (no multiplexing, each tube
 has a dedicated driver, so digit changes move milliamps at minutes cadence) and
@@ -1625,12 +1660,12 @@ divider contributes $H = V_{\mathrm{REF}}/V_{\mathrm{out}} = 1/170$.
 Solving $|T(f)| = 1$ for the product of divider, compensator, and plant
 (numerically, with all three break frequencies in place) confirms the target:
 \begin{align*}
-  f_c &\approx \SI{196}{\hertz} \approx \frac{f_{\mathrm{sw}}}{762},\\
+  f_c &\approx \SI{193}{\hertz} \approx \frac{f_{\mathrm{sw}}}{772},\\
   \varphi_m &= 180^\circ - \arctan\frac{f_c}{f_p} - 90^\circ
     + \arctan\frac{f_c}{f_z} - \arctan\frac{f_c}{f_{hp}}
-    = 180 - 88.7 - 90 + 51.0 - 0.2 \approx 52^\circ.
+    = 180 - 88.8 - 90 + 50.5 - 0.2 \approx 52^\circ.
 \end{align*}
-The zero lands at $0.81 f_c$ and the high-frequency pole $370\times$ above
+The zero lands at $0.82 f_c$ and the high-frequency pole $375\times$ above
 crossover, both inside their targets, and the phase never approaches
 $-180^\circ$ until far past $f_{hp}$, where loop gain is tens of dB down. The
 modulator constants ($G_{\mathrm{COMP}}$, $S_e$, $g_m$) are datasheet typicals
@@ -1654,7 +1689,7 @@ nothing until strike, so no load current competes) in
   \frac{\tfrac{1}{2} C_{\mathrm{out}} V_{\mathrm{out}}^2}
        {\tfrac{1}{2} L_p I_{\mathrm{lim}}^2 f_{\mathrm{sw}}\,\eta}
   = \frac{\SI{69}{\milli\joule}}{\SI{4.1}{\watt}}
-  \approx \SI{16.9}{\milli\second}.
+  \approx \SI{17.0}{\milli\second}.
 \end{align*}
 $\des{C}{HVSS}$ must be large enough that $t_{SS}$ exceeds $t_{\mathrm{rise}}$;
 otherwise the output falls behind the commanded ramp and the error amplifier
@@ -1662,8 +1697,8 @@ saturates into the current limit. Setting $t_{SS} = t_{\mathrm{rise}}$ gives the
 minimum:
 \begin{align*}
   \des{C}{HVSS}^{\min} &= \frac{t_{\mathrm{rise}} I_{SS}}{V_{\mathrm{REF}}}
-  = \frac{\SI{16.9}{\milli\second} \times \SI{10}{\micro\ampere}}{\SI{1.00}{\volt}}
-  \approx \SI{169}{\nano\farad}.
+  = \frac{\SI{17.0}{\milli\second} \times \SI{10}{\micro\ampere}}{\SI{1.00}{\volt}}
+  \approx \SI{170}{\nano\farad}.
 \end{align*}
 \paragraph{Hiccup makes the sizing mandatory, and the margin larger.}
 The LM51561H specified here enables hiccup mode overload protection, which the
@@ -1683,11 +1718,11 @@ $t_{SS}$ must exceed not $t_{\mathrm{rise}}$ but $t_{\mathrm{rise}}$ at its own
 worst case. That figure carries real spread: $C_{\mathrm{out}}$ at $+20\,\%$,
 the current limit at its \SI{93}{\milli\volt} minimum (which enters squared),
 and efficiency at the pessimistic turn-off overlap together give
-$t_{\mathrm{rise}}^{\max} \approx \SI{23.9}{\milli\second}$ against the
-\SI{16.9}{\milli\second} nominal.
+$t_{\mathrm{rise}}^{\max} \approx \SI{24.5}{\milli\second}$ against the
+\SI{17.0}{\milli\second} nominal.
 
 Sizing against the nominal figure alone would select \SI{220}{\nano\farad},
-whose worst-case $t_{SS}$ is \SI{17.8}{\milli\second}: six milliseconds short,
+whose worst-case $t_{SS}$ is \SI{17.8}{\milli\second}: seven milliseconds short,
 and a board at that corner hiccups on every power-up. $\des{C}{HVSS} = \SI{470}{\nano\farad}$ is specified instead,
 giving $t_{SS} = \SI{47.0}{\milli\second}$ nominal. Stacking
 $\des{C}{HVSS}$'s own tolerance ($\pm10\,\%$, typical for this class of ceramic)
@@ -1698,7 +1733,7 @@ against $I_{SS}$ and $V_{\mathrm{REF}}$'s datasheet ranges
   t_{SS}^{\min} &= \frac{\SI{470}{\nano\farad}\times0.9 \times \SI{0.99}{\volt}}
   {\SI{11}{\micro\ampere}} \approx \SI{38.1}{\milli\second},
 \end{align*}
-\SI{14.2}{\milli\second} clear of $t_{\mathrm{rise}}^{\max}$. The full range is
+\SI{13.5}{\milli\second} clear of $t_{\mathrm{rise}}^{\max}$. The full range is
 \SIrange{38.1}{58.0}{\milli\second}, imperceptible next to the tubes' own
 warm-up.
 
@@ -1727,7 +1762,7 @@ unquantified here, which sets the drain ring-down interval that
 
 \paragraph{The largest identified efficiency lever.}\label{sec:hv-summary-lever}
 The bias draw and turn-off overlap together account for
-\SIrange{299}{403}{\milli\watt} of a \SIrange{589}{621}{\milli\watt} budget
+\SIrange{297}{400}{\milli\watt} of a \SIrange{578}{612}{\milli\watt} budget
 across the input window, and both scale with \des{Q}{HVSW}'s gate charge: the
 first through $Q_G$ directly, the second through $Q_{GD}$. The charge pump
 (\cref{sec:hv-house-pump}) supplies that charge from the reflected shelf,
@@ -1736,7 +1771,7 @@ charge is worth roughly three times what it would be on a converter biased
 directly from its input. A through-hole
 logic-level switch of the same voltage class at \SI{20}{\nano\coulomb} rather
 than \SI{40}{\nano\coulomb}, and at comparable $R_{DS(\mathrm{on})}$, would move
-design-max efficiency from \SI{83.5}{\percent} to about \SI{87.4}{\percent}. The IRL540N is
+design-max efficiency from \SI{83.3}{\percent} to about \SI{87.1}{\percent}. The IRL540N is
 specified because that combination is not sourceable in a through-hole package,
 which this design requires. Nothing above depends on the choice, since in DCM
 the energy packet sets the peak current.
@@ -1796,34 +1831,34 @@ Digit ballast \des{R}{BALDIG} & rated digit current at every trim setpoint &
   (\cref{tab:hv-ballast-divider}) \\
 \hline
 Colon ballast \des{R}{BALCOL} & \SI{0.5}{\milli\ampere} brightness optimum, no
-  rated band & \SI{240}{\kilo\ohm}; \SIrange{0.447}{0.558}{\milli\ampere}
+  rated band & \SI{240}{\kilo\ohm}; \SIrange{0.458}{0.569}{\milli\ampere}
   across the achieved range \\
 \hline
 \des{R}{HVD1}/\des{R}{HVD2} element stress & $<\SI{250}{\volt}$ per DIN0207 element &
   \SI{95.25}{\volt} max at design-max \\
 \hline
-$P_{\mathrm{out}}$ & --- & \SI{1.89}{\watt} nominal / \SI{3.05}{\watt}
+$P_{\mathrm{out}}$ & --- & \SI{1.83}{\watt} nominal / \SI{2.94}{\watt}
   design-max \\
 \hline
-Efficiency & --- & design-max \SIrange{83.1}{83.8}{\percent} across the window,
-peaking near \SI{7.7}{\volt}; nominal \SI{80.9}{\percent} / \SI{80.4}{\percent}
-/ \SI{79.2}{\percent} at
+Efficiency & --- & design-max \SIrange{82.8}{83.6}{\percent} across the window,
+peaking near \SI{7.4}{\volt}; nominal \SI{80.6}{\percent} / \SI{80.0}{\percent}
+/ \SI{78.8}{\percent} at
 \SI{4.75}{\volt} / \SI{9}{\volt} / \SI{13}{\volt} \\
 \hline
 Turn-off speedup \des{D}{HVGOFF}/\des{R}{HVGOFF} & reduce turn-off overlap; driver peak
   $\le\SI{1.5}{\ampere}$ & SB240S-E3/54 + \SI{3.3}{\ohm};
   $t_{\mathrm{ovl}}$ \SIrange{36}{54}{\nano\second}; \SI{1.32}{\ampere} peak \\
 \hline
-$I_{\mathrm{pk}}$ & --- & \SI{1.77}{\ampere} nominal; \SI{2.21}{\ampere}
-design-max; \SI{2.33}{\ampere} at $L_{\min}$ \\
+$I_{\mathrm{pk}}$ & --- & \SI{1.75}{\ampere} nominal; \SI{2.18}{\ampere}
+design-max; \SI{2.29}{\ampere} at $L_{\min}$ \\
 \hline
-DCM & $t_{\mathrm{on}}+t_{\mathrm{dem}} < T$ & $0.91\,T$ at the worst corner
-(\SI{4.75}{\volt}, $L_p+10\,\%$, design-max): $9\,\%$ idle \\
+DCM & $t_{\mathrm{on}}+t_{\mathrm{dem}} < T$ & $0.89\,T$ at the worst corner
+(\SI{4.75}{\volt}, $L_p+10\,\%$, design-max): $10.5\,\%$ idle \\
 \hline
-Sense resistor \des{R}{HVCS} & \SIrange{37.4}{39.9}{\milli\ohm} worst-case-additive &
+Sense resistor \des{R}{HVCS} & \SIrange{37.4}{40.6}{\milli\ohm} worst-case-additive &
   \SI{39}{\milli\ohm} \\
 \hline
-Current-limit margin & --- & $+0.1\,\%$ worst-case-additive; $+5.6\,\%$ RSS \\
+Current-limit margin & --- & $+1.7\,\%$ worst-case-additive; $+7.2\,\%$ RSS \\
 \hline
 CS filter \des{R}{HVCSF}/\des{C}{HVCSF} & $\tau$ \SIrange{30}{100}{\nano\second} & \SI{100}{\ohm},
   \SI{470}{\pico\farad}; $\tau=\SI{47}{\nano\second}$ \\
@@ -1834,24 +1869,24 @@ Clamped peak vs.\ saturation & --- & \SI{2.91}{\ampere} vs.\
 Clamp \des{R}{HVCL}/\des{C}{HVCL} & $V_{\mathrm{cl}} \ge 2\times$ reflected; $20\,\%$ \des{Q}{HVSW}
   voltage derating at the current-limit corner & \SI{30}{\kilo\ohm},
   \SI{12}{\nano\farad}, both $\ge\SI{80}{\volt}$; $V_{\mathrm{cl}}$
-  \SI{63.8}{\volt} corner / \SI{51.3}{\volt} design-max \\
+  \SI{63.8}{\volt} corner / \SI{50.7}{\volt} design-max \\
 \hline
 \des{D}{HVCL} & $\ge\SI{100}{\volt}$; \SI{2.91}{\ampere}, \SI{14.3}{\nano\coulomb}
   pulse; fast or ultrafast recovery & --- \\
 \hline
 \des{R}{HVCL} dissipation & rating $\ge 2\times$ sustained dissipation &
-\SI{87.7}{\milli\watt} design-max; the \SI{136}{\milli\watt} corner is
+\SI{85.5}{\milli\watt} design-max; the \SI{136}{\milli\watt} corner is
 hiccup-limited to a $0.2\,\%$ duty and does not set the rating. Rated
 $\ge\SI{0.18}{\watt}$, $\ge\SI{80}{\volt}$ \\
 \hline
 \des{Q}{HVSW} $V_{DS}$ & $\le\SI{78.3}{\volt}$ at the current-limit corner &
   \SI{100}{\volt} rating; $21.7\,\%$ margin \\
 \hline
-\des{Q}{HVSW} dissipation & --- & \SI{0.21}{\watt} typ.\ / \SI{0.28}{\watt} max
-$t_{\mathrm{ovl}}$; $\Delta T \approx \SIrange{13}{18}{\kelvin}$, TO-220, no
+\des{Q}{HVSW} dissipation & --- & \SI{0.20}{\watt} typ.\ / \SI{0.28}{\watt} max
+$t_{\mathrm{ovl}}$; $\Delta T \approx \SIrange{12}{17}{\kelvin}$, TO-220, no
   heatsink \\
 \hline
-\des{D}{HVRECT} & $V_R < \SI{345}{\volt}$; \SI{16}{\milli\ampere} avg & UF4005:
+\des{D}{HVRECT} & $V_R < \SI{345}{\volt}$; \SI{15}{\milli\ampere} avg & UF4005:
   \SI{600}{\volt}, \SI{1}{\ampere} \\
 \hline
 Input bulk \des{C}{HVI1} & $\ge\SI{0.73}{\ampere}$ ripple capability &
@@ -1861,16 +1896,17 @@ Output caps \des{C}{HVO1}/\des{C}{HVO2} & rating $\ge\SI{250}{\volt}$ at the \SI
   envelope; switching-ripple control only & \SI{4.7}{\micro\farad} polymer +
   \SI{100}{\nano\farad} film, both \SI{250}{\volt} \\
 \hline
-Bleeder \des{R}{HVBLEED} & preload $\ge\SI{29}{\milli\watt}$; $\le\SI{60}{\volt}$ within
-  \SI{2}{\second} (IEC 62368-1 ES1) & \SI{1.5}{\mega\ohm}:
-  \SI{36}{\milli\watt}, \SI{1.83}{\second} \\
+Bleeder \des{R}{HVBLEED} & preload $\ge\SI{29}{\milli\watt}$ sets the value
+  ($\le\SI{2.47}{\mega\ohm}$); $\le\SI{60}{\volt}$ within \SI{2}{\second}
+  (IEC 62368-1 ES1) & \SI{1.5}{\mega\ohm}:
+  \SI{36}{\milli\watt}, \SI{1.08}{\second} with tubes installed \\
 \hline
 Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\circ$ & \SI{10}{\kilo\ohm},
   \SI{100}{\nano\farad}, \SI{220}{\pico\farad};
-  $f_c\approx\SI{196}{\hertz}$, $\varphi_m\approx52^\circ$ \\
+  $f_c\approx\SI{193}{\hertz}$, $\varphi_m\approx52^\circ$ \\
   \hline
   Soft start \des{C}{HVSS} & $t_{SS} > t_{\mathrm{rise}}^{\max} \approx
-  \SI{23.9}{\milli\second}$, else hiccup trips at every power-up &
+  \SI{24.5}{\milli\second}$, else hiccup trips at every power-up &
   \SI{470}{\nano\farad}; $t_{SS}$ \SI{47.0}{\milli\second} nominal,
   \SIrange{38.1}{58.0}{\milli\second} worst-case-additive \\
   \hline
@@ -1882,7 +1918,7 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   third of the DCM idle margin (\cref{sec:hv-house-dithoff}) \\
   \hline
   Input current & carried by the negotiated contract (\cref{sec:hv-inhibit}) &
-  \SI{770}{\milli\ampere} design-max at \SI{4.75}{\volt}; \SI{491}{\milli\ampere}
+  \SI{744}{\milli\ampere} design-max at \SI{4.75}{\volt}; \SI{478}{\milli\ampere}
   nominal at \SI{4.75}{\volt} \\
   \hline
   \end{longtable}
@@ -1898,8 +1934,8 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   \SIrange{75}{114}{\nano\second} instead of \SIrange{36}{54}{\nano\second};
   without the pump it runs \SI{171}{\nano\second} at the bottom of the input
   window, where the converter cannot reach its design-max load at all. Two
-  margins are thin there, DCM idle at $9\,\%$ (\cref{sec:hv-dcm}) and the
-  current-limit margin at $+0.1\,\%$ worst-case-additive
+  margins are narrow there, DCM idle at $10.5\,\%$ (\cref{sec:hv-dcm}) and the
+  current-limit margin at $+1.7\,\%$ worst-case-additive
   (\cref{sec:hv-cs-sense}), both consequences of the extended input window;
   no component choice produces them. And the pump's \SI{126}{\milli\watt} is
   the price of operating from a \SI{5}{\volt} contract at all, fixed by
@@ -1915,12 +1951,15 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   The requirements derived above, collected as selection criteria: values as
   specified in this section, ratings as the derived minima. Unlike the
   low-voltage rails, this converter is built through-hole wherever a through-hole
-  part exists, as a construction preference. The body
+  part exists, as a construction preference; the two colon ballasts, the only
+  parts here mounted on the visible face of the clock, take a carbon film body
+  for the same reason. The body
   column is filled only where the derivation constrains it or where an exact part
   is named; elsewhere any part meeting the ratings will do. Where a resistor does
   carry a body, the stated size is a floor set by the \SI{50}{\percent} power and
   \SI{20}{\percent} voltage derating applied throughout, taking a DIN0207 metal
-  film element as \SI{0.6}{\watt} and \SI{250}{\volt} and a DIN0309 as
+  film element as \SI{0.6}{\watt} and \SI{250}{\volt}, a quarter-watt DIN0207
+  carbon film element as \SI{0.25}{\watt} and \SI{250}{\volt}, and a DIN0309 as
   \SI{350}{\volt}; confirm both against the series actually bought, since
   neither figure is a parameter distributors expose.
 
@@ -1948,7 +1987,7 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   \hline
   \des{R}{BALDIG} & Fixed resistor & \SIrange{7.50}{13.00}{\kilo\ohm} & 1\,\%; four, matched to one row of \cref{tab:hv-ballast-divider}; $\geq\SI{0.32}{\watt}$ (\cref{sec:hv-load-digit}) & DIN0207 minimum \\
   \hline
-  \des{R}{BALCOL} & Fixed resistor & \SI{240}{\kilo\ohm} & 1\,\%; two; $\geq\SI{0.15}{\watt}$; element voltage $\geq\SI{168}{\volt}$ (\cref{sec:hv-load-colon}) & DIN0207 minimum \\
+  \des{R}{BALCOL} & Fixed resistor & \SI{240}{\kilo\ohm} & 5\,\%; two; $\geq\SI{0.16}{\watt}$; element voltage $\geq\SI{171}{\volt}$ (\cref{sec:hv-load-colon}) & DIN0207 carbon film \\
   \hline
   \des{R}{HVCS} & Current sense & \SI{39}{\milli\ohm} & 1\,\%; $\geq\SI{0.09}{\watt}$; low inductance (\cref{sec:hv-cs-sense}) & 2512 \\
   \hline
