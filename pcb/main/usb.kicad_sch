@@ -4752,6 +4752,16 @@
 		)
 		(uuid "1cf845ea-0d03-44d2-9d7b-44c8cfacf12d")
 	)
+	(label "FB_{ISINKF}"
+		(at 162.56 123.19 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2844dabb-4de4-4988-9196-63d979489ab5")
+	)
 	(label "CC2"
 		(at 101.6 82.55 0)
 		(effects
@@ -4762,7 +4772,7 @@
 		)
 		(uuid "6342453c-0593-483c-be61-5f670d082c7d")
 	)
-	(label "SOURCE"
+	(label "S_{USB}"
 		(at 161.29 36.83 0)
 		(effects
 			(font
@@ -4772,7 +4782,27 @@
 		)
 		(uuid "788d8c40-d508-46a7-bf4e-aa4c806b76f7")
 	)
-	(label "VBUS_{C}"
+	(label "FB_{VBUSMAX}"
+		(at 172.72 114.3 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "812b06c5-45cc-4069-9cf6-acffb72c59a9")
+	)
+	(label "V_{CCD}"
+		(at 130.81 95.25 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "93ab585d-a488-4985-9dfa-f64bda7a926a")
+	)
+	(label "V_{BUSC}"
 		(at 99.06 35.56 0)
 		(effects
 			(font
@@ -4782,8 +4812,8 @@
 		)
 		(uuid "a8dfab50-e92d-499a-9b99-93523bbf0dc1")
 	)
-	(label "GATE"
-		(at 147.32 44.45 0)
+	(label "G_{USB}"
+		(at 143.51 44.45 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5422,6 +5452,106 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+48V")
+		(at 167.64 124.46 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "1369ac33-b99d-4071-a076-3ce2b27128e4")
+		(property "Reference" "#PWR0234"
+			(at 167.64 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "V_{DDD}"
+			(at 165.608 120.65 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 167.64 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 167.64 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+48V\""
+			(at 167.64 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 167.64 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 167.64 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b2bef8e8-732a-492e-ac04-a59bcc874d49")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
+					(reference "#PWR0234")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3V3")
 		(at 115.57 120.65 0)
 		(unit 1)
@@ -5886,7 +6016,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 181.61 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -5897,7 +6027,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C307331"
 			(at 181.61 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -7655,106 +7785,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+48V")
-		(at 167.64 124.46 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "805b8e1a-2e02-4480-a931-19fae3f893d2")
-		(property "Reference" "#PWR0234"
-			(at 167.64 128.27 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VDDD"
-			(at 167.64 119.38 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 167.64 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 167.64 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+48V\""
-			(at 167.64 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" ""
-			(at 167.64 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 167.64 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ff8de199-50af-4b61-a513-674c9c9c3b94")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
-					(reference "#PWR0234")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 86.36 118.11 180)
 		(unit 1)
@@ -8885,105 +8915,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+48V")
-		(at 107.95 90.17 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "95c690e5-41a6-4cb8-b599-b34b97094114")
-		(property "Reference" "#PWR0101"
-			(at 107.95 93.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VDDD"
-			(at 111.252 87.884 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 107.95 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 107.95 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+48V\""
-			(at 107.95 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" ""
-			(at 107.95 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 107.95 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "4a8fa1e8-d080-4a00-a1ce-3a18e991fe5c")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
-					(reference "#PWR0101")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:LED")
 		(at 196.85 48.26 90)
 		(unit 1)
@@ -9736,6 +9667,106 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+48V")
+		(at 177.8 116.84 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "b660961f-dacc-4c9b-9ae3-183f2496b5ad")
+		(property "Reference" "#PWR0243"
+			(at 177.8 120.65 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "V_{DDD}"
+			(at 176.022 113.03 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 177.8 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 177.8 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+48V\""
+			(at 177.8 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 177.8 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 177.8 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3dc2754d-a46d-45bd-981c-fd32a4bb30db")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
+					(reference "#PWR0243")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Power_Protection:USBLC6-2SC6")
 		(at 107.95 95.25 0)
 		(unit 1)
@@ -9932,7 +9963,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 194.31 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -9943,7 +9974,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C307331"
 			(at 194.31 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -10080,7 +10111,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "c45df7c8-3c1c-44be-9fd2-3322487d2887")
 		(property "Reference" "#PWR0231"
 			(at 181.61 57.15 0)
@@ -10093,14 +10123,15 @@
 				)
 			)
 		)
-		(property "Value" "VDDD"
-			(at 181.61 48.26 0)
+		(property "Value" "V_{DDD}"
+			(at 182.88 50.292 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" ""
@@ -10381,6 +10412,106 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
 					(reference "#PWR0213")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+48V")
+		(at 107.95 90.17 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "cc8cbf7e-057e-4f15-9098-ec7467fc92b9")
+		(property "Reference" "#PWR0253"
+			(at 107.95 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "V_{DDD}"
+			(at 109.22 87.122 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 107.95 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 107.95 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+48V\""
+			(at 107.95 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 107.95 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 107.95 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1deb6062-ae15-4285-b4b4-e7ecc0a4d7bf")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
+					(reference "#PWR0253")
 					(unit 1)
 				)
 			)
@@ -11119,7 +11250,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "49.9K"
+		(property "Value" "100k"
 			(at 162.56 41.9099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11163,7 +11294,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF4992TCE"
+		(property "MFG Part No" "0402WGF1003TCE"
 			(at 160.02 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -11174,7 +11305,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25897"
+		(property "LCSC" "C25741"
 			(at 160.02 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -11233,7 +11364,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 106.3752 43.18 0)
 			(hide yes)
 			(show_name no)
@@ -11605,106 +11736,6 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
 					(reference "D103")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+48V")
-		(at 177.8 116.84 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "fa2eed70-d956-42ac-8114-fc1ca1392793")
-		(property "Reference" "#PWR0229"
-			(at 177.8 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VDDD"
-			(at 177.8 111.76 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 177.8 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 177.8 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+48V\""
-			(at 177.8 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" ""
-			(at 177.8 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 177.8 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c446a76b-e2a4-44d6-9fbd-5f088deff858")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
-					(reference "#PWR0229")
 					(unit 1)
 				)
 			)

@@ -9079,7 +9079,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 139.7 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -9090,7 +9090,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C307331"
 			(at 139.7 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -9204,7 +9204,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "5a7174b2-272a-432c-8b4b-20da5ad18b6d")
 		(property "Reference" "#PWR0512"
 			(at 31.75 72.39 0)
@@ -9217,14 +9216,15 @@
 				)
 			)
 		)
-		(property "Value" "VCC_{UART}"
-			(at 31.75 81.28 0)
+		(property "Value" "V_{UART}"
+			(at 32.512 79.756 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify right)
 			)
 		)
 		(property "Footprint" ""
@@ -9361,7 +9361,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 69.85 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -9372,7 +9372,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C307331"
 			(at 69.85 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -13572,7 +13572,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 111.76 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -13583,7 +13583,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C307331"
 			(at 111.76 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -13956,7 +13956,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 44.45 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -13967,7 +13967,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C307331"
 			(at 44.45 31.75 0)
 			(hide yes)
 			(show_name no)

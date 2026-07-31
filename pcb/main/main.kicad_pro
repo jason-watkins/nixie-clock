@@ -52,8 +52,8 @@
         "zones": {
           "border_display_style": 2,
           "border_hatch_pitch": 0.5,
-          "corner_radius": 0.25,
-          "corner_smoothing": 2,
+          "corner_radius": 0.0,
+          "corner_smoothing": 0,
           "fill_mode": 0,
           "hatch_gap": 1.5,
           "hatch_orientation": 0.0,
@@ -212,6 +212,7 @@
       "track_widths": [
         0.0,
         0.2,
+        0.25,
         0.5
       ],
       "tuning_pattern_settings": {
@@ -537,19 +538,43 @@
     "netclass_patterns": [
       {
         "netclass": "Default",
-        "pattern": "+170V"
+        "pattern": "GND"
       },
       {
         "netclass": "Default",
-        "pattern": "A\\"
+        "pattern": "+3V3"
       },
       {
         "netclass": "Default",
-        "pattern": "/?.*NX\\d+_{\\d}"
+        "pattern": "+5V"
       },
       {
         "netclass": "Default",
-        "pattern": "/?.*HV_{.*}"
+        "pattern": "*V_{*}"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "*SW_{*}"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "*FB_{*}"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "*G_{*}"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "*S_{*}"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "H\\d+_{[ABCD]}"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "M\\d+_{[ABCD]}"
       }
     ]
   },
@@ -693,7 +718,7 @@
         "uuid": "f225fc02-d36f-4469-bac4-82a576baae3a"
       }
     ],
-    "used_designators": "Q102,Q122,Q131,#PWR11,#PWR208,#PWR210,#PWR212,#PWR507,J6,J131,R129-130,TP102,TP123",
+    "used_designators": "Q102,Q122,Q131,#PWR11,#PWR208,#PWR210,#PWR212,#PWR234,#PWR243,#PWR253,#PWR507,J6,J131,R129-130,TP102,TP123",
     "variants": []
   },
   "sheets": [

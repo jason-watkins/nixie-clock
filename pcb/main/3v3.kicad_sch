@@ -3194,7 +3194,7 @@
 		)
 		(uuid "f01e1d2f-7201-4db9-94d7-bc6f47c6091e")
 	)
-	(label "FB_{3.3V}"
+	(label "FB_{3V3}"
 		(at 162.56 90.17 0)
 		(effects
 			(font
@@ -3224,7 +3224,7 @@
 		)
 		(uuid "533a1e66-35be-417a-adef-11da767587c4")
 	)
-	(label "VIN_{3.3V}"
+	(label "V_{IN3.3V}"
 		(at 105.41 82.55 0)
 		(effects
 			(font
@@ -3234,7 +3234,7 @@
 		)
 		(uuid "5b8f19eb-db02-4e10-a630-b2d321bc560f")
 	)
-	(label "L1_{3.3V}"
+	(label "SW_{3V3A}"
 		(at 130.81 73.66 0)
 		(effects
 			(font
@@ -3264,7 +3264,7 @@
 		)
 		(uuid "9168b90a-1bfa-486c-8adf-8de6021350aa")
 	)
-	(label "VAUX_{3.3V}"
+	(label "V_{AUX}"
 		(at 127 105.41 0)
 		(effects
 			(font
@@ -3274,7 +3274,7 @@
 		)
 		(uuid "b2284daa-87f1-4ae9-ba89-e0ec99059eb8")
 	)
-	(label "L2_{3.3V}"
+	(label "SW_{3V3B}"
 		(at 153.67 73.66 0)
 		(effects
 			(font
@@ -3830,7 +3830,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "1fed73a5-49bb-4777-ba10-4729e7cdbe0e")
 		(property "Reference" "#PWR0212"
 			(at 95.25 59.69 0)
@@ -3843,14 +3842,15 @@
 				)
 			)
 		)
-		(property "Value" "VCC_{UART}"
-			(at 95.25 50.8 0)
+		(property "Value" "V_{UART}"
+			(at 97.028 53.34 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" ""
@@ -5306,7 +5306,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL05B104KO5NNNC"
+		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 132.08 109.22 0)
 			(hide yes)
 			(show_name no)
@@ -7473,7 +7473,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "e11a253c-af24-44a2-bdac-42ee364dd748")
 		(property "Reference" "#PWR0208"
 			(at 77.47 95.25 0)
@@ -7486,14 +7485,15 @@
 				)
 			)
 		)
-		(property "Value" "VCC_{UART}"
-			(at 77.47 104.14 0)
+		(property "Value" "V_{UART}"
+			(at 78.232 102.616 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify right)
 			)
 		)
 		(property "Footprint" ""

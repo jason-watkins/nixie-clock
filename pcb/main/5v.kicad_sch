@@ -1793,7 +1793,7 @@
 		)
 		(uuid "01251b30-e94c-4e7c-8dcf-d815f37c6a60")
 	)
-	(label "MODE_{5V}"
+	(label "FB_{MODE}"
 		(at 44.45 50.8 0)
 		(effects
 			(font
@@ -1803,7 +1803,7 @@
 		)
 		(uuid "6ae086e9-3b29-4e68-9e83-34323f4b345e")
 	)
-	(label "VSET_{5V}"
+	(label "FB_{5V}"
 		(at 86.36 50.8 0)
 		(effects
 			(font
