@@ -21,10 +21,10 @@ override with `--sch <path>` placed *before* the subcommand.
 
 | Command | Purpose |
 |---|---|
-| `components` | List every component: ref, value, library part, footprint |
+| `components` | List every component: ref, value, `MFG Part No`, library part, footprint; plus a `NOTE:` line wherever the symbol carries a `Note` field |
 | `nets [REGEX ...]` | Print nets with pin-level nodes (`R1.2`, `U1.8(EN)`); optional net-name regex filters |
 | `refs REF [REF ...]` | Print every net touching the given components — the fast way to audit one part's connectivity |
-| `pins REF` | Pin table (number, name, electrical type) for one component's library symbol |
+| `pins REF` | Pin table (number, name, electrical type) for one component's library symbol, with its `Note` field if set |
 | `erc` | Run KiCad ERC, print all violations with severity and involved items |
 | `diff` | Net-level changes since the previous export — run after the user edits the schematic to verify exactly what changed |
 | `pdf FILE KW [KW ...]` | Extract a PDF's text (cached) and print context around regex keyword hits, each tagged `[pN]` with its page — for datasheet spec lookups that must cite a page |
@@ -46,6 +46,13 @@ unsaved changes open in KiCad — say so rather than re-running repeatedly.
 
 - `diff` compares against the snapshot taken by the previous run of any
   netlist-based subcommand in this repo, keyed to the schematic path.
+- The orderable part number lives in the `MFG Part No` field, not in `value` —
+  `value` carries the electrical value (10k, 100nF). Check anything against a
+  datasheet using the field, never the value.
+- A `Note` field on a symbol records why a part is what it is: a derating
+  expectation, a pinout caveat, a value that looks wrong but isn't. Read it
+  before questioning a part choice — C104/C107 carry one explaining that their
+  1 µF is specified against its derated value, not its nominal.
 - kicad-cli is autodetected from PATH or `C:\Program Files\KiCad\<ver>\bin`;
   override with the `KICAD_CLI` env var.
 - `pdf` needs `pypdf` and `cryptography` (both installed for this user's

@@ -23,11 +23,10 @@ NX5--NX6 & IN-6 colon tubes (colon separator) \\
 Both are Soviet-made parts documented only in scanned factory sheets;
 the figures below are transcribed directly from those scans, with the
 original Russian parameter names noted where a term's meaning is not
-self-evident from context. Neither tube's datasheet is a
-Western-style datasheet with guaranteed min/typ/max columns throughout:
-several entries below are single-sided limits (``not more than''
-or ``not less than'') rather than full min/typ/max triples, which
-bears on how conservatively the anode supply must be sized.
+self-evident from context. Neither sheet carries guaranteed
+min/typ/max columns throughout. Several entries below are single-sided
+limits (``not more than'' or ``not less than''), which bears on how
+conservatively the anode supply must be sized.
 
 \subsection{IN-12B (digit tubes, NX1--NX4)}
 \label{sec:in12b}
@@ -89,28 +88,25 @@ or anode-cathode capacitance; a manufacturer-recommended ballast
 resistor value or target anode current within the permissible 2.5--3.5~mA
 band.
 
-\paragraph{Open question: anode supply voltage.} The datasheet's own
+\paragraph{Open question: anode supply voltage.} The datasheet's
 minimum anode supply figure (\SI{200}{\volt}, recommended
 \SI{250}{\volt}) sits \emph{above} the \SIrange{164.8}{191.5}{\volt}
-anode-rail range this document derives (\cref{sec:hv-converter}); the
-design never reaches even the stated minimum, let alone the
-recommended value. The most likely explanation is that this
-factory figure is written for the tube's other stated supply mode,
-unfiltered half-wave-rectified AC (\S\ref{sec:in12b}, ``Cathode current,
-average''): an unsmoothed half-wave supply spends roughly half of every
-mains cycle near zero volts, so its \emph{peak} voltage must be pushed
-well above the \SI{145}{\volt} typical maintaining voltage to sustain
-adequate \emph{average} current and fast, reliable strike, a
-requirement that does not carry over unchanged to a continuously
-present, regulated DC rail such as this board's. This interpretation
-is plausible but not confirmed by the source, which does not explain
-the discrepancy directly. \Cref{sec:hv-converter} carries this forward
-as an explicit open item; the
-bench-tuning procedure (raising the trim potentiometer until
-every digit of the actual tube stock strikes reliably, then setting
-the rail roughly \SI{10}{\volt} above that point) is an empirical
-check against exactly this uncertainty, independent of which
-interpretation is correct.
+anode-rail range this document derives (\cref{sec:hv-converter}), so
+the design does not reach even the stated minimum. The likely
+explanation is that the factory figure is written for the tube's other
+stated supply mode, unfiltered half-wave-rectified AC
+(\S\ref{sec:in12b}, ``Cathode current, average''). An unsmoothed
+half-wave supply spends roughly half of every mains cycle near zero
+volts, so its \emph{peak} must be pushed well above the
+\SI{145}{\volt} typical maintaining voltage to sustain adequate
+\emph{average} current and reliable strike. A continuously present,
+regulated DC rail carries no such requirement. The source does not
+explain the discrepancy, so this reading is unconfirmed.
+\Cref{sec:hv-converter} carries it forward as an open item; the
+bench-tuning procedure (raising the trim potentiometer until every
+digit of the actual tube stock strikes reliably, then setting the rail
+roughly \SI{10}{\volt} above that point) tests the uncertainty
+directly, whichever reading is correct.
 
 \subsection{IN-6 (colon tubes, NX5--NX6)}
 \label{sec:in6}
@@ -159,14 +155,13 @@ if left unconnected; its rating is otherwise symmetric with the
 indicator cathode (K). The manufacturer's example circuit routes one
 cathode to a direct ground reference and the other through an
 RC network to a sensed node, which is \emph{consistent with} KA
-serving a priming/keep-alive role, but this is inferred from the
-circuit diagram, not stated in prose, and is not confirmed. No
-interelectrode capacitance is given. Two maintaining-voltage
-figures appear for the same \SI{0.7}{\milli\ampere} test current
-(\SI{88}{\volt} under ``basic parameters'' vs.\ \SI{90}{\volt} under
-``permissible operating modes''); the source does not explain the
-2~V discrepancy, which is small enough to be a nominal-vs.-rated
-distinction rather than a substantive conflict.
+serving a priming/keep-alive role. That reading is inferred from the
+circuit diagram and unconfirmed by the text. No interelectrode
+capacitance is given. Two maintaining-voltage figures appear for the
+same \SI{0.7}{\milli\ampere} test current (\SI{88}{\volt} under
+``basic parameters'' vs.\ \SI{90}{\volt} under ``permissible operating
+modes''); the source does not explain the 2~V discrepancy, which is
+small enough to be a nominal-vs.-rated distinction.
 
 \paragraph{Maximum switching frequency.} The \SI{0.5}{\hertz} maximum
 discharge switching frequency bounds how fast this tube's gap may be

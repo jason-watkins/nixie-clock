@@ -117,10 +117,17 @@ def parse_netlist(path):
     comps = {}
     for c in root.find("components") or []:
         ls = c.find("libsource")
+        # The orderable part number lives in a user field, not in "value";
+        # "value" carries the electrical value (10k, 100nF) instead. Anything
+        # that has to be checked against a datasheet needs the field.
+        fields = {f.get("name"): (f.text or "")
+                  for f in (c.find("fields") or [])}
         comps[c.get("ref")] = {
             "value": c.findtext("value") or "",
             "footprint": c.findtext("footprint") or "",
             "libpart": (ls.get("lib"), ls.get("part")) if ls is not None else None,
+            "fields": fields,
+            "mpn": fields.get("MFG Part No", ""),
         }
     nets = {}
     for net in root.find("nets") or []:
@@ -149,7 +156,15 @@ def cmd_components(args):
     for ref in sorted(comps, key=lambda r: (re.sub(r"\d+$", "", r), int(re.search(r"(\d+)$", r).group(1)) if re.search(r"(\d+)$", r) else 0)):
         c = comps[ref]
         part = c["libpart"][1] if c["libpart"] else ""
-        print(f"{ref:6} {c['value']:28} {part:28} {c['footprint']}")
+        mpn = c.get("mpn") or "-"
+        print(f"{ref:6} {c['value']:18} {mpn:24} {part:24} {c['footprint']}")
+        # A "Note" field records why a part is what it is -- a derating
+        # expectation, a pinout caveat, a value that looks wrong but isn't.
+        # It goes on its own line because it is prose and would otherwise
+        # destroy the column alignment above.
+        note = c["fields"].get("Note", "").strip()
+        if note:
+            print(f"       NOTE: {note}")
 
 
 def cmd_nets(args):
@@ -174,6 +189,9 @@ def cmd_pins(args):
     if not comp:
         sys.exit(f"no component {args.ref}")
     print(f"{args.ref}  {comp['value']}  {comp['footprint']}")
+    note = comp["fields"].get("Note", "").strip()
+    if note:
+        print(f"  NOTE: {note}")
     pins = pinmeta.get(comp["libpart"], {})
     for num in sorted(pins, key=lambda n: int(n) if n.isdigit() else 999):
         name, ptype = pins[num]

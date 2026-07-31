@@ -12,10 +12,9 @@ Source: <https://github.com/judge2005/Eagle-and-KiCAD-Nixie-Libs>
 - IN-6 symbol and footprint
 - K155ID1 symbol and DIP16 footprint (nixiemisc collection)
 
-Local changes: pin electrical types set to passive, courtyards added, IN-6
-corrected to three electrodes (anode, cathode, auxiliary priming cathode)
-per the GOST datasheet. DIP16 carries the stock KiCad `DIP-16_W7.62mm`
-model, rotated to suit this footprint's horizontal, centre-origin pin
+Local changes: pin electrical types set to passive, courtyards added, IN-6 corrected to three
+electrodes (anode, cathode, auxiliary priming cathode) per the GOST datasheet. DIP16 carries the
+stock KiCad `DIP-16_W7.62mm` model, rotated to suit this footprint's horizontal, centre-origin pin
 layout.
 
 ## Imported from laurivosandi's nixiesp12
@@ -27,11 +26,8 @@ Source: <https://github.com/laurivosandi/nixiesp12>
   project credits miniwatt.info as the origin of its 3D models; that site is
   no longer online.
 
-The model is authored in the VRML convention of one unit per 0.1 inch and
-carries no units of its own, so it is attached at scale 1 with the seating
-plane already at the board surface. Its pins sit on a 1.27 mm grid rather
-than the tube's 11.5 x 18 mm oval, so in the 3D view they stand off centre
-in their holes by up to 0.7 mm. Only the twelve and six o'clock pins land
+The model's' pins sit on a 1.27 mm grid rather than the tube's 11.5 x 18 mm oval, so in the 3D view
+they stand off centre in their holes by up to 0.7 mm. Only the twelve and six o'clock pins land
 concentric.
 
 ## Copied from the KiCad 9 stock library, then modified
@@ -45,11 +41,28 @@ concentric.
 
 ## Drawn for this project
 
+- INS-1 symbol and footprint. The label sheet in `docs/datasheets/INS-1.pdf`
+  carries no mechanical drawing, so the 6.8 mm envelope diameter comes from
+  distributor listings and the lead diameter, about 0.3 mm, from a photograph
+  scaled against that envelope. The leads are soft wire on no fixed pitch, so
+  the footprint sets it at 2.54 mm on 0.7 mm holes. The model draws its leads
+  5.5 mm apart, so they stand outside the holes in the 3D view.
+- INS-1_Recessed, the same lamp sunk through the board so its lens clears the
+  IN-12 faces by a few millimetres instead of standing 6 mm above them. The
+  milled 8.0 x 5.0 mm slot on Edge.Cuts passes the 7.0 x 4.0 mm pinch blade
+  and keys its rotation so the leads exit along X; the wider flare above the
+  blade seats the lamp. A printed TPU top-hat washer lines the slot and its
+  flange sets the height. Leads land on pads on the back of the board.
 - CYPD3176 symbol, pins arranged to match the datasheet's application figure
 - Kemet GoldMax radial dipped MLCC footprints: C315, C317, C320, C322, C330
   case sizes
 - Panasonic ECQ-E film capacitor footprint (7.9 x 5.9 mm, 5.0 mm pitch)
 - DA2032-AL flyback transformer, land pattern from the Coilcraft drawing
 
-Except for the IN-12B tube, 3D models come from the part manufacturers
-(Kemet, Panasonic, TI, JAE, Coilcraft).
+## Imported from GrabCAD
+
+- `INS1.STEP`, attached to the INS-1 footprint. Uploaded there in December
+  2020 by Patrick Simon.
+
+Apart from the IN-12B tube and the INS-1 lamp, 3D models come from the part
+manufacturers (Kemet, Panasonic, TI, JAE, Coilcraft).

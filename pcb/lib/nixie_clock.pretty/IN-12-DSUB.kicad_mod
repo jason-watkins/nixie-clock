@@ -117,17 +117,80 @@
 		(layer "F.CrtYd")
 		(uuid "f1e511e9-67cd-47c2-8063-cb8d28b8210d")
 	)
-	(fp_rect
-		(start -10.5 -15.5)
-		(end 10.5 15.5)
-		(radius 2)
+	(fp_line
+		(start -7.5 -15.5)
+		(end 8.5 -15.5)
 		(stroke
 			(width 0.1)
 			(type solid)
 		)
-		(fill no)
 		(layer "F.Fab")
-		(uuid "ec8c0113-c1c5-4b5e-8706-70768039cbc5")
+	)
+	(fp_arc
+		(start 8.5 -15.5)
+		(mid 9.914214 -14.914214)
+		(end 10.5 -13.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+	)
+	(fp_line
+		(start 10.5 -13.5)
+		(end 10.5 13.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+	)
+	(fp_arc
+		(start 10.5 13.5)
+		(mid 9.914214 14.914214)
+		(end 8.5 15.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+	)
+	(fp_line
+		(start 8.5 15.5)
+		(end -8.5 15.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+	)
+	(fp_arc
+		(start -8.5 15.5)
+		(mid -9.914214 14.914214)
+		(end -10.5 13.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+	)
+	(fp_line
+		(start -10.5 13.5)
+		(end -10.5 -12.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+	)
+	(fp_line
+		(start -10.5 -12.5)
+		(end -7.5 -15.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
 	)
 	(fp_text user "Top"
 		(at 0 -6 0)

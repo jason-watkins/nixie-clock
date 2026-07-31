@@ -47,7 +47,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/tps63070.pdf"
+			(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/tps63070.pdf"
 				(at 0 -22.86 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -656,172 +656,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:D_Schottky"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "D"
-				(at 0 2.54 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "D_Schottky"
-				(at 0 -2.54 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Schottky diode"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "diode Schottky"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "D_Schottky_0_1"
-				(polyline
-					(pts
-						(xy -1.905 0.635) (xy -1.905 1.27) (xy -1.27 1.27) (xy -1.27 -1.27) (xy -0.635 -1.27) (xy -0.635 -0.635)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0) (xy -1.27 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "D_Schottky_1_1"
-				(pin passive line
-					(at -3.81 0 0)
-					(length 2.54)
-					(name "K"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 0 180)
-					(length 2.54)
-					(name "A"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:L"
 			(pin_numbers
 				(hide yes)
@@ -1331,6 +1165,363 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Transistor_FET:Q_Dual_PMOS_G1S2G2D2S1D1"
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "Q"
+				(at 5.08 1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "Q_Dual_PMOS_G1S2G2D2S1D1"
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 1.27 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 1.27 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Dual PMOS transistor, 6 pin package"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "transistor PMOS P-MOS P-MOSFET"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Q_Dual_PMOS_G1S2G2D2S1D1_0_1"
+				(polyline
+					(pts
+						(xy 0.254 1.905) (xy 0.254 -1.905)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.254 0) (xy -2.54 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 2.286) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 1.778) (xy 3.302 1.778) (xy 3.302 -1.778) (xy 0.762 -1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 0.508) (xy 0.762 -0.508)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -1.27) (xy 0.762 -2.286)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 1.651 0)
+					(radius 2.794)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.286 0) (xy 1.27 0.381) (xy 1.27 -0.381) (xy 2.286 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54) (xy 2.54 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 2.54 -1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.921 -0.381) (xy 3.683 -0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.302 -0.381) (xy 2.921 0.254) (xy 3.683 0.254) (xy 3.302 -0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Q_Dual_PMOS_G1S2G2D2S1D1_1_1"
+				(pin input line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 5.08 270)
+					(length 2.54)
+					(name "D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "Q_Dual_PMOS_G1S2G2D2S1D1_2_1"
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 5.08 270)
+					(length 2.54)
+					(name "D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2291,7 +2482,7 @@
 		)
 	)
 	(rectangle
-		(start 75.565 60.96)
+		(start 72.39 48.895)
 		(end 222.25 116.84)
 		(stroke
 			(width 0)
@@ -2304,7 +2495,7 @@
 	)
 	(text "3.3V Regulator"
 		(exclude_from_sim no)
-		(at 75.692 60.452 0)
+		(at 72.644 48.26 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2318,6 +2509,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "05dfc26e-f7b4-4f3b-8aa1-a0df3a697603")
+	)
+	(junction
+		(at 95.25 55.88)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "1c86c0b5-5472-440f-b36b-ffbc4b7ff7b3")
 	)
 	(junction
 		(at 125.73 91.44)
@@ -2350,16 +2547,22 @@
 		(uuid "6278664a-af9b-4e10-8dfc-4fb0585e65d8")
 	)
 	(junction
-		(at 95.25 68.58)
+		(at 87.63 67.31)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "732fbde4-f17d-48df-bc5c-1961f3c1c304")
+		(uuid "7517f493-2086-4a34-aaf3-119212189f24")
 	)
 	(junction
 		(at 212.09 96.52)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7951ef65-56a6-4077-828a-64548880389e")
+	)
+	(junction
+		(at 87.63 96.52)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "919ff67f-a1a7-4ba5-b07e-19f08b317a2a")
 	)
 	(junction
 		(at 104.14 82.55)
@@ -2420,6 +2623,16 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fe593386-b4b2-45e4-a539-c46d6b1c793b")
+	)
+	(wire
+		(pts
+			(xy 95.25 82.55) (xy 95.25 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0709454a-c01c-4a26-ad0c-a5c3bf243f53")
 	)
 	(wire
 		(pts
@@ -2513,6 +2726,16 @@
 	)
 	(wire
 		(pts
+			(xy 87.63 60.96) (xy 87.63 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "28db9b66-fca4-4168-97cc-ede857cf1dde")
+	)
+	(wire
+		(pts
 			(xy 116.84 82.55) (xy 125.73 82.55)
 		)
 		(stroke
@@ -2553,13 +2776,13 @@
 	)
 	(wire
 		(pts
-			(xy 95.25 68.58) (xy 111.76 68.58)
+			(xy 111.76 55.88) (xy 95.25 55.88)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "4f1e04a4-c512-4498-a782-2834797b31b4")
+		(uuid "46c0e147-2517-4e14-9eb8-db83f05550da")
 	)
 	(wire
 		(pts
@@ -2600,6 +2823,16 @@
 			(type default)
 		)
 		(uuid "5c852138-755a-49f4-a9a8-f3ee64e7a668")
+	)
+	(wire
+		(pts
+			(xy 87.63 67.31) (xy 87.63 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e1c9d19-a3c8-48de-aa4e-11f81435594c")
 	)
 	(wire
 		(pts
@@ -2723,6 +2956,16 @@
 	)
 	(wire
 		(pts
+			(xy 111.76 59.69) (xy 111.76 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "908cd5bf-bdcb-4436-8ae8-31c8ff9aafbc")
+	)
+	(wire
+		(pts
 			(xy 181.61 111.76) (xy 182.88 111.76)
 		)
 		(stroke
@@ -2773,6 +3016,16 @@
 	)
 	(wire
 		(pts
+			(xy 80.01 96.52) (xy 77.47 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b492e953-cdf2-4922-9bdd-eb914b378a6e")
+	)
+	(wire
+		(pts
 			(xy 209.55 96.52) (xy 212.09 96.52)
 		)
 		(stroke
@@ -2793,6 +3046,16 @@
 	)
 	(wire
 		(pts
+			(xy 77.47 96.52) (xy 77.47 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b8884e48-6b08-4cd1-a99b-ff47fac85ca8")
+	)
+	(wire
+		(pts
 			(xy 127 80.01) (xy 127 73.66)
 		)
 		(stroke
@@ -2800,6 +3063,26 @@
 			(type default)
 		)
 		(uuid "bb2e5790-af13-49ee-9e02-65ba5c61403c")
+	)
+	(wire
+		(pts
+			(xy 95.25 66.04) (xy 95.25 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c079229f-e30f-4b3b-abfa-78c177546c56")
+	)
+	(wire
+		(pts
+			(xy 87.63 92.71) (xy 87.63 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c17fc8fe-e5ae-42af-8c3e-ac7d911b7cf5")
 	)
 	(wire
 		(pts
@@ -2823,7 +3106,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 71.12) (xy 78.74 73.66)
+			(xy 77.47 64.77) (xy 77.47 67.31)
 		)
 		(stroke
 			(width 0)
@@ -2883,7 +3166,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 73.66) (xy 80.01 73.66)
+			(xy 77.47 67.31) (xy 80.01 67.31)
 		)
 		(stroke
 			(width 0)
@@ -2931,6 +3214,16 @@
 		)
 		(uuid "4f71d9bc-c3b1-4fac-a136-aa6885566d69")
 	)
+	(label "G_{BUS}"
+		(at 87.63 92.71 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "533a1e66-35be-417a-adef-11da767587c4")
+	)
 	(label "VIN_{3.3V}"
 		(at 105.41 82.55 0)
 		(effects
@@ -2950,6 +3243,26 @@
 			(justify left bottom)
 		)
 		(uuid "5ca3e359-0efa-4f8d-a621-55835c6e4144")
+	)
+	(label "G_{UART}"
+		(at 87.63 67.31 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "615790c1-0968-48d1-8824-d95b91f5a4f6")
+	)
+	(label "S_{UART}"
+		(at 95.25 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9168b90a-1bfa-486c-8adf-8de6021350aa")
 	)
 	(label "VAUX_{3.3V}"
 		(at 127 105.41 0)
@@ -2992,109 +3305,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:D_Schottky")
-		(at 90.17 86.36 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "02becb9f-5e49-4cea-89a2-06a03b8e0914")
-		(property "Reference" "D121"
-			(at 92.71 84.7724 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "1N5819"
-			(at 92.71 87.3124 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Diode_SMD:D_SOD-123"
-			(at 90.17 86.36 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 90.17 86.36 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Schottky diode"
-			(at 90.17 86.36 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" "1N5819HW-7-F"
-			(at 90.17 86.36 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 90.17 86.36 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "5524c143-fb72-4305-b9d4-371ee8c6f151")
-		)
-		(pin "1"
-			(uuid "e9b16b10-ff22-4b31-af5d-52f45f55f27f")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
-					(reference "D121")
-					(unit 1)
-				)
 			)
 		)
 	)
@@ -3200,115 +3410,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Transistor_FET:Q_PMOS_GSD")
-		(at 92.71 73.66 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "06f40f10-31a9-4277-867c-e5fb6a8fe890")
-		(property "Reference" "Q121"
-			(at 99.06 72.3899 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "PMF170XP"
-			(at 99.06 74.9299 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
-			(at 97.79 71.12 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 92.71 73.66 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "P-MOSFET transistor, gate/source/drain"
-			(at 92.71 73.66 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" "PMF170XP,115"
-			(at 92.71 73.66 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 92.71 73.66 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "7e3d84a4-af25-4d8d-add7-275c24e47ed1")
-		)
-		(pin "2"
-			(uuid "1e33b90f-959a-4b97-8045-87e1f0655fa3")
-		)
-		(pin "3"
-			(uuid "048ef51c-eb29-4cfc-aa95-a976596c7af3")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
-					(reference "Q121")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
-		(at 111.76 72.39 180)
+		(at 111.76 63.5 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3318,7 +3421,7 @@
 		(dnp no)
 		(uuid "0e726c7d-8cf8-4d36-905e-7f480d490a9c")
 		(property "Reference" "R123"
-			(at 116.078 74.676 90)
+			(at 116.078 65.786 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3329,7 +3432,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 114.046 74.676 90)
+			(at 114.046 65.786 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3340,7 +3443,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 113.538 72.39 90)
+			(at 113.538 63.5 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3351,7 +3454,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 111.76 72.39 0)
+			(at 111.76 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3362,7 +3465,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 111.76 72.39 0)
+			(at 111.76 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3373,7 +3476,7 @@
 			)
 		)
 		(property "MFG Part No" "0402WGF1003TCE"
-			(at 111.76 72.39 0)
+			(at 111.76 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3384,7 +3487,7 @@
 			)
 		)
 		(property "LCSC" "C25741"
-			(at 111.76 72.39 0)
+			(at 111.76 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3404,6 +3507,110 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
 					(reference "R123")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 83.82 96.52 270)
+		(mirror x)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "158d698e-86c0-478a-9856-8c5e837ba913")
+		(property "Reference" "R129"
+			(at 86.106 100.838 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100k"
+			(at 86.106 98.806 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 83.82 98.298 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 83.82 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 83.82 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" "0402WGF1003TCE"
+			(at 83.82 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25741"
+			(at 83.82 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9b6bbdde-f995-4303-89ae-6819d4829b0d")
+		)
+		(pin "2"
+			(uuid "f2a345c2-32cf-4e7b-a5e1-48485c68b314")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
+					(reference "R129")
 					(unit 1)
 				)
 			)
@@ -3614,6 +3821,106 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VCCQ")
+		(at 95.25 55.88 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1fed73a5-49bb-4777-ba10-4729e7cdbe0e")
+		(property "Reference" "#PWR0212"
+			(at 95.25 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "VCC_{UART}"
+			(at 95.25 50.8 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 95.25 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 95.25 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VCCQ\""
+			(at 95.25 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 95.25 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 95.25 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9874303e-279d-4675-a44e-d1e1e042697c")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
+					(reference "#PWR0212")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 81.28 90.17 0)
 		(unit 1)
@@ -3816,108 +4123,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:VCCQ")
-		(at 95.25 68.58 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "2ae56ece-d76a-492e-9147-268110e781a4")
-		(property "Reference" "#PWR0206"
-			(at 95.25 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VCC_{UART}"
-			(at 95.25 63.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 95.25 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 95.25 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"VCCQ\""
-			(at 95.25 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" ""
-			(at 95.25 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 95.25 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "d3c87da3-fb72-42a0-aeed-7890ef38e5c2")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
-					(reference "#PWR0206")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
-		(at 83.82 73.66 270)
+		(at 83.82 67.31 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3927,7 +4134,7 @@
 		(dnp no)
 		(uuid "2b1d15bf-37bd-4396-b99a-bbf41d0e4b54")
 		(property "Reference" "R122"
-			(at 86.106 69.342 90)
+			(at 86.106 62.992 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3938,7 +4145,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 86.106 71.374 90)
+			(at 86.106 65.024 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3949,7 +4156,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 83.82 71.882 90)
+			(at 83.82 65.532 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3960,7 +4167,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 73.66 0)
+			(at 83.82 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3971,7 +4178,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 83.82 73.66 0)
+			(at 83.82 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3982,7 +4189,7 @@
 			)
 		)
 		(property "MFG Part No" "0402WGF1003TCE"
-			(at 83.82 73.66 0)
+			(at 83.82 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3993,7 +4200,7 @@
 			)
 		)
 		(property "LCSC" "C25741"
-			(at 83.82 73.66 0)
+			(at 83.82 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4123,7 +4330,7 @@
 	)
 	(symbol
 		(lib_id "power:+BATT")
-		(at 90.17 90.17 180)
+		(at 95.25 101.6 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4134,7 +4341,7 @@
 		(fields_autoplaced yes)
 		(uuid "32a3970d-4224-42db-acd9-56e5e6e92448")
 		(property "Reference" "#PWR0204"
-			(at 90.17 86.36 0)
+			(at 95.25 97.79 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4145,7 +4352,7 @@
 			)
 		)
 		(property "Value" "V_{BUS}"
-			(at 90.17 95.25 0)
+			(at 95.25 106.68 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4155,7 +4362,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 90.17 90.17 0)
+			(at 95.25 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4166,7 +4373,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 90.17 90.17 0)
+			(at 95.25 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4177,7 +4384,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+BATT\""
-			(at 90.17 90.17 0)
+			(at 95.25 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4188,7 +4395,7 @@
 			)
 		)
 		(property "MFG Part No" ""
-			(at 90.17 90.17 0)
+			(at 95.25 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4199,7 +4406,7 @@
 			)
 		)
 		(property "LCSC" ""
-			(at 90.17 90.17 0)
+			(at 95.25 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4629,7 +4836,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 111.76 76.2 0)
+		(at 111.76 67.31 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4640,7 +4847,7 @@
 		(fields_autoplaced yes)
 		(uuid "52e66b94-9e70-4c3f-92fc-41c489718452")
 		(property "Reference" "#PWR0161"
-			(at 111.76 82.55 0)
+			(at 111.76 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4651,7 +4858,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 111.76 81.28 0)
+			(at 111.76 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4662,7 +4869,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 111.76 76.2 0)
+			(at 111.76 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4673,7 +4880,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 111.76 76.2 0)
+			(at 111.76 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4684,7 +4891,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 111.76 76.2 0)
+			(at 111.76 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4695,7 +4902,7 @@
 			)
 		)
 		(property "MFG Part No" ""
-			(at 111.76 76.2 0)
+			(at 111.76 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4706,7 +4913,7 @@
 			)
 		)
 		(property "LCSC" ""
-			(at 111.76 76.2 0)
+			(at 111.76 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5305,7 +5512,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF5102TCE"
+		(property "MFG Part No" "0402WGF3902TCE"
 			(at 168.91 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -5316,7 +5523,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25794"
+		(property "LCSC" "C25783"
 			(at 168.91 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -5771,7 +5978,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1k"
+		(property "Value" "2.4k"
 			(at 214.63 86.3599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5815,7 +6022,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1001TCE"
+		(property "MFG Part No" "0402WGF2401TCE"
 			(at 212.09 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -5826,7 +6033,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C11702"
+		(property "LCSC" "C25882"
 			(at 212.09 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -6417,7 +6624,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/tps63070.pdf"
+		(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/tps63070.pdf"
 			(at 144.78 113.03 0)
 			(hide yes)
 			(show_name no)
@@ -6510,6 +6717,122 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
 					(reference "U121")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Transistor_FET:Q_Dual_PMOS_G1S2G2D2S1D1")
+		(at 92.71 60.96 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b12701d1-964c-4691-8e62-42b33559ae01")
+		(property "Reference" "Q131"
+			(at 99.06 59.6899 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "FDC6312P"
+			(at 99.06 62.2299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
+			(at 93.98 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 93.98 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Dual PMOS transistor, 6 pin package"
+			(at 92.71 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" "FDC6312P"
+			(at 92.71 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C241767"
+			(at 92.71 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "4eca4026-ed4d-4746-afa2-8f31e92ea078")
+		)
+		(pin "3"
+			(uuid "e086147e-2f13-4971-b11a-5d7e84c49bb3")
+		)
+		(pin "4"
+			(uuid "8393be91-e65c-4f54-b650-e0d13b284af0")
+		)
+		(pin "6"
+			(uuid "c3f43f3c-6236-4b7a-b9d9-1f32ba0cff47")
+		)
+		(pin "1"
+			(uuid "3ec73bfc-6bd3-41b6-8513-21eeecd2248e")
+		)
+		(pin "5"
+			(uuid "abd2ecce-cc55-4098-9aa3-dd9120985a03")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
+					(reference "Q131")
 					(unit 1)
 				)
 			)
@@ -6821,6 +7144,114 @@
 		)
 	)
 	(symbol
+		(lib_id "Transistor_FET:Q_PMOS_GSD")
+		(at 92.71 96.52 0)
+		(mirror x)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c927658a-6f64-4dc0-acaa-97a85f65f472")
+		(property "Reference" "Q122"
+			(at 99.06 97.7901 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "DMP3099L"
+			(at 99.06 95.2501 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+			(at 97.79 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 92.71 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "P-MOSFET transistor, gate/source/drain"
+			(at 92.71 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" "DMP3099L-13"
+			(at 92.71 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C412516"
+			(at 92.71 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "09c09db3-b1c0-4a15-ae70-10e163dcb6d0")
+		)
+		(pin "2"
+			(uuid "aeab6af9-d6d4-4346-9730-822b064f984e")
+		)
+		(pin "3"
+			(uuid "2b3fb722-a55b-4f2a-947a-7229c711e840")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
+					(reference "Q122")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 147.32 107.95 0)
 		(unit 1)
@@ -7000,8 +7431,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+BATT")
-		(at 78.74 71.12 0)
+		(lib_id "power:VCCQ")
+		(at 77.47 99.06 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7010,9 +7441,9 @@
 		(in_pos_files yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "e897c96f-2d42-4524-ac08-9fc9437f42b6")
-		(property "Reference" "#PWR0201"
-			(at 78.74 74.93 0)
+		(uuid "e11a253c-af24-44a2-bdac-42ee364dd748")
+		(property "Reference" "#PWR0208"
+			(at 77.47 95.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7022,8 +7453,8 @@
 				)
 			)
 		)
-		(property "Value" "V_{BUS}"
-			(at 78.74 66.04 0)
+		(property "Value" "VCC_{UART}"
+			(at 77.47 104.14 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7033,7 +7464,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 71.12 0)
+			(at 77.47 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7044,7 +7475,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 71.12 0)
+			(at 77.47 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7054,8 +7485,8 @@
 				)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"+BATT\""
-			(at 78.74 71.12 0)
+		(property "Description" "Power symbol creates a global label with name \"VCCQ\""
+			(at 77.47 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7066,7 +7497,7 @@
 			)
 		)
 		(property "MFG Part No" ""
-			(at 78.74 71.12 0)
+			(at 77.47 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7077,7 +7508,107 @@
 			)
 		)
 		(property "LCSC" ""
-			(at 78.74 71.12 0)
+			(at 77.47 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7651966b-869c-4587-a4e5-7b7b88c39943")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
+					(reference "#PWR0208")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+BATT")
+		(at 77.47 64.77 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e897c96f-2d42-4524-ac08-9fc9437f42b6")
+		(property "Reference" "#PWR0201"
+			(at 77.47 68.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "V_{BUS}"
+			(at 77.47 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 77.47 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 77.47 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+BATT\""
+			(at 77.47 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 77.47 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 77.47 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7095,6 +7626,123 @@
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
 					(reference "#PWR0201")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Transistor_FET:Q_Dual_PMOS_G1S2G2D2S1D1")
+		(at 92.71 73.66 0)
+		(mirror x)
+		(unit 2)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fa2e4221-dab8-4d23-8015-2592da1dbf1d")
+		(property "Reference" "Q131"
+			(at 99.06 74.9301 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "FDC6312P"
+			(at 99.06 72.3901 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
+			(at 93.98 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 93.98 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Dual PMOS transistor, 6 pin package"
+			(at 92.71 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" "FDC6312P"
+			(at 92.71 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C241767"
+			(at 92.71 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "4eca4026-ed4d-4746-afa2-8f31e92ea078")
+		)
+		(pin "3"
+			(uuid "e086147e-2f13-4971-b11a-5d7e84c49bb3")
+		)
+		(pin "4"
+			(uuid "8393be91-e65c-4f54-b650-e0d13b284af0")
+		)
+		(pin "6"
+			(uuid "c3f43f3c-6236-4b7a-b9d9-1f32ba0cff47")
+		)
+		(pin "1"
+			(uuid "3ec73bfc-6bd3-41b6-8513-21eeecd2248e")
+		)
+		(pin "5"
+			(uuid "abd2ecce-cc55-4098-9aa3-dd9120985a03")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/5f81dfb7-5e05-48b6-b3fe-15095fb191cd"
+					(reference "Q131")
+					(unit 2)
 				)
 			)
 		)

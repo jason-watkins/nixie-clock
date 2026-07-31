@@ -155,15 +155,14 @@ $\pm200$~ppm/\si{\celsius}, since the device distinguishes sixteen and eighteen
 values respectively across the same decade span.
 
 \paragraph{Efficiency enhancement makes the switching frequency a function of the
-conversion ratio.} Rather than holding a fixed frequency, the device scales it
-so the inductor ripple amplitude stays roughly constant across the input range,
-which recovers the efficiency a fixed-frequency converter loses at small duty
-cycles. The consequence for design is that the frequency is an output of the
-operating point rather than an input to it, and \cref{sec:5v-op} evaluates it
-across the input window instead of assuming a single value.
+conversion ratio.} The device scales the switching frequency so the inductor
+ripple amplitude stays roughly constant across the input range, which recovers
+the efficiency a fixed-frequency converter loses at small duty cycles. For
+design purposes the frequency is therefore an output of the operating point, and
+\cref{sec:5v-op} evaluates it across the input window.
 
-\paragraph{Ripple current is bounded from above by a stability requirement, not
-only by efficiency.} The datasheet cautions that inductor ripple must not exceed
+\paragraph{A stability requirement bounds ripple current from above.} The
+datasheet cautions that inductor ripple must not exceed
 \SI{1.6}{\ampere}, above which the low-side negative current limit can operate
 continuously at no load. This bounds how small an inductance may be chosen at a
 given input voltage, independently of the usual ripple-fraction reasoning.
@@ -310,8 +309,7 @@ which \cref{sec:3v3-diodeor} carries as a requirement on the input path.
 \paragraph{The \SI{2}{\ampere} output-current figure is conditioned.} It
 applies only when either terminal is at or above \SI{4.5}{\volt} \emph{and}
 the converter is bucking. Outside those conditions the guaranteed load current
-is lower and comes from the datasheet's application curves rather than the
-specification table.
+is lower, and the datasheet gives it only in application curves.
 
 \paragraph{Power Save Mode trades accuracy and ripple for light-load
 efficiency.} Below roughly \SI{650}{\milli\ampere} of inductor current the
@@ -325,10 +323,10 @@ and can be disabled by tying that pin low.
 the feedback pin.} The datasheet gives output-referred accuracy only for the
 fixed-voltage TPS630701. For the adjustable part the specified quantity is
 $V_{FB}$, so the external divider's ratio tolerance and the feedback pin's
-\SI{100}{\nano\ampere} leakage add to it at the output rather than being
-contained by it. \Cref{sec:3v3-fb,sec:3v3-cout} carry both terms.
+\SI{100}{\nano\ampere} leakage add to it at the output.
+\Cref{sec:3v3-fb,sec:3v3-cout} carry both terms.
 
 \paragraph{Package.} The part is offered only in a 13-pin VQFN on a
 $2.5\times3$~\si{\milli\meter} body. This is one of the cases where a
 design-driving part exists in a single package, so the footprint enters the
-design rather than being left entirely to layout.
+design here.

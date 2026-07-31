@@ -16,8 +16,7 @@ USB-C powered nixie tube clock. Four IN-12B digits, two IN-6 colon lamps, K155ID
 
 ## Power
 
-USB-PD negotiates 5-12 V from the charger and gates it through a back-to-back PFET load switch.
-Three converters hang off that rail:
+USB-PD negotiates 5-12V supply and feeds it into 3 converters:
 
 - Flyback boost: 170V for the tube anodes
 - 3.3V buck boost for the MCU. Boost exists to make sure a 3.3V FTDI type UART adapter provides the

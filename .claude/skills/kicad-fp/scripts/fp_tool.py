@@ -120,8 +120,13 @@ def discover_libs(table_name, table_tag, loose_glob, want_dir):
             p = Path(uri)
             if (p.is_dir() if want_dir else p.is_file()):
                 libs.setdefault(name, p)
+    # The loose scan is a fallback for libraries no table registers. Skipping
+    # paths already claimed above keeps a registered library from also being
+    # listed under its folder stem, which reads as two libraries and hides
+    # which name the board actually uses.
+    claimed = {p.resolve() for p in libs.values()}
     for p in _iter_files(loose_glob):
-        if (p.is_dir() if want_dir else p.is_file()):
+        if (p.is_dir() if want_dir else p.is_file()) and p.resolve() not in claimed:
             libs.setdefault(p.stem, p)
     return libs
 
@@ -226,6 +231,71 @@ def cmd_pads(args):
     drills = sorted({p["drill"] for p in pads if p["drill"]}, key=natkey)
     if drills:
         print("  drill sizes:", ", ".join(drills))
+
+
+def _pad_halfspan(p):
+    """Half-extent along the board axes. Orthogonal rotations swap the two;
+    anything else is reported by the caller rather than silently approximated."""
+    sx, sy = p["sx"], p["sy"]
+    if round(p["rot"] / 90) % 2:
+        sx, sy = sy, sx
+    return sx / 2, sy / 2
+
+
+def _pad_gap(a, b):
+    """Edge-to-edge copper clearance between two axis-aligned pad rectangles.
+    Negative when the copper overlaps. Diagonal neighbours return the true
+    corner-to-corner distance, not the larger axis projection."""
+    ahx, ahy = _pad_halfspan(a)
+    bhx, bhy = _pad_halfspan(b)
+    dx = abs(a["x"] - b["x"]) - (ahx + bhx)
+    dy = abs(a["y"] - b["y"]) - (ahy + bhy)
+    if dx < 0 and dy < 0:
+        return max(dx, dy)
+    if dx < 0:
+        return dy
+    if dy < 0:
+        return dx
+    return math.hypot(dx, dy)
+
+
+def cmd_gaps(args):
+    """Minimum copper gap between terminals of different nets.
+
+    This is the number an assembler's solder-bridging limit is written
+    against, and it is not implied by body size: a physically larger package
+    with elongated power terminals can be tighter than a smaller one on a
+    uniform pitch.
+    """
+    disp, root = resolve_fp(args.fp)
+    pads = [p for p in fp_pads(root) if ".Cu" in p["layers"] or "*.Cu" in p["layers"]]
+    skew = sorted({p["rot"] % 90 for p in pads} - {0.0})
+    pairs = []
+    for i, a in enumerate(pads):
+        for b in pads[i + 1:]:
+            # Same pad name is the same net, so bridging it is harmless.
+            # Coincident centres are one physical terminal drawn twice.
+            if a["name"] == b["name"]:
+                continue
+            if math.isclose(a["x"], b["x"]) and math.isclose(a["y"], b["y"]):
+                continue
+            pairs.append((_pad_gap(a, b), a["name"] or '""', b["name"] or '""'))
+    if not pairs:
+        print(f"{disp}: fewer than two distinct copper terminals")
+        return
+    pairs.sort()
+    print(f"{disp}  ({len(pads)} copper pads, units mm)")
+    if skew:
+        print(f"  note: {len(skew)} non-orthogonal pad rotation(s); gaps are "
+              f"bounding-box estimates for those")
+    for g, a, b in pairs[:args.count]:
+        print(f"  {g:7.3f}   {a} - {b}")
+    worst = pairs[0][0]
+    if args.min is not None:
+        verdict = "PASS" if worst >= args.min else "FAIL"
+        print(f"  -> tightest {worst:.3f} mm against a {args.min:g} mm floor: {verdict}")
+    else:
+        print(f"  -> tightest {worst:.3f} mm")
 
 
 LAYER_GROUPS = [("copper", ".Cu"), ("courtyard", "CrtYd"), ("silk", "SilkS"),
@@ -428,6 +498,20 @@ def _net_table(root):
     return nets
 
 
+def _net_name(item, nets):
+    """Net name of a segment/arc/via, across both file formats.
+
+    Through KiCad 9 an item carried an integer index into the board's
+    (net id name) table; KiCad 10 dropped the table and stores the name on
+    the item directly. Falling back to the raw value covers the new form and
+    keeps the old lookup working, so a board written by either version
+    reports real net names instead of '?'."""
+    raw = kidval(item, "net")
+    if raw is None:
+        return "?"
+    return nets.get(str(raw)) or str(raw)
+
+
 def _arc_length(x1, y1, xm, ym, x2, y2):
     d = 2 * (x1 * (ym - y2) + xm * (y2 - y1) + x2 * (y1 - ym))
     if abs(d) < 1e-9:
@@ -454,7 +538,7 @@ def cmd_netlen(args):
     stats = {}
     for tag in ("segment", "arc"):
         for s in kids(root, tag):
-            name = nets.get(kidval(s, "net"), "?")
+            name = _net_name(s, nets)
             if pats and not any(p.search(name) for p in pats):
                 continue
             st, en = kid(s, "start"), kid(s, "end")
@@ -489,7 +573,7 @@ def cmd_vias(args):
             x1, y1, x2, y2 = args.bbox
             if not (min(x1, x2) <= x <= max(x1, x2) and min(y1, y2) <= y <= max(y1, y2)):
                 continue
-        name = nets.get(kidval(v, "net"), "?")
+        name = _net_name(v, nets)
         if pats and not any(p.search(name) for p in pats):
             continue
         free = "  free" if kid(v, "free") else ""
@@ -506,7 +590,7 @@ def cmd_tracks(args):
     count, total = 0, 0.0
     for tag in ("segment", "arc"):
         for s in kids(root, tag):
-            name = nets.get(kidval(s, "net"), "?")
+            name = _net_name(s, nets)
             if pats and not any(p.search(name) for p in pats):
                 continue
             lay = kidval(s, "layer")
@@ -535,8 +619,12 @@ def cmd_tracks(args):
 
 def cmd_zones(args):
     root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    nets = _net_table(root)
     for z in kids(root, "zone"):
-        name = kidval(z, "net_name")
+        # Through KiCad 9 the readable name was in (net_name "..."); KiCad 10
+        # dropped that and puts it in (net "..."). Without the fallback every
+        # zone reports an empty net, which reads as an anonymous keepout.
+        name = kidval(z, "net_name") or _net_name(z, nets)
         tname = kidval(z, "name")
         layers = kid(z, "layers") or kid(z, "layer")
         lay = " ".join(str(t) for t in layers[1:]) if layers else "?"
@@ -559,19 +647,29 @@ def cmd_zones(args):
         print(f"net='{name}' layer={lay} prio={prio} {bbox}{extra}{kostr}")
 
 
+def _version_key(path):
+    """Numeric sort key for install directories named like '10.0' or '9.0'.
+
+    Sorting these as strings puts '9.0' above '10.0', which picks an older
+    CLI than the one installed and then fails to read files written by the
+    newer one. Non-numeric components sort last."""
+    return [int(part) if part.isdigit() else -1 for part in path.name.split(".")]
+
+
 def find_kicad_cli():
     env = os.environ.get("KICAD_CLI")
     if env:
         return env
-    found = shutil.which("kicad-cli")
-    if found:
-        return found
     base = Path(r"C:\Program Files\KiCad")
     if base.is_dir():
-        for ver in sorted(base.iterdir(), reverse=True):
+        installs = [p for p in base.iterdir() if p.is_dir()]
+        for ver in sorted(installs, key=_version_key, reverse=True):
             cli = ver / "bin" / "kicad-cli.exe"
             if cli.is_file():
                 return str(cli)
+    found = shutil.which("kicad-cli")
+    if found:
+        return found
     sys.exit("kicad-cli not found: install KiCad or set KICAD_CLI")
 
 
@@ -584,8 +682,11 @@ def cmd_drc(args):
     if out.exists():
         out.unlink()
     proc = subprocess.run(
+        # --schematic-parity is not implied by --severity-all; without it the
+        # parity section comes back empty and footprint/value/net drift between
+        # the schematic and the board passes silently.
         [find_kicad_cli(), "pcb", "drc", "--format", "json",
-         "--severity-all", "-o", str(out), str(pcb)],
+         "--severity-all", "--schematic-parity", "-o", str(out), str(pcb)],
         capture_output=True, text=True)
     if not out.exists():
         sys.exit(proc.stderr.strip() or proc.stdout.strip() or "kicad-cli drc failed")
@@ -614,6 +715,14 @@ def main():
     p = sub.add_parser("pads")
     p.add_argument("fp", help="footprint: lib:name, bare name, or .kicad_mod path")
     p.set_defaults(func=cmd_pads)
+
+    p = sub.add_parser("gaps")
+    p.add_argument("fp", help="footprint: lib:name, bare name, or .kicad_mod path")
+    p.add_argument("--min", type=float, default=None,
+                   help="assembler's minimum terminal gap in mm; prints PASS/FAIL")
+    p.add_argument("--count", type=int, default=6,
+                   help="how many of the tightest pairs to list (default 6)")
+    p.set_defaults(func=cmd_gaps)
 
     p = sub.add_parser("extents")
     p.add_argument("fp")

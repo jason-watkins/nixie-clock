@@ -11,9 +11,14 @@ sym-lib-table text eol=lf
 fp-lib-table  text eol=lf
 
 # Treat 3D models and images as binary (no diff/merge, no EOL conversion).
+# .FCStd is a zip archive; .igs/.stl/.3mf round out the interchange formats.
 *.step  binary
 *.stp   binary
+*.igs   binary
 *.wrl   binary
+*.FCStd binary
+*.stl   binary
+*.3mf   binary
 *.png   binary
 *.jpg   binary
 *.pdf   binary

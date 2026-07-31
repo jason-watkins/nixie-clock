@@ -121,9 +121,9 @@ FB/SS/COMP the same way as the boost case, but the boost formula
 assumes an input-to-output pass-through path that a flyback
 transformer does not provide; \cref{sec:hv-ss} therefore derives
 soft-start timing from the SS pin's charging mechanism rather than
-from either published formula. On the LM51561H that timing is not a
-convenience: the datasheet requires soft start to outlast the output's rise,
-or hiccup trips on every power-up.
+from either published formula. On the LM51561H that timing is a
+functional requirement: the datasheet requires soft start to outlast
+the output's rise, or hiccup trips on every power-up.
 
 \paragraph{EN and UVLO are distinct comparators on one pin.} Pin 14
 (``EN/UVLO/SYNC'') carries two separate thresholds: EN (\(\approx\)0.5~V)
@@ -197,5 +197,5 @@ peak-current rating. The isolation ratings (1500~V\textsubscript{rms}
 winding-to-winding, 750~V\textsubscript{rms} winding-to-core) presume
 an isolated application. Tying the secondary return to the primary
 ground forgoes that isolation, and nothing in the datasheet cautions
-against doing so: the windings stay galvanically separate whatever the
-secondary return is referenced to.
+against doing so; the windings remain galvanically separate however
+the secondary return is referenced.

@@ -44,7 +44,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/infineon-cypd3176-24lqxq-datasheet-en.pdf"
+			(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/infineon-cypd3176-24lqxq-datasheet-en.pdf"
 				(at 0 -25.4 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -575,7 +575,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "ts3usb221a.pdf"
+			(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/ts3usb221a.pdf"
 				(at 0.254 0.254 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1619,7 +1619,7 @@
 							)
 						)
 					)
-					(number "S1"
+					(number "SH"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -5340,7 +5340,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "5.1k"
+		(property "Value" "20k"
 			(at 89.154 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5351,7 +5351,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 89.408 39.37 90)
 			(hide yes)
 			(show_name no)
@@ -5384,7 +5384,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0603WAF5101T5E"
+		(property "MFG Part No" "0402WGF2002TCE"
 			(at 87.63 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -5395,7 +5395,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C23186"
+		(property "LCSC" "C25765"
 			(at 87.63 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -6151,7 +6151,7 @@
 		(dnp no)
 		(uuid "37c49545-e7af-4199-9b29-b6752ea6f8a8")
 		(property "Reference" "U103"
-			(at 149.352 74.422 0)
+			(at 149.352 72.644 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6161,7 +6161,7 @@
 			)
 		)
 		(property "Value" "CYPD3176"
-			(at 151.638 76.708 0)
+			(at 151.638 74.93 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6181,7 +6181,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "${KIPRJMOD}/../docs/datasheets/infineon-cypd3176-24lqxq-datasheet-en.pdf"
+		(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/infineon-cypd3176-24lqxq-datasheet-en.pdf"
 			(at 165.1 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -7165,7 +7165,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "DMP3085LSD-13"
+		(property "MFG Part No" "FDS4935A"
 			(at 177.8 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -8224,6 +8224,17 @@
 				)
 			)
 		)
+		(property "Note" "Chosen with the expectation of above nominal derating in this application. Expect ~200nF actual capacitance"
+			(at 138.43 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "5f62e8c8-53d3-4617-a7e6-6d68fe4fc7f9")
 		)
@@ -8365,7 +8376,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "100k"
 			(at 211.074 41.91 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8409,7 +8420,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1002TCE"
+		(property "MFG Part No" "0402WGF1003TCE"
 			(at 209.55 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -8420,7 +8431,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "LCSC" "C25741"
 			(at 209.55 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -8643,6 +8654,107 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
 					(reference "#PWR0228")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 105.41 35.56 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "92d95ee6-c410-4816-85b9-94603c77c20f")
+		(property "Reference" "TP102"
+			(at 102.362 30.226 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "VBUS_{C}"
+			(at 106.6799 30.48 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 110.49 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 105.41 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 105.41 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 105.41 35.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "07fd6592-465d-4846-8f1c-9bc53f80d334")
+		)
+		(instances
+			(project "main"
+				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/f8973f07-5632-4b97-a3ce-a5e33fa36ed2"
+					(reference "TP102")
 					(unit 1)
 				)
 			)
@@ -9535,7 +9647,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "DMP3085LSD-13"
+		(property "MFG Part No" "FDS4935A"
 			(at 154.94 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -10103,6 +10215,17 @@
 				)
 			)
 		)
+		(property "Note" "Chosen with the expectation of above nominal derating in this application. Expect ~200nF actual capacitance"
+			(at 185.42 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "ec885c54-585d-40d7-818d-30d654bb1e86")
 		)
@@ -10264,7 +10387,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "ts3usb221a.pdf"
+		(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/ts3usb221a.pdf"
 			(at 115.824 133.096 0)
 			(hide yes)
 			(show_name no)
@@ -10473,7 +10596,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "5.1k"
+		(property "Value" "20k"
 			(at 198.374 41.91 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10484,7 +10607,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 198.628 40.64 90)
 			(hide yes)
 			(show_name no)
@@ -10517,7 +10640,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0603WAF5101T5E"
+		(property "MFG Part No" "0402WGF2002TCE"
 			(at 196.85 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -10528,7 +10651,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C23186"
+		(property "LCSC" "C25765"
 			(at 196.85 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -10648,7 +10771,7 @@
 		(pin "B1"
 			(uuid "046e1e84-8ff1-46da-8cd6-89dba4353c39")
 		)
-		(pin "S1"
+		(pin "SH"
 			(uuid "2218ac64-8c7a-4486-95e7-8093d06c9576")
 		)
 		(pin "B6"

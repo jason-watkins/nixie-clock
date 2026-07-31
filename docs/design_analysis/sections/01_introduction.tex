@@ -11,10 +11,9 @@ other subsystem on the board (the 170~V anode supply, the 5~V rail
 for the decoder/drivers, the 3.3~V rail for the MCU, and the USB-PD
 front end that supplies all three) exists only to put a stable,
 correctly proportioned high voltage across these tubes and to switch
-it through these driver chips. The tubes and drivers are therefore the
-correct starting point for this derivation: their datasheet ratings
-set the requirements that every upstream converter stage must
-satisfy.
+it through these driver chips. The derivation therefore begins with
+the tubes and drivers: their datasheet ratings set the requirements
+that every upstream converter stage must satisfy.
 
 This document derives those requirements first (\cref{sec:tubes,sec:bcd-driver}),
 then works backward through the 170~V flyback converter that meets
@@ -29,10 +28,10 @@ design-driving component (a Nixie tube, the BCD decoder/driver, the
 flyback controller, the flyback transformer) is transcribed from a
 datasheet on file in \texttt{docs/datasheets/} and cited by filename
 and page. Where a datasheet gives a range, a tolerance, or a specific
-test condition, that context is preserved rather than collapsed to a
-single number, because the converter design in
-\cref{sec:hv-converter} depends on knowing which figures are
-guaranteed worst cases and which are typical or test-condition values.
+test condition, that context is carried through intact, because the
+converter design in \cref{sec:hv-converter} depends on knowing which
+figures are guaranteed worst cases and which are typical or
+test-condition values.
 \texttt{docs/datasheets/} is the boundary of that treatment: a part
 gets a cited, traceable figure if and only if its datasheet lives
 there, and everything else (resistors, capacitors, standard diodes,
@@ -47,8 +46,8 @@ and the tube and driver stages are through-hole wherever a through-hole
 part exists, and prefer the larger body among parts that already meet
 the requirement, so the supply looks of a piece with the tubes it
 drives. The USB-PD front end and the low-voltage rails make no such
-attempt, a USB-C receptacle being anachronistic on this board by
-construction; those stages follow current surface-mount practice and
-are laid out for assembly by the fabricator. Neither preference reaches
-into the derivations that follow: a requirement decides first, and the
-build style decides only among the parts that already satisfy it.
+attempt; a USB-C receptacle is anachronistic on this board in any
+case, and those stages follow current surface-mount practice, laid out
+for assembly by the fabricator. Neither preference reaches into the
+derivations that follow. Build style selects only among the parts that
+already satisfy a derived requirement.

@@ -5,6 +5,10 @@
 *-backups/
 *.bak
 
+# --- FreeCAD rolling backups (cad/) ---
+*.FCStd[0-9]*
+*.FCBak
+
 # --- Autosave / temporary scratch files ---
 _autosave-*
 \#auto_saved_files\#

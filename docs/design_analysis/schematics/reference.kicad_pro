@@ -437,7 +437,7 @@
         "uuid": "12d1c5ca-8caa-430e-acde-de5e63359dde"
       }
     ],
-    "used_designators": "R1-15,#FLG1-4,D1-4,T1-2,#PWR22-48,#PWR159-160,D_{PUMP}1,C1-11,Q1-3,C_{BIAS}1,C_{PUMP}1,D_{RESET}1,D_{START}1,H1-4,J1-2,R_{PUMP}1,RV1,TP1-2,U1-2",
+    "used_designators": "Q_{3V3HDR}1,R1-15,#FLG1-4,D1-4,T1-2,#PWR22-48,#PWR159-160,#PWR355,#PWR357,D_{PUMP}1,C1-11,Q1-3,Q122,C_{BIAS}1,C_{PUMP}1,D_{RESET}1,D_{START}1,H1-4,J1-2,R_{BUSBLEED}1,R_{PUMP}1,RV1,TP1-2,U1-2,R_{3V3HDR}1,R_{3V3BUS}1-2",
     "variants": []
   },
   "sheets": [

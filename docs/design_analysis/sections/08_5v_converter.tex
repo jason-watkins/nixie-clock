@@ -2,8 +2,8 @@
 
 This section derives the required characteristics of the 5~V rail and specifies
 component values that satisfy them, built around the TPS629203
-(\cref{sec:tps629203}). The converter is referred to by part number rather than
-by a designator, being the only device of its kind on the rail.
+(\cref{sec:tps629203}). The converter is the only device of its kind on the
+rail, so it is referred to by part number throughout.
 \Cref{sec:bcd-driver} already designates the four K155ID1 packages U1--U4; this
 document assigns the remaining designators used throughout this section as
 follows:
@@ -108,11 +108,11 @@ eighteen preset options at $R = \SI{80.6}{\kilo\ohm}$. Specification:
 $\des{R}{5VSET} = \SI{80.6}{\kilo\ohm}$, E96 1\,\% with a temperature coefficient no worse
 than $\pm200$~ppm/\si{\celsius}, as the selection table requires. This is
 preferred over the external-divider configuration the same pin also supports,
-because it keeps the rail's accuracy at the part's own $\pm1\,\%$ specification
-rather than adding a divider's resistor tolerance to it: an external divider
-would put the feedback reference's tolerance and the divider ratio's tolerance in
-series, and the ratio error alone would consume a comparable share of the
-K155ID1's supply window (\cref{sec:5v-cout}). With VSET selected, the output is
+because it keeps the rail's accuracy at the part's own $\pm1\,\%$ specification.
+An external divider would put the feedback reference's tolerance and the divider
+ratio's tolerance in series, and the ratio error alone would consume a
+comparable share of the K155ID1's supply window (\cref{sec:5v-cout}). With VSET
+selected, the output is
 sensed through the VOS pin, which connects directly to the positive terminal of
 the output capacitance.
 
@@ -124,9 +124,9 @@ requires is internal feedback with automatic power save, since the load is far
 below the power-save entry threshold at every corner (\cref{sec:5v-op}) and there
 is no reason to force continuous conduction into a static load. Automatic
 efficiency enhancement is taken with it, which adjusts the switching frequency
-with the conversion ratio rather than holding it fixed. Output discharge is
-enabled so the rail ramps down in a defined way when the bus falls away, rather
-than decaying through whatever leakage the drivers present. Specification:
+with the conversion ratio. Output discharge is enabled so the rail ramps down in
+a defined way when the bus falls away; without it the rail decays through
+whatever leakage the drivers present. Specification:
 $\des{R}{5VMODE} = \SI{27.4}{\kilo\ohm}$, to the same E96 1\,\% and $\pm200$~ppm/\si{\celsius}
 requirement.
 
@@ -180,7 +180,7 @@ pathological.
 \subsection{Conduction mode and switching frequency}\label{sec:5v-op}
 
 With efficiency enhancement selected, the switching frequency follows the
-conversion ratio rather than being fixed:
+conversion ratio:
 \begin{align*}
   f_{SW} &= 10\,V_{OUT}\frac{V_{IN}-V_{OUT}}{V_{IN}^2}
   &&\SI{8.5}{\volt}: \SI{2.42}{\mega\hertz}; \quad
@@ -232,13 +232,12 @@ power-save peak of \cref{sec:5v-inductor}:
 Accounting for the propagation delay that extends the actual trip point, the
 effective minimum is $0.8 + (8/\SI{2.2}{\micro\henry})\times\SI{50}{\nano\second}
 = \SI{0.98}{\ampere}$, giving \num{1.7}. This is a smaller margin than an
-oversized converter would show, which is the direct consequence of matching the
-part to the load: the limit is a fault threshold rather than an operating
-constraint, and the design intent is that it sit near but above the largest
+oversized converter would show, a direct consequence of matching the part to the
+load. The limit is a fault threshold, set to sit near but above the largest
 current normal operation produces. Were it reached, the high-side switch would
 turn off and the low-side switch would ramp the inductor down until the current
-fell below the low-side threshold, which is cycle-by-cycle behavior, not a
-fault latch.
+fell below the low-side threshold --- cycle-by-cycle behavior, with no fault
+latch.
 
 \subsection{Output capacitance and rail accuracy}\label{sec:5v-cout}
 
@@ -288,7 +287,7 @@ The part requires at least \SI{3}{\micro\farad} of effective input capacitance
 with \SI{4.7}{\micro\farad} nominal recommended (\cref{sec:tps629203}). At the
 \SI{13}{\volt} top of the bus window a \SI{25}{\volt}-rated ceramic loses roughly
 half its nominal capacitance to bias, so a \SI{4.7}{\micro\farad} nominal part
-would land near the requirement rather than above it. Specification:
+would land at the requirement with no margin above it. Specification:
 \des{C}{5VIN} $= \SI{10}{\micro\farad}$, giving about \SI{5}{\micro\farad} effective at the
 worst bias, \num{1.7} times the floor. The buck's input RMS ripple current at
 the worst point ($D$ nearest 0.5, i.e.\ $V_{IN}=\SI{8.5}{\volt}$):
@@ -303,8 +302,8 @@ bias-derating headroom.
 
 \subsection{Enable, soft start, and dissipation}\label{sec:5v-ss}
 
-EN ties directly to $V_{\mathrm{BUS}}$. The pin must be terminated rather than
-left floating, and its \SI{18}{\volt} rating matches VIN's, so no divider or
+EN ties directly to $V_{\mathrm{BUS}}$. The pin must be terminated, and its
+\SI{18}{\volt} rating matches VIN's, so no divider or
 level shift is required; the part's own undervoltage lockout, \SI{3}{\volt}
 maximum rising, releases far below the \SI{8.5}{\volt} minimum input. The
 precise enable threshold would permit a programmed lockout at a higher voltage,
@@ -363,9 +362,9 @@ At the bottom of that range the K155ID1 packages sit below the
 that costs. The parts are idle: the \SI{170}{\volt} rail is inhibited in this
 class (\cref{sec:hv-inhibit}), so every output is an open collector with no
 anode supply behind it and no cathode current to switch. And an undervolted
-bipolar TTL supply shifts input thresholds and output levels rather than
-stressing anything, the recommended window being a specification boundary and
-not a rating. The rail's accuracy result of \cref{sec:5v-cout} is therefore
+bipolar TTL supply shifts input thresholds and output levels without stressing
+anything; the recommended window is a specification boundary, and the rating
+lies further out. The rail's accuracy result of \cref{sec:5v-cout} is therefore
 conditional on a \SI{9}{\volt} or \SI{12}{\volt} contract, and no other result
 in this section is.
 
@@ -460,12 +459,12 @@ Bypass C1--C4 & \SI{100}{\nano\farad} per TTL package & \SI{100}{\nano\farad}
 The rail's one open assumption is \des{L}{5V}'s saturation rating, inferred from
 commodity-part norms for its value class instead of from a specific
 manufacturer datasheet; a part meeting it remains to be selected. Everything
-else resolves to a specified value with margin, and the section's substantive
-result is that matching the converter's rating to the load removes the two
-consequences oversizing carried: the inductor's saturation requirement now
-follows from a \SI{1.4}{\ampere} current limit rather than a multi-ampere one,
-and the manufacturer's own filter-selection table applies as written instead of
-demanding an inductance outside the part's own recommended range.
+else resolves to a specified value with margin. The section's substantive result
+is that matching the converter's rating to the load removes the two consequences
+oversizing carried: the inductor's saturation requirement now follows from a
+\SI{1.4}{\ampere} current limit, well below what a multi-ampere part would
+demand, and the manufacturer's own filter-selection table applies as written
+without calling for an inductance outside the part's recommended range.
 
 \subsection{Component selection}\label{sec:5v-parts}
 

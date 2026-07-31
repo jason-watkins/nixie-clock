@@ -364,7 +364,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "0_nixie_clock:IN-6"
+		(symbol "0_nixie_clock:INS-1"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -385,11 +385,10 @@
 					(justify left bottom)
 				)
 			)
-			(property "Value" "IN-6"
-				(at 0 0 0)
+			(property "Value" "INS-1"
+				(at -3.81 -7.62 0)
 				(show_name no)
 				(do_not_autoplace no)
-				(hide yes)
 				(effects
 					(font
 						(size 1.143 1.143)
@@ -397,7 +396,7 @@
 					(justify left bottom)
 				)
 			)
-			(property "Footprint" "nixie_clock:IN-6"
+			(property "Footprint" "0_nixie_clock:INS-1"
 				(at 0.762 3.81 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -408,7 +407,7 @@
 					)
 				)
 			)
-			(property "Datasheet" ""
+			(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/INS-1.pdf"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -419,7 +418,7 @@
 					)
 				)
 			)
-			(property "Description" "IN-6 neon dot indicator (colon separator); 3 electrodes: A=anode, K=indicator cathode, KA=auxiliary priming cathode (may be left NC in always-on use)"
+			(property "Description" "INS-1 neon glow indicator, colon separator; 2 electrodes, A = anode (small internal cylinder, lead 1), K = cathode (large cylinder, lead 2, the electrode the glow forms on). Strikes at 65 to 90 V, sustains at 55 V or less, 0.5 mA gives nominal brightness"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -430,17 +429,7 @@
 					)
 				)
 			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "*IN-6*"
+			(property "ki_fp_filters" "*INS-1*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -451,22 +440,10 @@
 					)
 				)
 			)
-			(symbol "IN-6_1_0"
+			(symbol "INS-1_0_1"
 				(polyline
 					(pts
-						(xy -5.08 0) (xy -4.445 0)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -4.445 0) (xy -5.08 0)
+						(xy -5.08 0) (xy -2.54 0)
 					)
 					(stroke
 						(width 0)
@@ -478,130 +455,10 @@
 				)
 				(polyline
 					(pts
-						(xy -4.445 0) (xy -1.905 0)
+						(xy -2.54 1.905) (xy -2.54 -1.905)
 					)
 					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -3.81 0) (xy -4.445 0)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.905 0) (xy -1.905 1.27)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.905 0) (xy -1.905 -1.27)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3048 2.54) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0 2.8448)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0 2.2098)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.3048 2.54)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 0) (xy 2.54 0)
-					)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "IN-6_1_1"
-				(circle
-					(center 0 2.54)
-					(radius 0.3048)
-					(stroke
-						(width 0)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 2.54)
-					(radius 0.635)
-					(stroke
-						(width 0)
+						(width 0.254)
 						(type solid)
 					)
 					(fill
@@ -612,7 +469,7 @@
 					(center 0 0)
 					(radius 5.08)
 					(stroke
-						(width 0)
+						(width 0.254)
 						(type solid)
 					)
 					(fill
@@ -620,8 +477,31 @@
 					)
 				)
 				(circle
-					(center 1.905 0)
-					(radius 0.635)
+					(center 0 -2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 2.54 0)
+					(radius 0.889)
+					(stroke
+						(width 0.254)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 5.08 0) (xy 3.429 0)
+					)
 					(stroke
 						(width 0)
 						(type solid)
@@ -630,6 +510,8 @@
 						(type none)
 					)
 				)
+			)
+			(symbol "INS-1_1_1"
 				(pin passive line
 					(at -7.62 0 0)
 					(length 2.54)
@@ -659,24 +541,6 @@
 						)
 					)
 					(number "K"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 -2.54 180)
-					(length 3.302)
-					(name "KA"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "KA"
 						(effects
 							(font
 								(size 1.016 1.016)
@@ -7075,7 +6939,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47uF"
+		(property "Value" "10uF"
 			(at 68.58 145.1609 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7086,7 +6950,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "0_nixie_clock:CP_Radial_D6.3mm_P2.50mm"
+		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
 			(at 65.7352 148.59 0)
 			(hide yes)
 			(show_name no)
@@ -7119,7 +6983,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "A750EK476M1EAAE040"
+		(property "MFG Part No" "A758BG106M1EAAE070"
 			(at 64.77 144.78 0)
 			(hide yes)
 			(show_name no)
@@ -7890,113 +7754,6 @@
 		)
 	)
 	(symbol
-		(lib_id "0_nixie_clock:IN-6")
-		(at 220.98 59.69 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "6582c713-2a7e-42f1-bab6-5891711bccec")
-		(property "Reference" "NX6"
-			(at 220.98 52.07 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.143 1.143)
-				)
-			)
-		)
-		(property "Value" "IN-6"
-			(at 220.98 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.143 1.143)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Footprint" "0_nixie_clock:IN-6"
-			(at 221.742 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.508 0.508)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 220.98 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "IN-6 neon dot indicator (colon separator); 3 electrodes: A=anode, K=indicator cathode, KA=auxiliary priming cathode (may be left NC in always-on use)"
-			(at 220.98 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" ""
-			(at 220.98 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 220.98 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "K"
-			(uuid "4bd664eb-fb4b-46b2-984d-fbcb69928f9f")
-		)
-		(pin "A"
-			(uuid "5340f912-2810-4d25-853e-53d4e681c87d")
-		)
-		(pin "KA"
-			(uuid "b0e69f33-9f87-4564-9ccd-bbc4f12f1263")
-		)
-		(instances
-			(project "face"
-				(path "/e9a806d6-34c6-4a58-8596-3336bf2feadc"
-					(reference "NX6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "0_nixie_clock:IN-12B")
 		(at 175.26 93.98 0)
 		(unit 1)
@@ -8535,6 +8292,108 @@
 			(project "face"
 				(path "/e9a806d6-34c6-4a58-8596-3336bf2feadc"
 					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "0_nixie_clock:INS-1")
+		(at 220.98 59.69 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8254cf32-4796-4921-82b9-54f82dd23c28")
+		(property "Reference" "NX6"
+			(at 220.98 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.143 1.143)
+				)
+			)
+		)
+		(property "Value" "INS-1"
+			(at 220.98 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.143 1.143)
+				)
+			)
+		)
+		(property "Footprint" "0_nixie_clock:INS-1_Recessed"
+			(at 221.742 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.508 0.508)
+				)
+			)
+		)
+		(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/INS-1.pdf"
+			(at 220.98 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "INS-1 neon glow indicator, colon separator; 2 electrodes, A = anode (small internal cylinder, lead 1), K = cathode (large cylinder, lead 2, the electrode the glow forms on). Strikes at 65 to 90 V, sustains at 55 V or less, 0.5 mA gives nominal brightness"
+			(at 220.98 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 220.98 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 220.98 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "A"
+			(uuid "1fbd8ad4-34ff-444d-9bab-0341292e4a88")
+		)
+		(pin "K"
+			(uuid "c6013a7c-a26e-497d-8a50-af3cd6558f04")
+		)
+		(instances
+			(project "face"
+				(path "/e9a806d6-34c6-4a58-8596-3336bf2feadc"
+					(reference "NX6")
 					(unit 1)
 				)
 			)
@@ -11177,113 +11036,6 @@
 		)
 	)
 	(symbol
-		(lib_id "0_nixie_clock:IN-6")
-		(at 220.98 36.83 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "d7612c78-e70d-4781-8f33-c32987f32aa9")
-		(property "Reference" "NX5"
-			(at 220.98 29.21 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.143 1.143)
-				)
-			)
-		)
-		(property "Value" "IN-6"
-			(at 220.98 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.143 1.143)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Footprint" "0_nixie_clock:IN-6"
-			(at 221.742 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.508 0.508)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 220.98 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "IN-6 neon dot indicator (colon separator); 3 electrodes: A=anode, K=indicator cathode, KA=auxiliary priming cathode (may be left NC in always-on use)"
-			(at 220.98 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" ""
-			(at 220.98 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 220.98 36.83 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "K"
-			(uuid "4bd664eb-fb4b-46b2-984d-fbcb69928fa0")
-		)
-		(pin "A"
-			(uuid "5340f912-2810-4d25-853e-53d4e681c87e")
-		)
-		(pin "KA"
-			(uuid "c9476e62-ab39-4b79-82dc-9c97293be079")
-		)
-		(instances
-			(project "face"
-				(path "/e9a806d6-34c6-4a58-8596-3336bf2feadc"
-					(reference "NX5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+5V")
 		(at 111.76 86.36 0)
 		(unit 1)
@@ -11356,6 +11108,108 @@
 			(project "face"
 				(path "/e9a806d6-34c6-4a58-8596-3336bf2feadc"
 					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "0_nixie_clock:INS-1")
+		(at 220.98 36.83 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ee3cb0a6-6d5e-4784-9e7b-6b6d7dd80260")
+		(property "Reference" "NX5"
+			(at 220.98 26.67 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.143 1.143)
+				)
+			)
+		)
+		(property "Value" "INS-1"
+			(at 220.98 29.21 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.143 1.143)
+				)
+			)
+		)
+		(property "Footprint" "0_nixie_clock:INS-1_Recessed"
+			(at 221.742 33.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.508 0.508)
+				)
+			)
+		)
+		(property "Datasheet" "${KIPRJMOD}/../../docs/datasheets/INS-1.pdf"
+			(at 220.98 36.83 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "INS-1 neon glow indicator, colon separator; 2 electrodes, A = anode (small internal cylinder, lead 1), K = cathode (large cylinder, lead 2, the electrode the glow forms on). Strikes at 65 to 90 V, sustains at 55 V or less, 0.5 mA gives nominal brightness"
+			(at 220.98 36.83 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MFG Part No" ""
+			(at 220.98 36.83 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 220.98 36.83 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "A"
+			(uuid "0b39e549-6c3c-4df8-8f85-add0084c6d77")
+		)
+		(pin "K"
+			(uuid "33d30c66-0137-474e-83aa-f67d02eb5d4e")
+		)
+		(instances
+			(project "face"
+				(path "/e9a806d6-34c6-4a58-8596-3336bf2feadc"
+					(reference "NX5")
 					(unit 1)
 				)
 			)

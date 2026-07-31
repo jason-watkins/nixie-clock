@@ -724,7 +724,7 @@
         "uuid": "e9a806d6-34c6-4a58-8596-3336bf2feadc"
       }
     ],
-    "used_designators": "C3,#PWR19-20",
+    "used_designators": "C3,NX5-6,#PWR19-20",
     "variants": []
   },
   "sheets": [
