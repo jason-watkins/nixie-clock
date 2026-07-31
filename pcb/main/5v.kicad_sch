@@ -1916,7 +1916,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 91.44 66.04 0)
+		(at 91.44 58.42 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -1927,7 +1927,7 @@
 		(fields_autoplaced yes)
 		(uuid "0a68ef3a-a23b-46ef-af59-f9253281f344")
 		(property "Reference" "#PWR0248"
-			(at 91.44 72.39 0)
+			(at 91.44 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1938,7 +1938,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 91.44 71.12 0)
+			(at 91.44 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1949,7 +1949,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 91.44 66.04 0)
+			(at 91.44 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1960,7 +1960,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 91.44 66.04 0)
+			(at 91.44 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1971,7 +1971,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 91.44 66.04 0)
+			(at 91.44 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1982,7 +1982,7 @@
 			)
 		)
 		(property "MFG Part No" ""
-			(at 91.44 66.04 0)
+			(at 91.44 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1993,7 +1993,7 @@
 			)
 		)
 		(property "LCSC" ""
-			(at 91.44 66.04 0)
+			(at 91.44 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2269,7 +2269,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "75k"
+		(property "Value" "80.6k"
 			(at 92.964 55.88 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2313,7 +2313,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF7502TCE"
+		(property "MFG Part No" "RC0402FR-0780K6L"
 			(at 91.44 54.61 0)
 			(hide yes)
 			(show_name no)
@@ -2324,7 +2324,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25798"
+		(property "LCSC" "C155698"
 			(at 91.44 54.61 0)
 			(hide yes)
 			(show_name no)
@@ -2748,109 +2748,6 @@
 			(project "main"
 				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/6897350a-6b24-4568-8df0-70384d2ca7c6"
 					(reference "TP132")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 91.44 62.23 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "9144249c-23e7-4ddf-a533-d702d0480c61")
-		(property "Reference" "R133"
-			(at 92.964 60.96 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "5.6k"
-			(at 92.964 63.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 93.218 62.23 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 91.44 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 91.44 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MFG Part No" "0402WGF5601TCE"
-			(at 91.44 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C25908"
-			(at 91.44 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "04236ef1-aa7d-415d-be5a-d39d41f147a9")
-		)
-		(pin "2"
-			(uuid "0587efea-20f8-4f4f-bf98-b1d974dfeaaf")
-		)
-		(instances
-			(project "main"
-				(path "/f225fc02-d36f-4469-bac4-82a576baae3a/6897350a-6b24-4568-8df0-70384d2ca7c6"
-					(reference "R133")
 					(unit 1)
 				)
 			)

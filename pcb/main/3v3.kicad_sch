@@ -3475,7 +3475,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1003TCE"
+		(property "MFG Part No" "RC0402FR-07120KL"
 			(at 111.76 63.5 0)
 			(hide yes)
 			(show_name no)
@@ -3486,7 +3486,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25741"
+		(property "LCSC" "C93945"
 			(at 111.76 63.5 0)
 			(hide yes)
 			(show_name no)

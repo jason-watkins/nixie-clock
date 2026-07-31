@@ -11777,7 +11777,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 129.2352 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -11810,7 +11810,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL10A226MQ8NRNC"
+		(property "MFG Part No" "CL31A226KPHNNNE"
 			(at 128.27 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -11821,7 +11821,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C59461"
+		(property "LCSC" "C5672"
 			(at 128.27 34.29 0)
 			(hide yes)
 			(show_name no)

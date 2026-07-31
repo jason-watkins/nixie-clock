@@ -10453,7 +10453,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "TS3USB221AQRSERQ1"
+		(property "MFG Part No" "TS3USB221ARSER"
 			(at 115.57 133.35 0)
 			(hide yes)
 			(show_name no)
@@ -10464,7 +10464,18 @@
 				)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C128396"
+			(at 115.57 133.35 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "rotate" "270"
 			(at 115.57 133.35 0)
 			(hide yes)
 			(show_name no)
@@ -10798,7 +10809,7 @@
 				)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C3197885"
 			(at 82.55 95.25 0)
 			(hide yes)
 			(show_name no)
