@@ -134,6 +134,7 @@
 	)
 	(property "AUTHOR" "Jason Watkins")
 	(property "REV" "C")
+	(property "STEP" "1")
 	(property "TITLE" "4 Digit Nixie Clock (IN-12)")
 	(footprint "0_nixie_clock:DIP16"
 		(layer "F.Cu")
