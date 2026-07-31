@@ -21,6 +21,18 @@ sets of files would otherwise carry one name. Bump STEP, commit, rerun.
 Rerunning at the tagged commit rebuilds the same export, which is the only
 case where an existing directory is overwritten.
 
+--step does the bumping: it moves each board past every step already tagged
+for its revision, or leaves it alone if the current one is still free. It
+runs ahead of every gate and needs no clean tree, because the point in the
+workflow where a step is spent is the point where the tree is mid-edit.
+
+It answers for the commit you are about to make, not the one you are on. A
+step tagged at HEAD is reusable only because rebuilding there reproduces the
+same files, so any pending change to that board's sources -- its own
+directory, pcb/lib/, or this script -- retires it: the commit that carries
+those changes moves HEAD off the tag. Bumping in that case is what stops the
+export from failing on a board that looked settled a moment earlier.
+
 "Sources committed" is scoped to the board rather than to the repository:
 its project directory, the shared library directory pcb/lib/, and this
 script -- everything whose content can change the exported files. Work in
@@ -47,6 +59,7 @@ Usage:
     python scripts/make_release.py                 # release every board
     python scripts/make_release.py main            # release one board
     python scripts/make_release.py main hv         # release a subset
+    python scripts/make_release.py --step          # bump spent STEPs, exit
     python scripts/make_release.py --sync-doc-rev  # regenerate revision.tex, exit
     python scripts/make_release.py --no-tag --output ../scratch   # trial run
 
@@ -112,6 +125,11 @@ class ReleaseError(Exception):
 @dataclass(frozen=True)
 class FabProfile:
     """Everything one fab house expects that differs from KiCad defaults.
+
+    Each output is produced only if the profile describes it, so a profile
+    that leaves gerber_layer_patterns, bom_columns or pos_columns empty
+    simply does not emit that file. A parts-order profile -- a distributor
+    rather than a fab -- is the degenerate case: purchase_columns alone.
 
     Attributes:
         name:          Key used on the command line (``--profile name``).
@@ -433,11 +451,59 @@ PCBWAY = FabProfile(
     ),
 )
 
+DIGIKEY = FabProfile(
+    name="digikey",
+    # A distributor, not a fab: no board is made here, so every output but
+    # the parts order is left undescribed and therefore never written.
+    gerber_layer_patterns=(),
+    gerber_args=(),
+    drill_args=(),
+    pos_args=(),
+    bom_columns=(),
+    pos_columns={},
+    zip_extras=(),
+    # Digi-Key matches on manufacturer part number; an LCSC code resolves to
+    # nothing in their catalogue, so there is no fallback to fall back to.
+    bom_part_fields=("MFG Part No",),
+    bom_comment_fields=("MFG Part No", "Value"),
+    bom_value_prefixes=("C", "L", "R"),
+    # Headers Digi-Key's list import recognises, so the upload maps itself.
+    # Designators ride in Customer Reference, which is what puts a line item
+    # back on a board once the order arrives.
+    purchase_columns=(
+        ("Manufacturer Part Number", "part"),
+        ("Quantity", "order_qty"),
+        ("Customer Reference", "designator"),
+        ("Description", "comment"),
+        ("Package", "footprint"),
+    ),
+    # One board's worth, with no spares. Multiplying for a build and padding
+    # for attrition are both things their site does after upload, and doing
+    # either here would fight it.
+    board_qty=1,
+    overage_rules=(),
+    overage_default=0,
+    mount_type_names={},
+    pos_shift_fields=("", ""),
+    pos_rotate_field="",
+    bom_strip_lib_prefix=True,
+    pos_side_names={},
+    upload_notes=(
+        "Digi-Key parts order:\n"
+        "  1. My Lists -> Create New List -> upload parts-order.csv. The\n"
+        "     headers match their importer, so the columns map themselves.\n"
+        "  2. Quantities are for one board. Set the build multiplier and any\n"
+        "     attrition on their side.\n"
+        "  3. Rows with an empty part number are parts with no MFG Part No\n"
+        "     set; they will not match and have to be sourced by hand."
+    ),
+)
+
 # Every profile here is exported by default, each into its own subdirectory of
 # the revision, so one commit can be quoted at several houses without a rerun.
 # Definition order is the order they run in.
 PROFILES: dict[str, FabProfile] = {
-    p.name: p for p in (JLCPCB, PCBUNLIMITED, PCBWAY)
+    p.name: p for p in (JLCPCB, PCBUNLIMITED, PCBWAY, DIGIKEY)
 }
 
 
@@ -613,6 +679,18 @@ def export_sources(project: Project) -> list[Path]:
     return [p for p in found if p.exists() and _within(p, root)]
 
 
+def dirty_sources(project: Project) -> list[str]:
+    """git status lines for the paths that decide this board's outputs.
+
+    Empty means the board's next export would come from HEAD as it stands.
+    Both the cleanliness gate and the step allocator ask this: one to refuse
+    an export, the other to predict the commit an export will land on."""
+    paths = [str(p) for p in export_sources(project)]
+    status = run(["git", "status", "--porcelain", "--", *paths],
+                 cwd=project.root).stdout
+    return [line for line in status.splitlines() if line.strip()]
+
+
 def gate_git_clean(project: Project) -> None:
     """Require this board's sources to be committed, so its tag names a
     commit that reproduces the exported files.
@@ -621,11 +699,9 @@ def gate_git_clean(project: Project) -> None:
     on another board, or on an unrelated script cannot change these outputs
     and so must not block the export. export_sources() defines the scope."""
     gate_lib_scope(project)
-    paths = [str(p) for p in export_sources(project)]
-    status = run(["git", "status", "--porcelain", "--", *paths],
-                 cwd=project.root).stdout
-    if status.strip():
-        listing = "\n".join(status.splitlines()[:10])
+    lines = dirty_sources(project)
+    if lines:
+        listing = "\n".join(lines[:10])
         raise ReleaseError(
             f"board {project.name!r} has uncommitted changes in its sources; "
             f"commit or stash first:\n{listing}"
@@ -682,6 +758,93 @@ def read_step(project: Project) -> str:
 def read_export_id(project: Project) -> str:
     """REV and STEP joined, e.g. 'C2'. Names the output directory and tag."""
     return read_rev(project) + read_step(project)
+
+
+STEP_VAR_RE = re.compile(r'("STEP"\s*:\s*")([^"]*)(")')
+
+
+def write_step(project: Project, step: str) -> None:
+    """Set the STEP text variable in place.
+
+    A targeted substitution rather than a JSON round-trip: .kicad_pro holds
+    several hundred settings, many of them floats, and reserialising them
+    risks a diff that buries the one line that changed."""
+    text = project.pro.read_text(encoding="utf-8")
+    new_text, count = STEP_VAR_RE.subn(
+        lambda m: m.group(1) + step + m.group(3), text)
+    if count != 1:
+        raise ReleaseError(
+            f"expected one 'STEP' text variable in {project.pro.name}, found {count}"
+        )
+    project.pro.write_text(new_text, encoding="utf-8")
+
+
+def spent_steps(project: Project, rev: str) -> dict[int, str]:
+    """Step numbers already tagged for this revision -> the commit each names.
+
+    Read from tags rather than from the output tree, so a fab directory that
+    was deleted or never synced does not make a spent step look free."""
+    prefix = release_tag(project, rev)
+    listing = run(["git", "tag", "--list", f"{prefix}*"], cwd=project.root).stdout
+    spent: dict[int, str] = {}
+    for tag in listing.split():
+        suffix = tag[len(prefix):]
+        # Skips the pre-step tags, whose suffix is empty.
+        if suffix.isdigit():
+            spent[int(suffix)] = run(["git", "rev-list", "-n1", tag],
+                                     cwd=project.root).stdout.strip()
+    return spent
+
+
+def next_step(project: Project, rev: str, step: str) -> tuple[str | None, str]:
+    """The step this board must move to and why, or (None, reason) if the
+    current one is free.
+
+    Free means untagged, or tagged at HEAD with nothing uncommitted that
+    could change this board's output. The second condition is what makes
+    this answer hold: a step tagged at HEAD is only reusable because
+    rebuilding there reproduces the same files, and that stops being true
+    the moment an edit is pending. Whatever is uncommitted has to be
+    committed before an export is allowed at all, and that commit moves HEAD
+    off the tag -- so a step that looks free now would be spent by the time
+    it was used. Predicting that here is the whole value of running this
+    before committing rather than after.
+
+    A bump goes to the next number past every spent step, which is not
+    always current+1: steps 1 and 2 may both be tagged while the file still
+    says 1."""
+    spent = spent_steps(project, rev)
+    if int(step) not in spent:
+        return None, "unspent"
+    head = run(["git", "rev-parse", "HEAD"], cwd=project.root).stdout.strip()
+    tagged = spent[int(step)]
+    if tagged != head:
+        return str(max(spent) + 1), f"tagged at {tagged[:10]}"
+    pending = dirty_sources(project)
+    if not pending:
+        return None, "tagged at HEAD, nothing pending: a rebuild of itself"
+    return (str(max(spent) + 1),
+            f"tagged at HEAD, but {len(pending)} pending source change(s) "
+            f"will move HEAD off it")
+
+
+def bump_steps(boards: list[Project]) -> list[Project]:
+    """Advance STEP on every board whose current one is already spent.
+
+    Reports each board either way, because "nothing to do" and "bumped" look
+    the same in a diff once the commit is made."""
+    bumped: list[Project] = []
+    for board in boards:
+        rev, step = read_rev(board), read_step(board)
+        target, why = next_step(board, rev, step)
+        if target is None:
+            print(f"  {board.name:6} rev {rev}{step}: left alone -- {why}")
+            continue
+        write_step(board, target)
+        print(f"  {board.name:6} rev {rev}{step}: {why}\n"
+              f"  {'':6} -> STEP now {target} (rev {rev}{target})")
+        bumped.append(board)
+    return bumped
 
 
 def read_revs(boards: list[Project]) -> dict[str, str]:
@@ -1036,8 +1199,12 @@ def _write_columns(path: Path, columns: tuple[tuple[str, str], ...],
 
 
 def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
-               out_csv: Path, purchase_csv: Path | None = None) -> set[str]:
+               out_csv: Path | None, purchase_csv: Path | None = None) -> set[str]:
     """Export the assembly BOM, and the parts-order BOM if the fab consigns.
+
+    Either output may be absent: out_csv is None for a distributor profile
+    that only needs a parts order, and purchase_csv is unused by a fab that
+    buys the parts itself.
 
     One row per part type. The part-number column tries
     profile.bom_part_fields in order and keeps the first non-empty value.
@@ -1137,7 +1304,8 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
                 "Set the footprint type in Footprint Properties so the BOM can "
                 "state it."
             )
-    _write_columns(out_csv, profile.bom_columns, records)
+    if profile.bom_columns and out_csv is not None:
+        _write_columns(out_csv, profile.bom_columns, records)
     if profile.purchase_columns and purchase_csv is not None:
         _write_columns(purchase_csv, profile.purchase_columns, records)
     return {ref for record in records for ref in _refs(record["designator"])}
@@ -1227,38 +1395,46 @@ def profile_stages(kicad_cli: str, project: Project, profile: FabProfile,
     folder is a good way to send a board to the wrong house."""
     gerber_dir = out_dir / "gerbers"
     assembled: set[str] = set()
-    bom_label = "bom.csv" + (f" + {PURCHASE_BOM}" if profile.purchase_columns else "")
-    return [
-        (
+    written = [name for name, wanted in (("bom.csv", profile.bom_columns),
+                                         (PURCHASE_BOM, profile.purchase_columns)) if wanted]
+    stages: list[tuple[str, object]] = []
+    if profile.gerber_layer_patterns:
+        stages.append((
             f"{profile.name}: gerbers + drill",
             lambda: export_gerbers_and_drill(kicad_cli, project, profile, gerber_dir),
-        ),
-        # The BOM runs first: it decides which designators are offered for
-        # assembly, and the placement file is then held to that same set.
-        (
-            f"{profile.name}: {bom_label}",
+        ))
+    # The BOM runs before the placement file: it decides which designators
+    # are offered for assembly, and the placement file is held to that set.
+    # Both BOMs come out of this one call, so the parts ordered and the parts
+    # placed can never describe different boards.
+    if written:
+        stages.append((
+            f"{profile.name}: {' + '.join(written)}",
             lambda: assembled.update(
-                export_bom(kicad_cli, project, profile, out_dir / "bom.csv",
+                export_bom(kicad_cli, project, profile,
+                           out_dir / "bom.csv" if profile.bom_columns else None,
                            out_dir / PURCHASE_BOM)
             ),
-        ),
-        (
+        ))
+    if profile.pos_columns:
+        stages.append((
             f"{profile.name}: positions.csv",
             lambda: export_positions(
                 kicad_cli, project, profile, out_dir / "positions.csv", assembled
             ),
-        ),
-        # Last, so the files a fab wants bundled already exist. The
-        # parts-order BOM is never among them: it is for the distributor.
-        (
+        ))
+    # Last, so the files a fab wants bundled already exist. The parts-order
+    # BOM is never among them: it is for the distributor, not the fab.
+    if profile.gerber_layer_patterns:
+        stages.append((
             f"{profile.name}: zip",
             lambda: make_zip(
                 gerber_dir,
                 out_dir / f"{project.name}-rev{export_id}-{profile.name}-gerbers.zip",
                 tuple(out_dir / name for name in profile.zip_extras),
             ),
-        ),
-    ]
+        ))
+    return stages
 
 
 def release(kicad_cli: str, project: Project, profiles: list[FabProfile],
@@ -1332,6 +1508,9 @@ def main() -> int:
     parser.add_argument("--output", metavar="DIR", default=None,
                         help="root for the exported tree (default: fab/); "
                              "outputs land in DIR/<board>/rev<REV><STEP>/")
+    parser.add_argument("--step", action="store_true",
+                        help="bump STEP on any board whose step is already tagged "
+                             "elsewhere, then exit; run before committing")
     parser.add_argument("--sync-doc-rev", action="store_true",
                         help="regenerate docs/design_analysis/revision.tex from REV, then exit")
     parser.add_argument("--kicad-cli", default=None,
@@ -1342,6 +1521,24 @@ def main() -> int:
         all_boards = find_boards()
         boards = find_boards(args.boards) if args.boards else all_boards
         root = all_boards[0].root
+
+        # Deliberately ahead of every gate, and of the kicad-cli lookup: this
+        # is what a blocked export sends you to, and at that point the tree
+        # is mid-edit by definition. It only reads tags and writes .kicad_pro.
+        if args.step:
+            bumped = bump_steps(boards)
+            if not bumped:
+                print("\nno step needed; every board's step is free at this commit")
+                return 0
+            # Forward slashes: git takes them on every platform, and the hint
+            # is meant to be pasted into whichever shell is to hand.
+            files = " ".join(b.pro.relative_to(root).as_posix() for b in bumped)
+            print(f"\nCommit the bumped step(s), then export:\n"
+                  f"  git add {files}\n"
+                  f"  git commit -m \"Bump export step\"\n"
+                  f"Reload the project if KiCad has it open; the silkscreen and\n"
+                  f"title block render ${{STEP}} and still show the old number.")
+            return 0
 
         # revision.tex always covers every board, whatever subset is released.
         if args.sync_doc_rev:
