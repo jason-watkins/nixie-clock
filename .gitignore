@@ -54,6 +54,8 @@ docs/design_analysis/**/*.fdb_latexmk
 docs/design_analysis/**/*.synctex.gz
 docs/design_analysis/**/*.bbl
 docs/design_analysis/**/*.blg
+# xelatex writes .xdv, then xdvipdfmx turns it into the .pdf below.
+docs/design_analysis/**/*.xdv
 docs/design_analysis/**/*.pdf
 # ...but figures/ holds committed source artwork, not build output.
 !docs/design_analysis/figures/*.pdf
