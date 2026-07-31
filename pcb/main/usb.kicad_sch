@@ -6225,6 +6225,17 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 165.1 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "8"
 			(uuid "93e04d26-7d96-4133-ac8f-05a8ee0fc3f2")
 		)
@@ -7178,6 +7189,17 @@
 		)
 		(property "LCSC" ""
 			(at 177.8 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "rotate" "270"
+			(at 177.8 39.37 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9669,6 +9691,17 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 154.94 39.37 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "8"
 			(uuid "0af374ce-a48b-47b5-8667-3f2e13cda17f")
 		)
@@ -9784,6 +9817,17 @@
 			)
 		)
 		(property "LCSC" "C7519"
+			(at 107.95 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "rotate" "270"
 			(at 107.95 95.25 0)
 			(hide yes)
 			(show_name no)
@@ -10755,6 +10799,17 @@
 			)
 		)
 		(property "LCSC" ""
+			(at 82.55 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "shift_x" "0.95mm"
 			(at 82.55 95.25 0)
 			(hide yes)
 			(show_name no)

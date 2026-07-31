@@ -49,9 +49,17 @@ add it to PROFILES.
 
 Limitations:
 
-* Pick-and-place rotations use KiCad's footprint zero, which differs from
-  JLCPCB's zero for some packages. Check orientations in the fab's DFM
-  viewer before ordering assembly.
+* Pick-and-place data uses KiCad's footprint zero for both position and
+  rotation, and the fab's library part may be anchored elsewhere. Rotation
+  zeros differ for some packages; origins differ whenever a footprint's
+  pads are not symmetric about its anchor, because KiCad centres the
+  footprint on the body while a fab may centre it on the pad centroid. The
+  ESP32-S3-WROOM-1 is the worst case here at 3.7 mm, its antenna end
+  carrying no pads. The fab resolves this during DFM review by aligning its
+  model to the gerber copper, so the CSV should keep describing the
+  footprint honestly rather than carrying a fab-specific offset. Check both
+  position and orientation in the fab's DFM viewer before ordering
+  assembly.
 * The BOM part-number column reads the LCSC symbol field if set, falling
   back to the MFG Part No field. JLCPCB does not assemble rows with an
   empty part number.
@@ -96,7 +104,18 @@ class FabProfile:
         bom_part_fields: Symbol fields tried in order for the BOM
                        part-number column; the first non-empty value per
                        part wins.
+        bom_comment_fields: Same, for the BOM comment column. The fab shows
+                       this on rows whose part number it cannot resolve, so
+                       it should identify the part, not describe it.
+        bom_value_prefixes: Designator prefixes exempt from the above: their
+                       comment stays the Value, because "10k" reads better
+                       than an order code for parts identified by value.
         bom_part_label: Output header for the part-number column.
+        pos_shift_fields: (x, y) symbol field names holding per-part
+                       placement corrections in mm, stated in KiCad's
+                       board coordinates (+Y down the screen).
+        pos_rotate_field: Symbol field holding a rotation correction in
+                       degrees, added to KiCad's rotation.
         bom_strip_lib_prefix: Rewrite BOM "Footprint" cells from
                        ``Library:Name`` to bare ``Name`` (fabs want the
                        package name, not KiCad's library path).
@@ -113,7 +132,11 @@ class FabProfile:
     drill_args: tuple[str, ...]
     pos_args: tuple[str, ...]
     bom_part_fields: tuple[str, ...]
+    bom_comment_fields: tuple[str, ...]
+    bom_value_prefixes: tuple[str, ...]
     bom_part_label: str
+    pos_shift_fields: tuple[str, str]
+    pos_rotate_field: str
     bom_strip_lib_prefix: bool
     pos_columns: dict[str, str]
     pos_side_names: dict[str, str]
@@ -160,7 +183,20 @@ JLCPCB = FabProfile(
     ),
     # LCSC when set (JLC cost tuning), else the canonical MFG Part No.
     bom_part_fields=("LCSC", "MFG Part No"),
+    # JLC shows the comment for rows whose part number it cannot resolve, and
+    # those get matched by hand. The MFG Part No identifies exactly one part;
+    # Value may be an electrical value, a function label ("Boot"), or an
+    # unedited library symbol name, so it is the fallback rather than the
+    # first choice. Swap the order to put values on passives instead.
+    bom_comment_fields=("MFG Part No", "Value"),
+    # Parts identified by value rather than by order code. "10k" is what a
+    # human wants to read here; the order code is already in its own column.
+    bom_value_prefixes=("C", "L", "R"),
     bom_part_label="LCSC Part #",
+    # Per-part placement corrections, for packages whose JLC library model is
+    # anchored or oriented differently from the KiCad footprint.
+    pos_shift_fields=("shift_x", "shift_y"),
+    pos_rotate_field="rotate",
     bom_strip_lib_prefix=True,
     # KiCad pos CSV -> JLC CPL.  KiCad emits Ref,Val,Package,PosX,PosY,Rot,Side.
     pos_columns={
@@ -446,9 +482,79 @@ def export_gerbers_and_drill(kicad_cli: str, project: Project, profile: FabProfi
          *profile.drill_args, str(project.pcb)])
 
 
+# kicad-cli's pos CSV column names. These are KiCad's, not the fab's, so they
+# are fixed here rather than in the profile.
+POS_SRC_X, POS_SRC_Y, POS_SRC_ROT = "PosX", "PosY", "Rot"
+
+
+def _correction(text: str) -> float:
+    """Parse a correction field. Blank means none; a 'mm' or 'deg' suffix is
+    tolerated so the schematic can carry readable values."""
+    t = text.strip().lower()
+    for suffix in ("mm", "deg", "°"):
+        t = t.removesuffix(suffix).strip()
+    if not t:
+        return 0.0
+    try:
+        return float(t)
+    except ValueError as exc:
+        raise ReleaseError(f"placement correction {text!r} is not a number") from exc
+
+
+def read_placement_corrections(kicad_cli: str, project: Project,
+                               profile: FabProfile) -> dict[str, tuple[float, float, float]]:
+    """Per-designator (dx, dy, drot) placement corrections from schematic fields.
+
+    A fab places its own library model at the coordinate this script reports,
+    and that model may be anchored or oriented differently from the KiCad
+    footprint -- most visibly on parts whose pads are not symmetric about the
+    footprint anchor. These fields carry the measured correction per part.
+    Only symbols that set at least one of the fields appear in the result."""
+    wanted = [f for f in (*profile.pos_shift_fields, profile.pos_rotate_field) if f]
+    if not wanted:
+        return {}
+    with tempfile.TemporaryDirectory() as tmp:
+        raw = Path(tmp) / "corrections.csv"
+        # No --group-by: one row per symbol, so corrections stay per-designator
+        # even when two parts are otherwise identical.
+        run([kicad_cli, "sch", "export", "bom", "-o", str(raw),
+             "--fields", ",".join(["Reference", *wanted]),
+             "--labels", ",".join(["Reference", *wanted]),
+             "--ref-range-delimiter", "",
+             str(project.sch)])
+        rows = list(csv.DictReader(raw.open(encoding="utf-8")))
+    out: dict[str, tuple[float, float, float]] = {}
+    fx, fy = profile.pos_shift_fields
+    for row in rows:
+        vals = (_correction(row.get(fx, "")), _correction(row.get(fy, "")),
+                _correction(row.get(profile.pos_rotate_field, "")))
+        if any(vals):
+            for ref in row["Reference"].split(","):
+                if ref.strip():
+                    out[ref.strip()] = vals
+    return out
+
+
 def export_positions(kicad_cli: str, project: Project, profile: FabProfile,
-                     out_csv: Path) -> None:
-    """Export the position file, then rewrite it into the fab's CPL format."""
+                     out_csv: Path, assembled: set[str] | None = None) -> None:
+    """Export the position file, then rewrite it into the fab's CPL format.
+
+    ``assembled`` is the designator set the BOM offers. KiCad keeps "exclude
+    from BOM" and "exclude from position files" as separate per-symbol flags,
+    so a part dropped from one still appears in the other -- and the assembly
+    house rejects every placement row it cannot find a BOM line for. Filtering
+    to the BOM here makes the two files agree by construction, rather than
+    relying on both checkboxes being set on every mounting hole, test point
+    and hand-fitted connector.
+
+    Per-part corrections from profile.pos_shift_fields / pos_rotate_field are
+    applied on the way out. Both are stated the way KiCad states them, so a
+    correction can be read straight off the board editor: shifts are in board
+    coordinates (+Y is down the screen, which this negates on the way into the
+    CSV), and the rotation is a delta added to KiCad's, so it describes the
+    fab's model rather than one placement and survives the part being
+    moved or re-rotated."""
+    corrections = read_placement_corrections(kicad_cli, project, profile)
     with tempfile.TemporaryDirectory() as tmp:
         raw = Path(tmp) / "pos.csv"
         run([kicad_cli, "pcb", "export", "pos", "-o", str(raw),
@@ -461,25 +567,72 @@ def export_positions(kicad_cli: str, project: Project, profile: FabProfile,
                 f"kicad-cli pos CSV lacks expected columns {missing}; "
                 f"got {list(rows[0])}. Update profile.pos_columns to match."
             )
+    ref_src = profile.pos_columns["Designator"]
+    placed = {row[ref_src] for row in rows}
+    applied: set[str] = set()
     with out_csv.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(profile.pos_columns.keys())
         for row in rows:
+            ref = row[ref_src]
+            if assembled is not None and ref not in assembled:
+                continue
+            if ref in corrections:
+                dx, dy, drot = corrections[ref]
+                row[POS_SRC_X] = f"{float(row[POS_SRC_X]) + dx:.6f}"
+                # Corrections are stated in KiCad's board coordinates, where Y
+                # grows downward; kicad-cli emits Y negated, so it subtracts.
+                row[POS_SRC_Y] = f"{float(row[POS_SRC_Y]) - dy:.6f}"
+                row[POS_SRC_ROT] = f"{(float(row[POS_SRC_ROT]) + drot) % 360:.6f}"
+                applied.add(ref)
             record = [row[src] for src in profile.pos_columns.values()]
             side_index = list(profile.pos_columns).index("Layer")
             record[side_index] = profile.pos_side_names.get(
                 record[side_index].lower(), record[side_index])
             writer.writerow(record)
+    # A correction that never reached a row is worse than no correction: the
+    # schematic says the part is being fixed up and nothing happens. Usually a
+    # typo'd designator, or a field set on a part the CPL excludes.
+    unused = sorted(set(corrections) - applied)
+    if unused:
+        raise ReleaseError(
+            f"placement corrections set on {', '.join(unused)} were never "
+            "applied: those designators are not in the placement file."
+        )
+    # The reverse mismatch is the dangerous one: a part the BOM offers with no
+    # placement row is silently left unassembled rather than warned about.
+    if assembled is not None:
+        orphans = sorted(assembled - placed)
+        if orphans:
+            raise ReleaseError(
+                "BOM lists parts with no placement row: "
+                f"{', '.join(orphans)}. They are in the BOM but excluded from "
+                "position files, so the assembler cannot place them."
+            )
 
 
-def export_bom(kicad_cli: str, project: Project, profile: FabProfile, out_csv: Path) -> None:
+def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
+               out_csv: Path) -> set[str]:
     """Export the BOM in the fab's column format.
 
     One row per part type. The part-number column tries
     profile.bom_part_fields in order and keeps the first non-empty value.
     The part fields are included in the grouping so parts that differ only
-    in part number stay on separate rows."""
+    in part number stay on separate rows.
+
+    The comment column works the same way from profile.bom_comment_fields.
+    It matters only on rows the fab cannot resolve automatically -- those are
+    matched by hand, and the comment is the only search key the operator
+    sees, so a generic library symbol name there ("Q_Dual_PMOS_...") wastes
+    the one chance to identify the part.
+
+    Returns every designator the BOM offers, which export_positions uses to
+    hold the placement file to the same set."""
     part_fields = list(profile.bom_part_fields)
+    comment_fields = list(profile.bom_comment_fields)
+    # Value is always exported (it is the fallback for both columns); the
+    # rest are whatever the two priority lists between them ask for.
+    extra = [f for f in dict.fromkeys(part_fields + comment_fields) if f != "Value"]
     run(
         [
             kicad_cli,
@@ -489,11 +642,11 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile, out_csv: P
             "-o",
             str(out_csv),
             "--fields",
-            ",".join(["Value", "Reference", "Footprint"] + part_fields),
+            ",".join(["Value", "Reference", "Footprint"] + extra),
             "--labels",
-            ",".join(["Comment", "Designator", "Footprint"] + part_fields),
+            ",".join(["Comment", "Designator", "Footprint"] + extra),
             "--group-by",
-            ",".join(["Value", "Footprint"] + part_fields),
+            ",".join(["Value", "Footprint"] + extra),
             "--exclude-dnp",
             # Spell every reference out. kicad-cli defaults to collapsing
             # runs into ranges ("C1-C3"), which an assembly house reads as
@@ -506,16 +659,34 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile, out_csv: P
     )
     rows = list(csv.reader(out_csv.open(encoding="utf-8")))
     header, body = rows[0], rows[1:]
-    part_cols = [header.index(f) for f in part_fields]
+    # "Value" is exported under the label "Comment", so it is column 0.
+    col = {"Value": 0}
+    col.update({f: header.index(f) for f in extra})
     fp_col = header.index("Footprint")
     out_rows = [["Comment", "Designator", "Footprint", profile.bom_part_label]]
     for row in body:
         if profile.bom_strip_lib_prefix:
             row[fp_col] = row[fp_col].split(":")[-1]
-        part = next((row[c] for c in part_cols if row[c].strip()), "")
-        out_rows.append([row[0], row[1], row[fp_col], part])
+
+        def first(fields, _row=row):
+            return next((_row[col[f]] for f in fields
+                         if f in col and _row[col[f]].strip()), "")
+
+        # Grouping keys include Value and the part fields, so every designator
+        # on a row is the same part type and the first one's prefix speaks for
+        # all of them.
+        prefix = re.match(r"[A-Za-z]+", row[1].split(",")[0].strip())
+        if prefix and prefix.group(0) in profile.bom_value_prefixes:
+            comment = row[col["Value"]].strip() or first(comment_fields)
+        else:
+            comment = first(comment_fields)
+        out_rows.append([comment, row[1], row[fp_col], first(part_fields)])
     with out_csv.open("w", newline="", encoding="utf-8") as f:
         csv.writer(f).writerows(out_rows)
+    # One BOM row carries many designators; --ref-range-delimiter "" above
+    # guarantees they are spelled out rather than collapsed into ranges.
+    return {ref.strip() for row in out_rows[1:]
+            for ref in row[1].split(",") if ref.strip()}
 
 
 def make_zip(gerber_dir: Path, zip_path: Path) -> None:
@@ -595,6 +766,7 @@ def release(kicad_cli: str, project: Project, profile: FabProfile,
         shutil.rmtree(out_dir)  # same-commit re-release: rebuild from scratch
     out_dir.mkdir(parents=True)
 
+    assembled: set[str] = set()
     steps = [
         ("ERC", lambda: gate_erc(kicad_cli, project, out_dir / "erc.rpt")),
         (
@@ -605,15 +777,19 @@ def release(kicad_cli: str, project: Project, profile: FabProfile,
             "gerbers + drill",
             lambda: export_gerbers_and_drill(kicad_cli, project, profile, gerber_dir),
         ),
+        # The BOM runs first: it decides which designators are offered for
+        # assembly, and the placement file is then held to that same set.
         (
-            "positions.csv",
-            lambda: export_positions(
-                kicad_cli, project, profile, out_dir / "positions.csv"
+            "bom.csv",
+            lambda: assembled.update(
+                export_bom(kicad_cli, project, profile, out_dir / "bom.csv")
             ),
         ),
         (
-            "bom.csv",
-            lambda: export_bom(kicad_cli, project, profile, out_dir / "bom.csv"),
+            "positions.csv",
+            lambda: export_positions(
+                kicad_cli, project, profile, out_dir / "positions.csv", assembled
+            ),
         ),
         (
             "zip",

@@ -94,7 +94,6 @@
 		)
 		(capping no)
 		(filling no)
-		(zone_defaults)
 		(pcbplotparams
 			(layerselection 0x00000000_00000000_55555555_5755f5ff)
 			(plot_on_all_layers_selection 0x00000000_00000000_00000000_00000000)
@@ -696,6 +695,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e1a0195a-4ec6-4497-90aa-f3cf94bacf2c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "shift_x" "0.95mm"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dbb509d6-bb3b-49c5-97a8-f10ece99cecf")
 			(effects
 				(font
 					(size 1 1)
@@ -1515,6 +1527,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "24b9b70e-a66f-47fa-bd38-1e12420f91d8")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "rotate" "270"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3cd83286-bece-48eb-888c-11e6803a00e6")
 			(effects
 				(font
 					(size 1 1)
@@ -3608,6 +3633,19 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4cf8d88-7b2b-4e8e-a6c6-fd6d9c4731b7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "*RNM0015A*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/a87f42af-5400-4b4f-b871-8fce7955c959")
 		(sheetname "/3v3/")
@@ -5150,6 +5188,19 @@
 				)
 			)
 		)
+		(property "rotate" "180"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b5eafbcc-19c8-4186-830c-3850dc076056")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/c927658a-6f64-4dc0-acaa-97a85f65f472")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
@@ -6639,6 +6690,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "208385ad-08ea-475b-b32d-582dcac93f1f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "rotate" "270"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "53856d3f-568d-47c6-aa73-d24e2bbd744e")
 			(effects
 				(font
 					(size 1 1)
@@ -8610,6 +8674,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "73eb1634-a9fb-453e-a9ee-b434d92061e9")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "rotate" "270"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9e714323-f190-4094-a215-53b2b58a861f")
 			(effects
 				(font
 					(size 1 1)
@@ -11656,6 +11733,19 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ed30a9bd-4a0c-4700-82f2-988cd46b7d71")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/fa2e4221-dab8-4d23-8015-2592da1dbf1d")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
@@ -12034,6 +12124,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "2b1ea949-313a-4a1b-9a26-64b4e631aaff")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "shift_y" "-3.7mm"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "822e379b-10a0-407d-99e9-7eccaecd813e")
 			(effects
 				(font
 					(size 1 1)
@@ -13267,7 +13370,7 @@
 		(at 106.12 87.2 90)
 		(descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x04 2.54mm single row")
-		(property "Reference" "J131"
+		(property "Reference" "J6"
 			(at 0 -2.38 90)
 			(layer "F.SilkS")
 			(hide yes)
@@ -13348,7 +13451,7 @@
 				(pins "1" "2" "3" "4")
 			)
 		)
-		(attr through_hole)
+		(attr through_hole exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.38 -1.38)
@@ -17358,6 +17461,45 @@
 				)
 			)
 		)
+		(property "MFG Part No" "74LVC1G17"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "89df42fc-d3e4-4044-a583-8d389f0431fe")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ef9375c9-2897-4b40-90a2-4377854659a6")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "rotate" "270"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a2c876c1-93a6-4f73-a698-aa1eeccb1929")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOT?23* SOT?553* Texas?R-PDSO-G5?DCK* Texas?R-PDSO-N5?DRL* Texas?X2SON*0.8x0.8mm*P0.48mm*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/82a3ec61-3985-4f4b-ad9b-7ad64d2dd31e")
 		(sheetname "/mcu/")
@@ -20615,6 +20757,19 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a71adfa8-1eb9-4fd1-a303-6a7f94641cf4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOT?23*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/b77f3a2e-3ff6-4452-aedb-d29c0bcb9a4e")
 		(sheetname "/usb/")
@@ -22531,7 +22686,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" ""
+		(property "MFG Part No" "74LVC1G17"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -22550,6 +22705,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "206b7fd1-cf56-49ee-91e5-4bdd691fd6e2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "rotate" "270"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aeb5940e-640b-4cf1-923d-99fead8a6fd5")
 			(effects
 				(font
 					(size 1 1)
@@ -22947,7 +23115,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" ""
+		(property "MFG Part No" "S6B-XH-A"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -28330,6 +28498,30 @@
 		(uuid "edf0f4f5-32da-408d-82e8-d1dfc597c98e")
 	)
 	(segment
+		(start 124.728939 65.671061)
+		(end 125.55 64.85)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{BUS}")
+		(uuid "27db259a-ef4e-4a60-b8be-8a00ae446aa2")
+	)
+	(segment
+		(start 125.55 64.85)
+		(end 126.6625 64.85)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{BUS}")
+		(uuid "46c1cc5e-6ebb-4725-ad9f-a1c5b89b5ddf")
+	)
+	(segment
+		(start 124.728939 67.09)
+		(end 124.728939 65.671061)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{BUS}")
+		(uuid "c8893aac-eb6b-482f-a65e-a1223d756d7a")
+	)
+	(segment
 		(start 127.899997 92.400003)
 		(end 127.9 92.4)
 		(width 0.2)
@@ -29682,6 +29874,94 @@
 		(layer "F.Cu")
 		(net "Net-(D105-A)")
 		(uuid "edb65a85-ee69-4f8e-8497-bf2b44baeee4")
+	)
+	(segment
+		(start 126.028939 70.8)
+		(end 126.028939 71.462499)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "183313bf-0442-4c48-b4f4-e5b7cbb909c0")
+	)
+	(segment
+		(start 126.47894 71.9125)
+		(end 127.381623 71.9125)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "49b31086-cc21-471d-a928-f12d2f7bdbe5")
+	)
+	(segment
+		(start 126.028939 71.462499)
+		(end 126.47894 71.9125)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "905a104f-6b1a-4e4f-af7a-3d1eea76f232")
+	)
+	(segment
+		(start 127.928939 71.365184)
+		(end 127.928939 70.8)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "c147b055-218c-423f-af21-73d40cc91e0b")
+	)
+	(segment
+		(start 129.4 67.91)
+		(end 129.4 68.6)
+		(width 0.2)
+		(layer "F.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "d10d73a4-56ea-46ad-a530-3581995acdae")
+	)
+	(segment
+		(start 127.381623 71.9125)
+		(end 127.928939 71.365184)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "fe88bc98-ad5c-43a0-81c2-a3ef145111b3")
+	)
+	(via
+		(at 129.4 68.6)
+		(size 0.6)
+		(drill 0.3)
+		(layers "F.Cu" "B.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "34ed97af-6560-4213-aef7-cd0861723845")
+	)
+	(via
+		(at 127.928939 70.8)
+		(size 0.6)
+		(drill 0.3)
+		(layers "F.Cu" "B.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "fc271b04-36dd-4ddd-a5e2-c9939b971d34")
+	)
+	(segment
+		(start 127.928939 70.8)
+		(end 129.4 69.32894)
+		(width 0.2)
+		(layer "B.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "177e9ea8-400d-4c8d-a0d1-71387f622b29")
+	)
+	(segment
+		(start 129.4 69.32894)
+		(end 129.4 68.6)
+		(width 0.2)
+		(layer "B.Cu")
+		(net "/3v3/G_{UART}")
+		(uuid "9d8ac516-d9c0-467e-b0f2-acc64cf5c903")
+	)
+	(segment
+		(start 126.978939 70.8)
+		(end 126.978939 68.525)
+		(width 0.5)
+		(layer "F.Cu")
+		(net "/3v3/S_{UART}")
+		(uuid "8a11ea09-7830-4803-a2ab-9ec125d4b9c7")
 	)
 	(segment
 		(start 157.634744 105.4)
@@ -31316,118 +31596,6 @@
 		(layer "F.Cu")
 		(net "Net-(D3-A)")
 		(uuid "fe68de25-0460-470c-8fb2-82b547bb40c6")
-	)
-	(segment
-		(start 126.978939 70.8)
-		(end 126.978939 68.525)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/S_{UART}")
-		(uuid "8a11ea09-7830-4803-a2ab-9ec125d4b9c7")
-	)
-	(segment
-		(start 126.028939 70.8)
-		(end 126.028939 71.462499)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "183313bf-0442-4c48-b4f4-e5b7cbb909c0")
-	)
-	(segment
-		(start 126.47894 71.9125)
-		(end 127.381623 71.9125)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "49b31086-cc21-471d-a928-f12d2f7bdbe5")
-	)
-	(segment
-		(start 126.028939 71.462499)
-		(end 126.47894 71.9125)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "905a104f-6b1a-4e4f-af7a-3d1eea76f232")
-	)
-	(segment
-		(start 127.928939 71.365184)
-		(end 127.928939 70.8)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "c147b055-218c-423f-af21-73d40cc91e0b")
-	)
-	(segment
-		(start 129.4 67.91)
-		(end 129.4 68.6)
-		(width 0.2)
-		(layer "F.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "d10d73a4-56ea-46ad-a530-3581995acdae")
-	)
-	(segment
-		(start 127.381623 71.9125)
-		(end 127.928939 71.365184)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "fe88bc98-ad5c-43a0-81c2-a3ef145111b3")
-	)
-	(via
-		(at 129.4 68.6)
-		(size 0.6)
-		(drill 0.3)
-		(layers "F.Cu" "B.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "34ed97af-6560-4213-aef7-cd0861723845")
-	)
-	(via
-		(at 127.928939 70.8)
-		(size 0.6)
-		(drill 0.3)
-		(layers "F.Cu" "B.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "fc271b04-36dd-4ddd-a5e2-c9939b971d34")
-	)
-	(segment
-		(start 127.928939 70.8)
-		(end 129.4 69.32894)
-		(width 0.2)
-		(layer "B.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "177e9ea8-400d-4c8d-a0d1-71387f622b29")
-	)
-	(segment
-		(start 129.4 69.32894)
-		(end 129.4 68.6)
-		(width 0.2)
-		(layer "B.Cu")
-		(net "/3v3/G_{UART}")
-		(uuid "9d8ac516-d9c0-467e-b0f2-acc64cf5c903")
-	)
-	(segment
-		(start 124.728939 65.671061)
-		(end 125.55 64.85)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{BUS}")
-		(uuid "27db259a-ef4e-4a60-b8be-8a00ae446aa2")
-	)
-	(segment
-		(start 125.55 64.85)
-		(end 126.6625 64.85)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{BUS}")
-		(uuid "46c1cc5e-6ebb-4725-ad9f-a1c5b89b5ddf")
-	)
-	(segment
-		(start 124.728939 67.09)
-		(end 124.728939 65.671061)
-		(width 0.5)
-		(layer "F.Cu")
-		(net "/3v3/G_{BUS}")
-		(uuid "c8893aac-eb6b-482f-a65e-a1223d756d7a")
 	)
 	(zone
 		(net "/5v/SW_{5V}")

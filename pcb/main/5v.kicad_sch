@@ -2102,6 +2102,17 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 68.58 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "8"
 			(uuid "5af5f303-0aa4-4fa1-a832-c1ca1cbfa4e6")
 		)

@@ -6668,6 +6668,17 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 144.78 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "6"
 			(uuid "6a8b52ce-704e-46a9-bc22-0103423e3b0a")
 		)
@@ -6801,6 +6812,17 @@
 			)
 		)
 		(property "LCSC" "C241767"
+			(at 92.71 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "rotate" "270"
 			(at 92.71 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -7223,6 +7245,17 @@
 			)
 		)
 		(property "LCSC" "C412516"
+			(at 92.71 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "rotate" "180"
 			(at 92.71 96.52 0)
 			(hide yes)
 			(show_name no)
@@ -7720,23 +7753,34 @@
 				)
 			)
 		)
+		(property "rotate" "270"
+			(at 92.71 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
-			(uuid "4eca4026-ed4d-4746-afa2-8f31e92ea078")
+			(uuid "4eca4026-ed4d-4746-afa2-8f31e92ea079")
 		)
 		(pin "3"
-			(uuid "e086147e-2f13-4971-b11a-5d7e84c49bb3")
+			(uuid "e086147e-2f13-4971-b11a-5d7e84c49bb4")
 		)
 		(pin "4"
-			(uuid "8393be91-e65c-4f54-b650-e0d13b284af0")
+			(uuid "8393be91-e65c-4f54-b650-e0d13b284af1")
 		)
 		(pin "6"
-			(uuid "c3f43f3c-6236-4b7a-b9d9-1f32ba0cff47")
+			(uuid "c3f43f3c-6236-4b7a-b9d9-1f32ba0cff48")
 		)
 		(pin "1"
-			(uuid "3ec73bfc-6bd3-41b6-8513-21eeecd2248e")
+			(uuid "3ec73bfc-6bd3-41b6-8513-21eeecd2248f")
 		)
 		(pin "5"
-			(uuid "abd2ecce-cc55-4098-9aa3-dd9120985a03")
+			(uuid "abd2ecce-cc55-4098-9aa3-dd9120985a04")
 		)
 		(instances
 			(project "main"
