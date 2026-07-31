@@ -1178,6 +1178,7 @@
 		(path "/ccad4512-350f-4285-8425-e86a3ce6e773")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.91 1.28)
@@ -3775,6 +3776,7 @@
 		(path "/dcc60878-255d-482f-b394-1e952e7ff24e")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
+		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -2.55 -1.65)
