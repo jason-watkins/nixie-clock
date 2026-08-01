@@ -1261,7 +1261,12 @@ def alternate_records(project: Project, profile: FabProfile,
     is already on the order. That doubles as the check on this whole
     construction: if the code for the fitted value did not rebuild its actual
     part number, every alternate built from the same prefix would be wrong
-    too, so it fails here rather than on the order."""
+    too, so it fails here rather than on the order.
+
+    The match is exact, including case. A miscased multiplier letter is
+    reported as its own error rather than waved through, because the
+    alternates are built canonically and would otherwise ship in a different
+    style from the part they were derived from."""
     extra: list[dict[str, str]] = []
     for kit in SELECTION_KITS:
         if kit.board != project.name:
@@ -1273,15 +1278,32 @@ def alternate_records(project: Project, profile: FabProfile,
                 f"which is not on the BOM"
             )
         candidates = kit_candidates(kit)
+        part = fitted["part"]
         matched = [ohms for ohms in candidates
-                   if fitted["part"].endswith("-" + yageo_code(ohms))]
+                   if part.endswith("-" + yageo_code(ohms))]
         if len(matched) != 1:
+            # A resistance code's only letter is its multiplier, and the
+            # catalogue writes it uppercase. Miscased, it still names the
+            # right part to a human and to a distributor's search, so the
+            # generic "matches none of the candidates" reads as though the
+            # value were wrong and sends the fix in the wrong direction.
+            miscased = [ohms for ohms in candidates
+                        if part.upper().endswith("-" + yageo_code(ohms))]
+            if len(miscased) == 1:
+                code = yageo_code(miscased[0])
+                raise ReleaseError(
+                    f"{kit.fitted} on board {kit.board!r} is {part!r}, which is "
+                    f"{value_text(miscased[0])} with a lowercase multiplier "
+                    f"letter.\nThe catalogue writes it {code!r}: set 'MFG Part "
+                    f"No' to {part[:-len(code)] + code!r}."
+                )
+            tried = ", ".join(f"{value_text(o)} ({yageo_code(o)})" for o in candidates)
             raise ReleaseError(
-                f"{kit.fitted} on board {kit.board!r} is {fitted['part']!r}, which "
-                f"matches {len(matched)} of the {kit.label} candidates "
-                f"({', '.join(value_text(o) for o in candidates)}).\n"
+                f"{kit.fitted} on board {kit.board!r} is {part!r}, whose part "
+                f"number matches {len(matched)} of the {kit.label} candidates.\n"
+                f"Tried: {tried}.\n"
                 "The fitted part must be one of them, so the alternates can copy "
-                "its series."
+                "its series and packaging."
             )
         prefix = fitted["part"][: -len(yageo_code(matched[0]))]
         for ohms in candidates:
