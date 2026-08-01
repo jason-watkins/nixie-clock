@@ -13122,7 +13122,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8.25k"
+		(property "Value" "9.09k"
 			(at 165.1 80.0099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13166,7 +13166,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FBF52-8K25"
+		(property "MFG Part No" "MFR-25FBF52-9k09"
 			(at 162.56 78.74 0)
 			(hide yes)
 			(show_name no)

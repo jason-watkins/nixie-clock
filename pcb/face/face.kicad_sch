@@ -8055,7 +8055,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8.2k"
+		(property "Value" "7.5k"
 			(at 193.04 38.0999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8099,7 +8099,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FTE52-8K2"
+		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 190.5 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -8227,7 +8227,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8.2k"
+		(property "Value" "7.5k"
 			(at 104.14 39.3699 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8271,7 +8271,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FTE52-8K2"
+		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 101.6 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -8512,7 +8512,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8.2k"
+		(property "Value" "7.5k"
 			(at 193.04 88.8999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8556,7 +8556,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FTE52-8K2"
+		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 190.5 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -8884,7 +8884,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8.2k"
+		(property "Value" "7.5k"
 			(at 104.14 88.8999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8928,7 +8928,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "MFR-25FTE52-8K2"
+		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 101.6 87.63 0)
 			(hide yes)
 			(show_name no)

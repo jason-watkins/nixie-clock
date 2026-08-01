@@ -113,6 +113,11 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
+# Sibling script, importable because this one runs out of scripts/. It owns
+# the ballast and divider design space; the parts order offers every value it
+# reports so a build can be tuned without a second order.
+import ballast_trim_sweep
+
 
 class ReleaseError(Exception):
     """An unmet release requirement."""
@@ -157,6 +162,10 @@ class FabProfile:
                        or () for a fab that procures the parts itself. This
                        file stays out of the gerber archive: it is for the
                        distributor, not the fab.
+        include_alternates: Append SELECTION_KITS values the board is not
+                       built with. True for a shopping list, false for a
+                       consignment manifest -- the parts shipped to an
+                       assembly house must be only the parts it places.
         board_qty:     Boards per order, the quantity the parts-order BOM
                        multiplies by. The fab's usual minimum unless there
                        is a reason to build more.
@@ -196,6 +205,7 @@ class FabProfile:
     bom_value_prefixes: tuple[str, ...]
     bom_columns: tuple[tuple[str, str], ...]
     purchase_columns: tuple[tuple[str, str], ...]
+    include_alternates: bool
     board_qty: int
     overage_rules: tuple[tuple[str, int], ...]
     overage_default: int
@@ -272,6 +282,7 @@ JLCPCB = FabProfile(
     # Turnkey: JLC buys the parts, so there is nothing to order separately
     # and no overage to carry.
     purchase_columns=(),
+    include_alternates=False,
     board_qty=5,
     overage_rules=(),
     overage_default=0,
@@ -344,6 +355,9 @@ PCBUNLIMITED = FabProfile(
         ("Per Board", "quantity"),
         ("Reference Designators", "designator"),
     ),
+    # This file is the kit shipped to them. An alternate ballast is a part
+    # they have no placement for, and a loose part in a kit is a question.
+    include_alternates=False,
     # Their stated minimum on the assembly quote form.
     board_qty=4,
     # "Extra parts will be required on small builds (1 to 25 boards) as
@@ -424,6 +438,7 @@ PCBWAY = FabProfile(
         ("Type (Surface mount, Thru-hole or Hybrid)", "type"),
     ),
     purchase_columns=(),
+    include_alternates=False,
     # Their quantity ladder for assembly starts at 5.
     board_qty=5,
     overage_rules=(),
@@ -477,6 +492,8 @@ DIGIKEY = FabProfile(
         ("Description", "comment"),
         ("Package", "footprint"),
     ),
+    # The shopping list, so it carries the values still to be chosen between.
+    include_alternates=True,
     # One board's worth, with no spares. Multiplying for a build and padding
     # for attrition are both things their site does after upload, and doing
     # either here would fight it.
@@ -675,7 +692,10 @@ def export_sources(project: Project) -> list[Path]:
     root = project.root.resolve()
     found = [project.pro.parent.resolve(),
              (root / SHARED_LIB_DIR).resolve(),
-             Path(__file__).resolve()]
+             Path(__file__).resolve(),
+             # Imported to compute the parts order's alternate values, so its
+             # content reaches the outputs exactly as this script's does.
+             Path(ballast_trim_sweep.__file__).resolve()]
     return [p for p in found if p.exists() and _within(p, root)]
 
 
@@ -1164,6 +1184,126 @@ def overage(profile: FabProfile, footprint: str) -> int:
     return profile.overage_default
 
 
+def yageo_code(ohms: float) -> str:
+    """Yageo's through-hole resistance code, where the multiplier letter
+    stands in for the decimal point: 8.2k -> 8K2, 9.09k -> 9K09, 10k -> 10K,
+    82 ohm -> 82R. Significant figures follow the value, so an E24 part gets
+    a two-digit code and an E96 part a three-digit one, which is what the
+    catalogue does."""
+    for limit, unit in ((1e6, "M"), (1e3, "K"), (1.0, "R")):
+        if ohms >= limit:
+            whole, _, frac = f"{ohms / limit:.10g}".partition(".")
+            return f"{whole}{unit}{frac}"
+    raise ReleaseError(f"resistance {ohms} is below 1 ohm; no code for it")
+
+
+def value_text(ohms: float) -> str:
+    """The value as a schematic would write it: 7500 -> '7.5k'."""
+    for limit, unit in ((1e6, "M"), (1e3, "k"), (1.0, "")):
+        if ohms >= limit:
+            return f"{ohms / limit:g}{unit}"
+    return f"{ohms:g}"
+
+
+@dataclass(frozen=True)
+class SelectionKit:
+    """Values a board can be tuned to, beyond the one it is built with.
+
+    The ballast sets digit current and the divider sets the rail that feeds
+    it; both are chosen against real tubes, whose maintaining voltage the
+    datasheets do not bound. Ordering the whole candidate set with the build
+    turns that choice into a swap on the bench instead of a second order and
+    a week's wait.
+
+    These reach the parts order only. An assembly house is never handed a
+    part it is not meant to place.
+
+    Attributes:
+        board:      Board whose parts order gains the alternates.
+        fitted:     Designator already carrying one of the candidate values.
+                    Its part number and package are the pattern the rest are
+                    built from, so the alternates match what was specified
+                    rather than a series named twice.
+        column:     ballast_trim_sweep.build_table() key holding the values.
+        per_board:  Pieces one board takes of whichever value wins.
+        label:      What the row is, for the reference column.
+    """
+
+    board: str
+    fitted: str
+    column: str
+    per_board: int
+    label: str
+
+
+SELECTION_KITS = (
+    SelectionKit(board="face", fitted="R1", column="r_a", per_board=4,
+                 label="digit ballast"),
+    SelectionKit(board="hv", fitted="R13", column="r205", per_board=1,
+                 label="feedback divider"),
+)
+
+
+def kit_candidates(kit: SelectionKit) -> list[int]:
+    """The kit's distinct values in ohms, ascending. Several table rows can
+    name one value -- two ballasts may share a divider -- so this dedupes."""
+    table = ballast_trim_sweep.build_table()
+    return sorted({round(row[kit.column] * 1000) for row in table})
+
+
+def alternate_records(project: Project, profile: FabProfile,
+                      records: list[dict[str, str]],
+                      start_line: int) -> list[dict[str, str]]:
+    """Parts-order rows for the values a board is not built with.
+
+    The fitted part's number is decomposed by finding which candidate's code
+    it ends with, which pins down both the series prefix and the value that
+    is already on the order. That doubles as the check on this whole
+    construction: if the code for the fitted value did not rebuild its actual
+    part number, every alternate built from the same prefix would be wrong
+    too, so it fails here rather than on the order."""
+    extra: list[dict[str, str]] = []
+    for kit in SELECTION_KITS:
+        if kit.board != project.name:
+            continue
+        fitted = next((r for r in records if kit.fitted in _refs(r["designator"])), None)
+        if fitted is None:
+            raise ReleaseError(
+                f"selection kit for board {kit.board!r} names {kit.fitted}, "
+                f"which is not on the BOM"
+            )
+        candidates = kit_candidates(kit)
+        matched = [ohms for ohms in candidates
+                   if fitted["part"].endswith("-" + yageo_code(ohms))]
+        if len(matched) != 1:
+            raise ReleaseError(
+                f"{kit.fitted} on board {kit.board!r} is {fitted['part']!r}, which "
+                f"matches {len(matched)} of the {kit.label} candidates "
+                f"({', '.join(value_text(o) for o in candidates)}).\n"
+                "The fitted part must be one of them, so the alternates can copy "
+                "its series."
+            )
+        prefix = fitted["part"][: -len(yageo_code(matched[0]))]
+        for ohms in candidates:
+            if ohms == matched[0]:
+                continue  # already on the order, as the part actually fitted
+            value = value_text(ohms)
+            extra.append({
+                "line": str(start_line + len(extra)),
+                "comment": value,
+                "designator": f"alt {kit.fitted} {value}",
+                "footprint": fitted["footprint"],
+                "part": prefix + yageo_code(ohms),
+                "quantity": str(kit.per_board),
+                "description": f"{kit.label} candidate, {value}; not fitted, "
+                               f"ordered for bench selection",
+                "type": fitted["type"],
+                "order_qty": str(kit.per_board * profile.board_qty
+                                 + overage(profile, fitted["footprint"])),
+            })
+    return extra
+
+
 def _refs(cell: str) -> list[str]:
     """Split a BOM row's designator cell. One row carries many designators;
     --ref-range-delimiter "" in export_bom guarantees they are spelled out
@@ -1307,7 +1447,14 @@ def export_bom(kicad_cli: str, project: Project, profile: FabProfile,
     if profile.bom_columns and out_csv is not None:
         _write_columns(out_csv, profile.bom_columns, records)
     if profile.purchase_columns and purchase_csv is not None:
-        _write_columns(purchase_csv, profile.purchase_columns, records)
+        # Alternates go on the parts order only, never into `records`: they
+        # have no designators, so they must not reach bom.csv, the returned
+        # designator set, or the placement file held against it.
+        ordered = records + (
+            alternate_records(project, profile, records, len(records) + 1)
+            if profile.include_alternates else []
+        )
+        _write_columns(purchase_csv, profile.purchase_columns, ordered)
     return {ref for record in records for ref in _refs(record["designator"])}
 
 
