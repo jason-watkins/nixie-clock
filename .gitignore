@@ -22,6 +22,10 @@ _autosave-*
 # --- Per-user local project state (window/display prefs, not design data) ---
 *.kicad_prl
 
+# --- KiCad board geometry exported for the CAD assembly ---
+# Regenerate with the kicad-cli line in cad/test_base/base_plate.py
+cad/**/boards/
+
 # --- Caches (regenerated automatically) ---
 fp-info-cache
 *-cache.lib
@@ -59,3 +63,5 @@ docs/design_analysis/**/*.xdv
 docs/design_analysis/**/*.pdf
 # ...but figures/ holds committed source artwork, not build output.
 !docs/design_analysis/figures/*.pdf
+
+.typings/

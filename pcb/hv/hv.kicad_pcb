@@ -133,7 +133,7 @@
 	)
 	(property "AUTHOR" "Jason Watkins")
 	(property "REV" "C")
-	(property "STEP" "1")
+	(property "STEP" "3")
 	(property "TITLE" "170V Flyback Converter")
 	(footprint "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal"
 		(layer "F.Cu")
@@ -392,6 +392,17 @@
 			(at 5.47 0 270)
 			(layer "F.Fab")
 			(uuid "191d0d64-8137-4536-8c3c-8d925d29ac0a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(fp_text user "K"
+			(at 0 -2.1 270)
+			(layer "F.Fab")
+			(uuid "dad9b7e2-ae88-4f0c-a757-cff0bb7c93a4")
 			(effects
 				(font
 					(size 1 1)
@@ -1521,6 +1532,17 @@
 			(fill no)
 			(layer "F.Fab")
 			(uuid "b56426fb-405a-45eb-9a9b-9dbe0158fa27")
+		)
+		(fp_text user "K"
+			(at 0 -1.8 270)
+			(layer "F.SilkS")
+			(uuid "a64cb1ef-88e0-4616-ac95-4d1e6cce467e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
 		)
 		(fp_text user "${REFERENCE}"
 			(at 4.11 0 90)
@@ -4426,6 +4448,17 @@
 				)
 			)
 		)
+		(fp_text user "K"
+			(at 0 -2.1 90)
+			(layer "F.Fab")
+			(uuid "8fba125f-72ae-49a0-93dc-5ddc8d146683")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(fp_text user "${REFERENCE}"
 			(at 4.2 0 90)
 			(layer "F.Fab")
@@ -4964,7 +4997,6 @@
 		(path "/c4a1f912-f0ea-43a0-8b42-d737d0fdcbf8")
 		(sheetname "/")
 		(sheetfile "hv.kicad_sch")
-		(zone_connect 2)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11805,6 +11837,17 @@
 			(fill no)
 			(layer "F.Fab")
 			(uuid "6171df87-efee-483a-b1e5-ea841bd3cb22")
+		)
+		(fp_text user "K"
+			(at 0 -2.1 90)
+			(layer "F.SilkS")
+			(uuid "bfed5852-158c-478e-9de1-9bb7d0d39195")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
 		)
 		(fp_text user "K"
 			(at 0 -2.1 90)

@@ -6,13 +6,17 @@
         "editor.formatOnType": false
     },
     "cSpell.words": [
+        "circumradius",
         "Coilcraft",
         "commoned",
+        "counterbore",
         "CYPD",
         "datasheet",
         "deglitch",
+        "dshapes",
         "derating",
         "excellon",
+        "freecadcmd",
         "gerbers",
         "Infineon",
         "ISNK",
@@ -21,6 +25,7 @@
         "kicad",
         "KOHM",
         "LCSC",
+        "LEADIN",
         "Mbps",
         "microamp",
         "microamps",
@@ -30,17 +35,31 @@
         "Netlist",
         "NPTH",
         "PGOOD",
+        "printability",
         "Protel",
         "ratiometrically",
         "respun",
         "soldermask",
+        "superellipse",
         "trimmable",
         "UART",
         "unpowered",
         "UVLO",
         "VBUS",
         "VCCD",
+        "vrml",
         "VDDD",
         "zener"
-    ]
+    ],
+    "python.analysis.stubPath": ".typings",
+    "python.analysis.extraPaths": [
+        "C:/Program Files/FreeCAD 1.1/bin",
+        "C:/Program Files/FreeCAD 1.1/lib",
+        "C:/Program Files/FreeCAD 1.1/Mod",
+        "C:/Program Files/FreeCAD 1.1/Mod/Part"
+    ],
+    "files.associations": {
+        "*.FCMacro": "python"
+    }
+
 }

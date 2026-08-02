@@ -54,7 +54,16 @@ concentric.
 - CYPD3176 symbol, pins arranged to match the datasheet's application figure
 - Kemet GoldMax radial dipped MLCC footprints: C315, C317, C320, C322, C330
   case sizes
-- Panasonic ECQ-E film capacitor footprint (7.9 x 5.9 mm, 5.0 mm pitch)
+- Panasonic ECQ-E film capacitor footprint (7.9 x 5.9 mm, 5.0 mm pitch), and
+  `ECQ-E.stp` with it. Panasonic's own model for ECQ-E2104KB is a plain box 14
+  mm tall, which is H max for the crimped lead form; this part has straight
+  leads and stands 9. The replacement is built in `cad/ecqe/ecqe2104kb.py` from
+  the three outlines on the catalogue drawing.
+- Bourns SRN5040TA inductor footprint, land pattern per the datasheet's
+  recommended layout, and `L_Bourns_SRN5040TA.step` with it. Bourns publish no
+  model; the part is built in `cad/srn5040/srn5040ta.py` from the dimensioned
+  terminal and envelope sizes, with the flange-and-waist profile taken off the
+  catalogue render.
 - DA2032-AL flyback transformer, land pattern from the Coilcraft drawing
 
 ## Imported from GrabCAD
@@ -62,5 +71,6 @@ concentric.
 - `INS1.STEP`, attached to the INS-1 footprint. Uploaded there in December
   2020 by Patrick Simon.
 
-Apart from the IN-12B tube and the INS-1 lamp, 3D models come from the part
-manufacturers (Kemet, Panasonic, TI, JAE, Coilcraft).
+Apart from the IN-12B tube, the INS-1 lamp, the ECQ-E capacitor and the
+SRN5040TA inductor, 3D models come from the part manufacturers (Kemet, TI, JAE,
+Coilcraft).

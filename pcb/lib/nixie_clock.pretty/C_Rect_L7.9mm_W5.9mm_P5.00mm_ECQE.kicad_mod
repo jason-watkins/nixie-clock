@@ -3,7 +3,7 @@
 	(generator "pcbnew")
 	(generator_version "9.0")
 	(layer "F.Cu")
-	(descr "Panasonic ECQ-E(B) metallized polyester box film cap, body 7.9x5.9mm, seated height 10.0mm, LS 5.0mm")
+	(descr "Panasonic ECQ-E(B) metallized polyester box film cap, body 7.9x5.9x9.0mm, seated height 10.0mm worst case, LS 5.0mm")
 	(tags "capacitor film box polyester ECQ-E")
 	(property "Reference" "REF**"
 		(at 0 -4.2 0)
@@ -78,7 +78,7 @@
 	(embedded_fonts no)
 	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/ECQ-E.stp"
 		(offset
-			(xyz -2.5 0 0.5)
+			(xyz -2.5 0 0)
 		)
 		(scale
 			(xyz 1 1 1)

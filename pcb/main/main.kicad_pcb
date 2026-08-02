@@ -133,7 +133,7 @@
 	)
 	(property "AUTHOR" "Jason Watkins")
 	(property "REV" "C")
-	(property "STEP" "1")
+	(property "STEP" "3")
 	(property "TITLE" "4 Digit Nixie Clock Controller")
 	(footprint "TestPoint:TestPoint_Pad_D1.0mm"
 		(layer "F.Cu")
@@ -220,12 +220,6 @@
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/d6f28e8f-62b4-468c-ba86-bffd487ec09a")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -325,6 +319,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25771"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "419a7460-a08c-4b50-99a7-7e3e6c722405")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF2702TCE"
 			(at 0 0 180)
 			(unlocked yes)
@@ -338,29 +345,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25771"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "419a7460-a08c-4b50-99a7-7e3e6c722405")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/d1f3a366-7e79-4f2d-8fc6-ebb0c8fc1b9b")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -500,6 +488,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "CL21A106KAYNNNE"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "34dd9c34-1a3f-4bd3-b93b-bd9d4545a986")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C15850"
 			(at 0 0 270)
 			(unlocked yes)
@@ -513,29 +514,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL21A106KAYNNNE"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "34dd9c34-1a3f-4bd3-b93b-bd9d4545a986")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/9f4125f1-8202-4abd-97f9-7b65ff9a70ce")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -720,15 +702,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/e9056b77-7d20-4b19-a1a0-548ec4b53f5a")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "SH" "A1" "A12" "B1" "B12" "A4" "A9" "B4" "B9" "A5" "B5" "A7" "B7"
-					"A6" "B6" "A8" "B8"
-				)
-			)
-		)
-		(zone_connect 1)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1158,6 +1131,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C1525"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1a5d9b05-04fe-4be3-ac16-92ac144bc2f5")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -1171,29 +1157,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C1525"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1a5d9b05-04fe-4be3-ac16-92ac144bc2f5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/672ce2ef-29ba-46c7-ac72-9f0cb2f4e88a")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1333,6 +1300,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C5672"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d789aae3-b32e-402a-a2f7-142b86140339")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL31A226KPHNNNE"
 			(at 0 0 270)
 			(unlocked yes)
@@ -1346,29 +1326,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C5672"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d789aae3-b32e-402a-a2f7-142b86140339")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/eb0a8595-77a5-46e5-8482-5351bd691b2f")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1509,6 +1470,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "package/gullwing"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "0fcd6d97-e70c-4cff-93ce-4abfeb334014")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "FDS4935A"
 			(at 0 0 90)
 			(unlocked yes)
@@ -1551,16 +1524,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/b57fc3cc-e3f2-4d9d-a205-1f884c3142e1")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "2" "7" "1" "8")
-			)
-			(unit
-				(name "B")
-				(pins "4" "5" "3" "6")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1956,12 +1919,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/622a9704-a0e9-46f0-ac7d-52047ddbb2c7")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -2061,7 +2018,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF2401TCE"
+		(property "KiLib_Generator" "0402WGF2401TCE"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2091,12 +2048,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/f6442852-9eb2-43ad-ab3b-149f1e777b5c")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2236,6 +2187,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "1753e63b-2d72-4009-8edd-36221084645b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -2266,12 +2229,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/ee69fa43-1cf3-4016-a2da-d43f1f462487")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2411,6 +2368,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25744"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f2e08f5d-2adb-4654-8419-86350fbd1642")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF1002TCE"
 			(at 0 0 180)
 			(unlocked yes)
@@ -2424,29 +2394,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "f2e08f5d-2adb-4654-8419-86350fbd1642")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/6aa31ff7-503f-4e27-aa62-83a1986af0a2")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2586,6 +2537,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25744"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "33ee3c6c-895d-478e-9739-bb3b2f61ab2a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF1002TCE"
 			(at 0 0 90)
 			(unlocked yes)
@@ -2599,29 +2563,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "33ee3c6c-895d-478e-9739-bb3b2f61ab2a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/0714cf33-1bcb-4aff-9491-4ab7e2daf7e3")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2761,6 +2706,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C52923"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "03b9961e-92a8-4ca1-829b-2e47bc8d59b4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05A105KA5NQNC"
 			(at 0 0 90)
 			(unlocked yes)
@@ -2774,29 +2732,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C52923"
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "03b9961e-92a8-4ca1-829b-2e47bc8d59b4")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/faa9ceb0-f454-4be1-963b-f3678c856672")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2936,6 +2875,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "Chosen with the expectation of above nominal derating in this application. Expect ~200nF actual capacitance"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "84aae83f-87a5-49d6-aea2-054c2734f462")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05A105KA5NQNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -2962,29 +2914,10 @@
 				)
 			)
 		)
-		(property "Note" "Chosen with the expectation of above nominal derating in this application. Expect ~200nF actual capacitance"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "84aae83f-87a5-49d6-aea2-054c2734f462")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/c9430b55-6f55-46bb-9454-7489129427c0")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3156,12 +3089,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/f9985b07-658b-48cc-8a1f-e0e5cf7dd53d")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3431,6 +3358,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C5672"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5bec91a6-a1c5-4952-a98e-9e8807728399")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL31A226KPHNNNE"
 			(at 0 0 270)
 			(unlocked yes)
@@ -3444,29 +3384,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C5672"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5bec91a6-a1c5-4952-a98e-9e8807728399")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/a83ed1d9-a578-4b5e-9374-fbed56e6c034")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3651,12 +3572,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/a87f42af-5400-4b4f-b871-8fce7955c959")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "11" "12" "13" "14" "1" "3" "15" "4" "10" "9" "7" "8" "5" "6" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -3981,7 +3896,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "KiLib_Generator" "C25744"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4011,12 +3926,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/b0755dc0-2337-465b-b8ce-dc25c86fdbd8")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4156,7 +4065,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1002TCE"
+		(property "KiLib_Generator" "0402WGF1002TCE"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4186,12 +4095,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/c0fb3ada-1b04-4ac0-80b9-22b429ced172")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4331,6 +4234,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "9bdd8dec-6a22-4654-9b5f-29302503a5a7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C93945"
 			(at 0 0 90)
 			(unlocked yes)
@@ -4361,12 +4276,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/0e726c7d-8cf8-4d36-905e-7f480d490a9c")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4507,6 +4416,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "405538eb-2d7d-4ce8-9fd3-8a7eb42168c1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -4537,12 +4458,6 @@
 		(path "/d6846f3d-b2a0-4ec4-b4f7-3af896914bae")
 		(sheetname "/")
 		(sheetfile "main.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -4640,6 +4555,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "240ac9d2-0145-450d-bacb-a847d801c249")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL10A106MA8NRNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -4670,12 +4597,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/2d136a9d-90e3-4a11-90de-65ed32bcf455")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4815,6 +4736,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "6ee085ed-8815-45a0-8480-cfb0adf241e2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 90)
 			(unlocked yes)
@@ -4845,12 +4778,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/bc9e3ccc-e99a-4580-be47-cb4fb0b6c374")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4990,6 +4917,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C96123"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4b4fc9d1-e535-4dca-aa7b-98284b2f85d6")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL31A476MPHNNNE"
 			(at 0 0 90)
 			(unlocked yes)
@@ -5003,29 +4943,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C96123"
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4b4fc9d1-e535-4dca-aa7b-98284b2f85d6")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/69638b3a-6f91-4213-a7c7-1d355cd193cc")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5163,6 +5084,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "package/gullwing"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "13aed914-febb-4bd0-8ad2-578d00130b91")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "DMP3099L-13"
 			(at 0 0 0)
 			(unlocked yes)
@@ -5205,12 +5138,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/c927658a-6f64-4dc0-acaa-97a85f65f472")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "3" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5606,12 +5533,6 @@
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/8d4753a5-049e-449e-8351-89c0140239ab")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -5743,12 +5664,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/4907314b-b7d2-4985-bbea-f04c7713e1d6")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -5892,12 +5807,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/db426c0c-eae7-46a4-8bae-07a42c7d404c")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "8" "7" "6" "9" "10" "5" "1" "2" "3" "4")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6209,6 +6118,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "connector/pin_header_socket"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "150ddee0-b28a-46f3-a845-eafec28c2fd3")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -6239,13 +6160,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/071bbf79-ffbd-4710-a9cb-9a4aa5565f8c")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6")
-			)
-		)
-		(zone_connect 1)
 		(attr through_hole exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6510,7 +6424,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25765"
+		(property "KiLib_Generator" "C25765"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6540,12 +6454,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/119e8690-e602-42d8-a7ff-fa725d5c736e")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6727,14 +6635,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/37c49545-e7af-4199-9b29-b6752ea6f8a8")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "18" "14" "15" "5" "6" "9" "24" "19" "22" "25" "17" "3" "16" "23"
-					"1" "4" "2" "11" "12" "13" "7" "10" "20" "21" "8"
-				)
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7463,6 +7363,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "a94a81a1-7641-4e59-bb97-22ea7abd64c0")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 0)
 			(unlocked yes)
@@ -7493,12 +7405,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/570f9b53-f8d4-475f-b7c0-c293cd4e9f81")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7670,12 +7576,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/939045d0-92a6-4c58-be83-a0831ac7ba6b")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7946,6 +7846,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ee84d667-0f21-48a2-bea8-3661a91ffb0d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -7976,12 +7888,6 @@
 		(path "/398ac55b-6285-431f-9caa-2d083b8e79f6")
 		(sheetname "/")
 		(sheetfile "main.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -8111,12 +8017,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/92d95ee6-c410-4816-85b9-94603c77c20f")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -8247,12 +8147,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/d5c5bfaa-3860-4d7b-b11a-b5c2f5c02ea0")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8490,6 +8384,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C52923"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4af5e016-66d7-4d06-874f-63ed9ca4e05e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05A105KA5NQNC"
 			(at 0 0 90)
 			(unlocked yes)
@@ -8503,29 +8410,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C52923"
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4af5e016-66d7-4d06-874f-63ed9ca4e05e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/756218d5-42d1-46e1-8c3a-fa78668d66fc")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8712,12 +8600,6 @@
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/1a796525-6192-4745-967d-4cdbc89983b9")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "6" "7" "8" "5" "4" "3" "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9008,7 +8890,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25082"
+		(property "KiLib_Generator" "C25082"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9038,12 +8920,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/adbef359-30e4-4bbe-9554-0e8815ba0012")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9183,6 +9059,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF5101TCE"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c1b35734-f776-4006-b781-e97fb006aad8")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C25905"
 			(at 0 0 180)
 			(unlocked yes)
@@ -9196,29 +9085,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF5101TCE"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c1b35734-f776-4006-b781-e97fb006aad8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/17b985c6-5669-45a3-942c-c7584bc66c01")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9358,6 +9228,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF1001TCE"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "07c262cf-d02d-45b4-86b4-269aeb94199e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C11702"
 			(at 0 0 180)
 			(unlocked yes)
@@ -9371,29 +9254,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1001TCE"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "07c262cf-d02d-45b4-86b4-269aeb94199e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/ed01f1f9-c92b-42a5-ba65-0bd5f9577f9e")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9533,7 +9397,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "KiLib_Generator" "C25744"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9563,12 +9427,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/58cfbcfb-574b-417d-b786-e9a00026bdf8")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9708,7 +9566,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25882"
+		(property "KiLib_Generator" "C25882"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9738,12 +9596,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/e075fefc-416e-4d17-b6af-217a8ceebe79")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9834,7 +9686,7 @@
 		(layer "F.Cu")
 		(uuid "715166ba-b069-459f-bd2d-af6b00174713")
 		(at 127.3 82.4 90)
-		(descr "Bourns SRN5040TA semi-shielded SMD power inductor, 4.95x4.95 mm body, 3.9 mm high for value codes R60M through 100M and 3.8 mm for 150M through 101K; land pattern per datasheet recommended layout, two 1.5x4.2 mm lands separated by 2.1 mm. 3D model is the Sunlord SWPA5040S body, a 5x5x4 mm envelope")
+		(descr "Bourns SRN5040TA semi-shielded SMD power inductor, 4.95x4.95 mm body, 3.9 mm high for value codes R60M through 100M and 3.8 mm for 150M through 101K; land pattern per datasheet recommended layout, two 1.5x4.2 mm lands separated by 2.1 mm")
 		(tags "inductor bourns srn 5040 smd semi-shielded")
 		(property "Reference" "L131"
 			(at 0 -3.45 90)
@@ -9915,12 +9767,6 @@
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/aa569c4d-a181-40eb-9820-6c734a0ae382")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9997,7 +9843,7 @@
 			(uuid "cbec9e8e-4dfc-4034-bde0-b22942486d98")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Sunlord_SWPA5040S.step"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/L_Bourns_SRN5040TA.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -10062,12 +9908,12 @@
 				)
 			)
 		)
-		(property "MFG Part No" "KT-0603R"
+		(property "KiLib_Generator" "C2286"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "3c6e7ea7-2253-4270-99e6-355e0c5693a8")
+			(uuid "e4baee8c-cbdd-4f11-a711-715735aa21f0")
 			(effects
 				(font
 					(size 1 1)
@@ -10075,12 +9921,12 @@
 				)
 			)
 		)
-		(property "LCSC" "C2286"
+		(property "MFG Part No" "KT-0603R"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "e4baee8c-cbdd-4f11-a711-715735aa21f0")
+			(uuid "3c6e7ea7-2253-4270-99e6-355e0c5693a8")
 			(effects
 				(font
 					(size 1 1)
@@ -10105,12 +9951,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/256a568c-48e6-477b-979c-5ee0070883ae")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10301,6 +10141,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "Chosen with the expectation of above nominal derating in this application. Expect ~200nF actual capacitance"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "069bcd44-6c3a-4b96-a580-f30f198da24f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05A105KA5NQNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -10327,29 +10180,10 @@
 				)
 			)
 		)
-		(property "Note" "Chosen with the expectation of above nominal derating in this application. Expect ~200nF actual capacitance"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "069bcd44-6c3a-4b96-a580-f30f198da24f")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/8a74d071-b814-4c72-855c-fb3e9a236cc2")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10520,12 +10354,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/23aa16d5-82de-42c6-941b-7c7d19ef23f4")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10763,12 +10591,12 @@
 				)
 			)
 		)
-		(property "MFG Part No" "KT-0603R"
+		(property "KiLib_Generator" "C2286"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "d928f478-c1ed-430d-afd1-0f525e172b2c")
+			(uuid "12f2ab6a-1cee-49b5-9f60-2daa0348995b")
 			(effects
 				(font
 					(size 1 1)
@@ -10776,12 +10604,12 @@
 				)
 			)
 		)
-		(property "LCSC" "C2286"
+		(property "MFG Part No" "KT-0603R"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "12f2ab6a-1cee-49b5-9f60-2daa0348995b")
+			(uuid "d928f478-c1ed-430d-afd1-0f525e172b2c")
 			(effects
 				(font
 					(size 1 1)
@@ -10806,12 +10634,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/a645673c-329e-4199-8b79-6e00bc43ee5e")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11002,12 +10824,12 @@
 				)
 			)
 		)
-		(property "MFG Part No" "KT-0603R"
+		(property "KiLib_Generator" "C2286"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "9f7ee2c4-3ffc-45ad-b5ef-e2a5cc6115f3")
+			(uuid "02bfe939-eeef-4a19-998f-894798c7da26")
 			(effects
 				(font
 					(size 1 1)
@@ -11015,12 +10837,12 @@
 				)
 			)
 		)
-		(property "LCSC" "C2286"
+		(property "MFG Part No" "KT-0603R"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "02bfe939-eeef-4a19-998f-894798c7da26")
+			(uuid "9f7ee2c4-3ffc-45ad-b5ef-e2a5cc6115f3")
 			(effects
 				(font
 					(size 1 1)
@@ -11045,12 +10867,6 @@
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/d3ef6d1a-058b-4c8c-b7bd-fcd30e79d200")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11242,6 +11058,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "05fd0e57-b6fa-4b16-b0d4-35d8e79a5b2e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -11272,12 +11100,6 @@
 		(path "/b460172b-d1ca-49f2-a5b3-e5f8d3c452b3")
 		(sheetname "/")
 		(sheetfile "main.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -11375,7 +11197,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25905"
+		(property "KiLib_Generator" "C25905"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11405,12 +11227,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/7c2e9c40-bb2f-4305-a4e3-acbda5d6cabb")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11548,7 +11364,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF2002TCE"
+		(property "KiLib_Generator" "0402WGF2002TCE"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11578,12 +11394,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/e8ac7571-cc98-4fc9-91fd-70f5b37be8f1")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11721,6 +11531,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "package/gullwing"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "0f1821e7-ce17-4fb9-a154-9f3289e6a7cb")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "FDC6312P"
 			(at 0 0 90)
 			(unlocked yes)
@@ -11763,16 +11585,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/fa2e4221-dab8-4d23-8015-2592da1dbf1d")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "6" "5")
-			)
-			(unit
-				(name "B")
-				(pins "3" "4" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12161,15 +11973,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/b29234e7-b2af-44a4-99d7-d97a8f90f393")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "3" "27" "15" "26" "16" "36" "37" "13" "14" "32" "33" "34" "35"
-					"1" "40" "41" "2" "39" "38" "4" "5" "6" "7" "12" "17" "18" "19" "20"
-					"21" "22" "8" "9" "10" "11" "23" "31" "28" "29" "30" "24" "25"
-				)
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12983,6 +12786,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C15525"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1b5dda94-1b15-4d06-b4e1-cb7e22fc1ed8")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05A106MQ5NUNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -12996,29 +12812,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C15525"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1b5dda94-1b15-4d06-b4e1-cb7e22fc1ed8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/1b68fc09-6564-4257-8dda-3c970af59a8e")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -13190,12 +12987,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/6fa5c5e1-ae8f-498a-addd-107bde94494c")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "3" "5" "7" "9" "2" "4" "6" "8" "10")
-			)
-		)
 		(attr smd exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -13429,6 +13220,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "connector/pin_header_socket"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "47743295-a416-43e4-b2a7-0d83a5e86752")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 90)
 			(unlocked yes)
@@ -13459,12 +13262,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/a07319a6-9899-4c62-86de-cca831fce3fc")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4")
-			)
-		)
 		(attr through_hole exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -13707,6 +13504,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "Close with M50-1900005 or equivelent"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "33463d47-1a70-4591-a68b-adfc88e5fc83")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "M50-3530242"
 			(at 0 0 0)
 			(unlocked yes)
@@ -13733,29 +13543,10 @@
 				)
 			)
 		)
-		(property "Note" "Close with M50-1900005 or equivelent"
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "33463d47-1a70-4591-a68b-adfc88e5fc83")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/4f0f444a-d023-4174-8a01-827382d5762b")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -13949,7 +13740,7 @@
 		(layer "F.Cu")
 		(uuid "99d82513-b17a-449c-8e02-57fa15764e2e")
 		(at 132.8 67.3)
-		(descr "Bourns SRN5040TA semi-shielded SMD power inductor, 4.95x4.95 mm body, 3.9 mm high for value codes R60M through 100M and 3.8 mm for 150M through 101K; land pattern per datasheet recommended layout, two 1.5x4.2 mm lands separated by 2.1 mm. 3D model is the Sunlord SWPA5040S body, a 5x5x4 mm envelope")
+		(descr "Bourns SRN5040TA semi-shielded SMD power inductor, 4.95x4.95 mm body, 3.9 mm high for value codes R60M through 100M and 3.8 mm for 150M through 101K; land pattern per datasheet recommended layout, two 1.5x4.2 mm lands separated by 2.1 mm")
 		(tags "inductor bourns srn 5040 smd semi-shielded")
 		(property "Reference" "L121"
 			(at 0 -3.45 0)
@@ -14030,12 +13821,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/4081e5de-c4af-460a-a9b1-7287664e77e1")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -14112,7 +13897,7 @@
 			(uuid "3d5385e6-abb2-4ac2-bcb7-699cca1ba217")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Sunlord_SWPA5040S.step"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/L_Bourns_SRN5040TA.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -14177,7 +13962,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "KiLib_Generator" "C25744"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14207,12 +13992,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/54e46960-8da5-46bd-b6d5-f50a9314c34b")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -14352,7 +14131,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1003TCE"
+		(property "KiLib_Generator" "0402WGF1003TCE"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14382,12 +14161,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/8dfdc09a-0fc4-4ccc-851b-50d545d02aca")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -14525,6 +14298,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF1003TCE"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ee3f3475-7684-452e-985b-2581721c5631")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C25741"
 			(at 0 0 270)
 			(unlocked yes)
@@ -14538,29 +14324,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1003TCE"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "ee3f3475-7684-452e-985b-2581721c5631")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/158d698e-86c0-478a-9856-8c5e837ba913")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -14700,7 +14467,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25750"
+		(property "KiLib_Generator" "C25750"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14730,12 +14497,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/7974904e-0a4a-4f69-9cb7-eee804213545")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -14875,6 +14636,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25744"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "98d21504-0aa2-4fb1-b4ad-caeb83c7ff89")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF1002TCE"
 			(at 0 0 270)
 			(unlocked yes)
@@ -14888,29 +14662,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "98d21504-0aa2-4fb1-b4ad-caeb83c7ff89")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/a8704749-0708-49fa-b75a-ee4f60105368")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15050,7 +14805,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "KiLib_Generator" "C25744"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15080,12 +14835,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/352f84b5-7aa2-460d-9de6-374426482427")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15225,7 +14974,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1002TCE"
+		(property "KiLib_Generator" "0402WGF1002TCE"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15255,12 +15004,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/b78daccd-a894-4910-a923-715cf0ec32fa")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15400,6 +15143,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF1002TCE"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "71afccc6-253e-4bbf-8323-1da58c2c06fc")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C11702"
 			(at 0 0 270)
 			(unlocked yes)
@@ -15413,29 +15169,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1002TCE"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "71afccc6-253e-4bbf-8323-1da58c2c06fc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/626eed9b-c0d2-45ab-adad-ed4978e6d156")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15575,6 +15312,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25130"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "03e5d959-2d7c-4c16-b936-fce7893edd05")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF6800TCE"
 			(at 0 0 180)
 			(unlocked yes)
@@ -15588,29 +15338,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25130"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "03e5d959-2d7c-4c16-b936-fce7893edd05")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/68a18963-f702-48a3-8fcb-baa2d6ba291a")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15750,6 +15481,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "03c77689-263b-43ef-9139-0ce67a3f5e30")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 90)
 			(unlocked yes)
@@ -15780,12 +15523,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/361394e8-6727-4071-b838-128a29a072ad")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -15924,6 +15661,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "connector/pin_header_socket"
+			(at 0 0 180)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "c26bb6bf-3377-46d5-93a6-7c75640fc8a1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 180)
 			(unlocked yes)
@@ -15954,15 +15703,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/aa439349-5ea7-4eb0-81bf-d2a448e73de0")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "3" "5" "7" "9" "11" "13" "15" "17" "19" "21" "23" "25" "2"
-					"4" "6" "8" "10" "12" "14" "16" "18" "20" "22" "24" "26"
-				)
-			)
-		)
-		(zone_connect 1)
 		(attr through_hole exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -16600,7 +16340,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25741"
+		(property "KiLib_Generator" "C25741"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16630,12 +16370,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/edddada1-a00b-42a9-9292-7b3c59f92bc9")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -16775,6 +16509,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "1e25e41f-7401-4152-b7ab-36b2ef2fd83e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -16805,12 +16551,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/5a7c95c7-cdf5-4c44-af1b-d61ee2927b66")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -16950,7 +16690,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25882"
+		(property "KiLib_Generator" "C25882"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16980,12 +16720,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/7e882208-8977-445b-bb95-95cfe364f8bb")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -17125,7 +16859,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25130"
+		(property "KiLib_Generator" "C25130"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17155,12 +16889,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/b37d5954-e955-4947-99b1-e9b5151f5fba")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -17300,6 +17028,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "package/gullwing"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "d2e0ce96-0aec-4e76-a760-e6f615b54923")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "74LVC1G17"
 			(at 0 0 0)
 			(unlocked yes)
@@ -17343,12 +17083,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/82a3ec61-3985-4f4b-ad9b-7ad64d2dd31e")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "2" "1" "5" "3" "4")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -17730,6 +17464,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "d17bc003-d078-4207-a048-44db69331a4b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 270)
 			(unlocked yes)
@@ -17760,12 +17506,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/8aee22f1-118d-41c5-9e8c-ce40f2355ad7")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -17905,6 +17645,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "1=K 2=A"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7655a1c0-5fd3-4a96-a9fb-367fda4a018e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "NCD0603Y2"
 			(at 0 0 90)
 			(unlocked yes)
@@ -17931,29 +17684,10 @@
 				)
 			)
 		)
-		(property "Sim.Pins" "1=K 2=A"
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7655a1c0-5fd3-4a96-a9fb-367fda4a018e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/42ef9c56-7688-4c85-967c-29853caf571a")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -18144,7 +17878,7 @@
 				)
 			)
 		)
-		(property "Sim.Pins" "1=K 2=A"
+		(property "KiLib_Generator" "1=K 2=A"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18187,12 +17921,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/9b73e481-113f-4def-b116-2d0232939204")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -18383,7 +18111,7 @@
 				)
 			)
 		)
-		(property "Sim.Pins" "1=K 2=A"
+		(property "KiLib_Generator" "1=K 2=A"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18426,12 +18154,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/882fdb32-227b-439d-a38c-9fa8eafc021f")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -18622,6 +18344,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF6800TCE"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "60ff9f96-21fc-4a74-848f-143343ceda14")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C25130"
 			(at 0 0 270)
 			(unlocked yes)
@@ -18635,29 +18370,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF6800TCE"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "60ff9f96-21fc-4a74-848f-143343ceda14")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/6bec984d-dc59-4951-87c6-8c6e7003ff06")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -18797,7 +18513,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "KiLib_Generator" "C25744"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18827,12 +18543,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/17d159ed-c43f-4da8-a478-cc71b2d55489")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -18972,6 +18682,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "CL21A106KAYNNNE"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b6ca6327-9659-49fe-b1f4-f8efa2aecd0d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C15850"
 			(at 0 0 270)
 			(unlocked yes)
@@ -18985,29 +18708,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL21A106KAYNNNE"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "b6ca6327-9659-49fe-b1f4-f8efa2aecd0d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/cee98a13-fd2c-41a0-8f22-31361fba06be")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -19147,6 +18851,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "1=K 2=A"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a0994e6d-9375-485f-85f2-727dc5308383")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "NCD0603Y2"
 			(at 0 0 180)
 			(unlocked yes)
@@ -19173,29 +18890,10 @@
 				)
 			)
 		)
-		(property "Sim.Pins" "1=K 2=A"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a0994e6d-9375-485f-85f2-727dc5308383")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/2b09a4c0-c230-4be4-9a4f-f0894ebd3450")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -19387,6 +19085,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "cc843bbe-ff7d-4c8b-ae52-b8a951cf5ba1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -19417,12 +19127,6 @@
 		(path "/c6b70d96-e77b-42ce-8432-9d14624f462b")
 		(sheetname "/")
 		(sheetfile "main.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -19520,6 +19224,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C5672"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b2d1ffd7-1295-4bd9-a1ab-f9f8d44b0dbe")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL31A226KPHNNNE"
 			(at 0 0 270)
 			(unlocked yes)
@@ -19533,29 +19250,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C5672"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "b2d1ffd7-1295-4bd9-a1ab-f9f8d44b0dbe")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/aecc78c0-5880-43de-af85-59e4740d3e04")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -19695,6 +19393,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF1003TCE"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "090843c7-9592-4283-8600-85bc7eb2b312")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C25741"
 			(at 0 0 90)
 			(unlocked yes)
@@ -19708,29 +19419,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1003TCE"
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "090843c7-9592-4283-8600-85bc7eb2b312")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/2b1d15bf-37bd-4396-b99a-bbf41d0e4b54")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -19868,7 +19560,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "CL21A475KAQNNNE"
+		(property "KiLib_Generator" "CL21A475KAQNNNE"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19898,12 +19590,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/f35100f1-1ec5-4c91-b133-8b3daf813389")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -20043,6 +19729,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "76b8cded-b975-49ed-b719-99abba04d40b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL05B104KB54PNC"
 			(at 0 0 0)
 			(unlocked yes)
@@ -20073,12 +19771,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/fe45ce85-6658-40cb-8828-253037befd50")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -20218,7 +19910,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF1002TCE"
+		(property "KiLib_Generator" "0402WGF1002TCE"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -20248,12 +19940,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/60eaec70-ef24-4c98-aacf-f3ea9630315d")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -20393,6 +20079,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "SMD_2terminal_chip_molded"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "83ba8130-6c50-48a7-a1b5-d2dca229af8a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "RC0402FR-0780K6L"
 			(at 0 0 90)
 			(unlocked yes)
@@ -20423,12 +20121,6 @@
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/4300af20-ce5a-4a65-ae20-1e32baefd7fe")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -20568,6 +20260,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "package/gullwing"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "aba752c8-0848-4503-9ccd-f7586534c10b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "USBLC6-2SC6"
 			(at 0 0 0)
 			(unlocked yes)
@@ -20611,12 +20315,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/b77f3a2e-3ff6-4452-aedb-d29c0bcb9a4e")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "3" "5" "2" "6" "4")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -20958,6 +20656,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C5672"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1263c968-4658-4273-8994-fb86882a1305")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CL31A226KPHNNNE"
 			(at 0 0 270)
 			(unlocked yes)
@@ -20971,29 +20682,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C5672"
-			(at 0 0 270)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1263c968-4658-4273-8994-fb86882a1305")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/aa1a655e-392d-4cbd-828d-09f21a136ea6")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -21133,7 +20825,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF3902TCE"
+		(property "KiLib_Generator" "0402WGF3902TCE"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -21163,12 +20855,6 @@
 		(path "/5f81dfb7-5e05-48b6-b3fe-15095fb191cd/69beb3fd-6579-4a27-9a1d-bb64f3a4df26")
 		(sheetname "/3v3/")
 		(sheetfile "3v3.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -21308,7 +20994,7 @@
 				)
 			)
 		)
-		(property "Sim.Pins" "1=K 2=A"
+		(property "KiLib_Generator" "1=K 2=A"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -21351,12 +21037,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/36c8cdb2-ce32-4a1d-97fc-5cddae97f2f0")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -21547,6 +21227,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25744"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "56529e42-f72a-4d83-ad75-d68ab6f9ba8a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF1002TCE"
 			(at 0 0 180)
 			(unlocked yes)
@@ -21560,29 +21253,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25744"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "56529e42-f72a-4d83-ad75-d68ab6f9ba8a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/a0e19f2e-158a-484e-a67a-9518a2fe2ee1")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -21722,6 +21396,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "C25741"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6ccee903-d8ec-44a5-abe1-131208b57acc")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "0402WGF1003TCE"
 			(at 0 0 180)
 			(unlocked yes)
@@ -21735,29 +21422,10 @@
 				)
 			)
 		)
-		(property "LCSC" "C25741"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "6ccee903-d8ec-44a5-abe1-131208b57acc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/668de218-bc38-41b3-b020-8edc2e343766")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -21897,7 +21565,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25741"
+		(property "KiLib_Generator" "C25741"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -21927,12 +21595,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/7ea91195-b57e-45bd-b2de-7fa52194e394")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -22104,12 +21766,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/17a3f42f-75a0-4006-8598-fe01d3d834e5")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -22209,6 +21865,19 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "0402WGF5601TCE"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "627f4ec3-b3ed-4c8f-b223-9bb16e978dfb")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "LCSC" "C25908"
 			(at 0 0 180)
 			(unlocked yes)
@@ -22222,29 +21891,10 @@
 				)
 			)
 		)
-		(property "MFG Part No" "0402WGF5601TCE"
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "627f4ec3-b3ed-4c8f-b223-9bb16e978dfb")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/6897350a-6b24-4568-8df0-70384d2ca7c6/b7a14950-2f9b-48d8-ba65-2bf85d9413c0")
 		(sheetname "/5v/")
 		(sheetfile "5v.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -22416,12 +22066,6 @@
 		(path "/f8973f07-5632-4b97-a3ce-a5e33fa36ed2/5925c5f9-b166-4a5d-a3f7-a754dc53365c")
 		(sheetname "/usb/")
 		(sheetfile "usb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -22521,6 +22165,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "package/gullwing"
+			(at 0 0 180)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "c38bc52e-03c3-4fa5-b8c8-fa4d2c3ef07e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "74LVC1G17"
 			(at 0 0 180)
 			(unlocked yes)
@@ -22564,12 +22220,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/7a9a11f1-7109-4e5d-8e61-f82eca4963f9")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "2" "1" "5" "3" "4")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -22950,6 +22600,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "connector/JST"
+			(at 0 0 180)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "5aa585dc-eb7b-4af1-bde7-9394e72f8e41")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "S6B-XH-A"
 			(at 0 0 180)
 			(unlocked yes)
@@ -22980,13 +22642,6 @@
 		(path "/0a78e122-cae8-43c8-ae5e-350b0dd676ce/046683cf-ee34-4d07-9f6d-36020f7ea663")
 		(sheetname "/mcu/")
 		(sheetfile "mcu.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6")
-			)
-		)
-		(zone_connect 1)
 		(attr through_hole exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
