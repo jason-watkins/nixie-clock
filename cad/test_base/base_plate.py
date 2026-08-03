@@ -205,14 +205,15 @@ RIBBON = 11.00  # an IDC socket and its strain relief, above J4's shroud
 REPO = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
-# The IN-12 tubes exist only as VRML, so KiCad's STEP export drops them and they
-# have to be inserted here. Worth the trouble twice over: it is the only way to
-# get the tubes at all, and the only way to get the glass, which is a material
-# property a STEP twin could not carry. See vrml.py.
-TUBE_WRL = os.path.join(REPO, "pcb", "lib", "nixie_clock.3dshapes", "IN-12B.wrl")
-TUBE_OFFSET = (3.819, -7.620, 0.0)  # the footprint's model offset, as written
-TUBE_SEAT = 1.510  # model origin rides on the board's top face, as exported
-TUBE_AT = ((-44.0, 0.0), (-18.0, 0.0), (18.0, 0.0), (44.0, 0.0))  # NX1..NX4
+# The glass parts are carried as VRML, so KiCad's STEP export drops them and
+# they have to be inserted here. Worth the trouble twice over: for the IN-12 it
+# is the only way to get the tube at all, having no STEP twin, and for both it
+# is the only way to get the glass, which is a material property a STEP twin
+# could not carry. The INS-1 has a twin available and deliberately does not ship
+# one: a substituted solid would arrive grey, and it would also arrive twice,
+# once here and once in the exported board. See vrml.py.
+SHAPES = os.path.join(REPO, "pcb", "lib", "nixie_clock.3dshapes")
+MODEL_SEAT = 1.510  # a front-side model's origin, above the board's underside
 BOARD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boards")
 BOARD_ORIGIN = {"main": (135.0, 87.5), "hv": (147.5, 102.5), "face": (150.0, 90.0)}
 
@@ -221,6 +222,29 @@ BRASS = (0.85, 0.68, 0.25)
 BLACK_OXIDE = (0.13, 0.13, 0.14)  # the 12.9 alloy screws and their nuts
 
 WEB_T = PLATE_T - POCKET_D - HEAD_DEPTH
+
+
+class Glassware(NamedTuple):
+    """A VRML part, and where its footprint puts it on the face board.
+
+    places holds (reference, x, z) per instance, measured from the board's
+    centre - which is the KiCad placement less BOARD_ORIGIN["face"], with Y
+    negated because KiCad's grows downward. All of these sit at rotation zero;
+    a turned one would need its own, applied before the fixture's.
+    """
+
+    path: str
+    offset: tuple  # the footprint's model offset, as written
+    places: tuple
+
+
+GLASSWARE = (
+    Glassware(os.path.join(SHAPES, "IN-12B.wrl"), (3.819, -7.620, 0.0),
+              (("NX1", -44.0, 0.0), ("NX2", -18.0, 0.0),
+               ("NX3", 18.0, 0.0), ("NX4", 44.0, 0.0))),
+    Glassware(os.path.join(SHAPES, "INS1_Recessed.wrl"), (0.0, 0.0, -9.74),
+              (("NX5", 0.0, 6.0), ("NX6", 0.0, -6.0))),
+)
 
 
 class Board(NamedTuple):
@@ -1042,36 +1066,41 @@ def models() -> list:
     return out
 
 
-def tubes() -> list:
-    """(name, Material, mesh) for the four IN-12s, placed on the face board.
+def glassware() -> list:
+    """(name, Material, mesh) for the tubes and lamps on the face board.
 
-    The tube's axis is the model's Z - glass toward +Z, leads toward -Z - and it
-    has to end up along the fixture's -Y so the digits face the front and the
-    leads go back through the board. VRML is authored Y up, so that is a quarter
-    turn about X: model +Z lands on -Y and model +Y stands up onto +Z.
+    Both are authored with the axis on the model's Z, glass toward +Z and leads
+    toward -Z, and both have to end up along the fixture's -Y so the lenses face
+    the front and the leads go back through the board. That is a quarter turn
+    about X: model +Z lands on -Y and model +Y stands up onto +Z.
 
     The footprint's model offset is applied in the model's own frame, before the
     turn, which is why it is rotated here rather than added to the translation.
-    Its 3.819 is exactly what centres the model on its pads.
+    The tube's 3.819 is exactly what centres it on its pads; the lamp's -9.74 is
+    what sinks it through the board, leaving the lens 18.86 proud of the front
+    and 2.00 of lead behind.
+
+    One mesh per material per part, so each keeps its own glass.
     """
-    if not os.path.exists(TUBE_WRL):
-        return []
     import Mesh
 
     turn = App.Rotation(App.Vector(1, 0, 0), 90)
-    offset = turn.multVec(App.Vector(*TUBE_OFFSET))
     out = []
-    for material, pts, faces in vrml.load(TUBE_WRL):
-        # The (points, facets) constructor access-violates in FreeCAD 1.1; the
-        # triangle-list one does not. Built once per material, copied per tube.
-        master = Mesh.Mesh([[App.Vector(*pts[i]) for i in f] for f in faces])
-        for n, (px, py) in enumerate(TUBE_AT):
-            mesh = master.copy()
-            mesh.Placement = App.Placement(
-                offset + App.Vector(px, FACE_Y - TUBE_SEAT,
-                                    FACE_Z + FACE_SIZE[1] / 2 + py),
-                turn)
-            out.append((f"NX{n + 1}_{material.name}", material, mesh))
+    for part in GLASSWARE:
+        if not os.path.exists(part.path):
+            continue
+        offset = turn.multVec(App.Vector(*part.offset))
+        for material, pts, faces in vrml.load(part.path):
+            # The (points, facets) constructor access-violates in FreeCAD 1.1;
+            # the triangle-list one does not. Built once, copied per instance.
+            master = Mesh.Mesh([[App.Vector(*pts[i]) for i in f] for f in faces])
+            for reference, px, pz in part.places:
+                mesh = master.copy()
+                mesh.Placement = App.Placement(
+                    offset + App.Vector(px, FACE_Y - MODEL_SEAT,
+                                        FACE_Z + FACE_SIZE[1] / 2 + pz),
+                    turn)
+                out.append((f"{reference}_{material.name}", material, mesh))
     return out
 
 
@@ -1301,7 +1330,7 @@ def build(part: str = "all"):
         real = dict(models())
         for name, slab in slabs():
             _show(real.get(name, slab), name.capitalize())
-        for name, material, mesh in tubes():
+        for name, material, mesh in glassware():
             obj = doc.addObject("Mesh::Feature", name)
             obj.Mesh = mesh
             if getattr(obj, "ViewObject", None) is not None:

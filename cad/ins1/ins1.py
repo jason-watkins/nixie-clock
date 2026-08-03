@@ -305,8 +305,18 @@ def spline_wire(points, z: float) -> Part.Wire:
     curve = Part.BSplineCurve()
     # PeriodicFlag closes the curve; repeating the first point at the end
     # instead raises OCCError: BSplCLib::Interpolate.
+    #
+    # Parameters are given rather than left to default, so that every section
+    # comes out on the same knot vector. Left to itself interpolate uses chord
+    # length, which differs section by section, and the loft can only reconcile
+    # that by knot union - the skin over 23 sections then carries 688,000
+    # control points instead of 3,000, and the STEP it writes is 63 MB. The
+    # points are already evenly spaced by arc length, so uniform is also the
+    # honest parameterization here; it reproduces them to 1e-15.
+    count = len(points)
     curve.interpolate(Points=[App.Vector(x, y, z) for x, y in points],
-                      PeriodicFlag=True)
+                      PeriodicFlag=True,
+                      Parameters=[k / count for k in range(count + 1)])
     return Part.Wire([curve.toShape()])
 
 

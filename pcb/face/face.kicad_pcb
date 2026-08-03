@@ -5487,15 +5487,15 @@
 			(uuid "965005ca-4dbf-4227-aebd-38ed4e6eb2a5")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/INS1.STEP"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/INS1_Recessed.wrl"
 			(offset
-				(xyz 0 0 0.86)
+				(xyz 0 0 -9.74)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -90 0 0)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -6530,15 +6530,15 @@
 			(uuid "54f5a6d2-e9db-4c40-b044-f76130e95e17")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/INS1.STEP"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/INS1_Recessed.wrl"
 			(offset
-				(xyz 0 0 0.86)
+				(xyz 0 0 -9.74)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -90 0 0)
+				(xyz 0 0 0)
 			)
 		)
 	)

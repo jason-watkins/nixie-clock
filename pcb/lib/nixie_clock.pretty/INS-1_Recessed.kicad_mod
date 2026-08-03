@@ -252,15 +252,15 @@
 		(uuid "9aaeb738-3916-4446-995e-6c35fb4c9c16")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/INS1.STEP"
+	(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/INS1_Recessed.wrl"
 		(offset
-			(xyz 0 0 0.86)
+			(xyz 0 0 -9.74)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz -90 0 0)
+			(xyz 0 0 0)
 		)
 	)
 )

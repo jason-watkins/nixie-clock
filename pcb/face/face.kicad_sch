@@ -396,7 +396,7 @@
 					(justify left bottom)
 				)
 			)
-			(property "Footprint" "0_nixie_clock:INS-1"
+			(property "Footprint" "0_nixie_clock:INS-1_Recessed"
 				(at 0.762 3.81 0)
 				(show_name no)
 				(do_not_autoplace no)

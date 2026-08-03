@@ -37,40 +37,25 @@ concentric.
 
 ## Drawn for this project
 
-- IN-12B symbol and IN-12-DSUB footprint, the tube socketed on D-SUB machined
-  pins.
-- INS-1 symbol and footprint. The label sheet in `docs/datasheets/INS-1.pdf`
-  carries no mechanical drawing, so the 6.8 mm envelope diameter comes from
-  distributor listings and the lead diameter, about 0.3 mm, from a photograph
-  scaled against that envelope. The leads are soft wire on no fixed pitch, so
-  the footprint sets it at 2.54 mm on 0.7 mm holes. The model draws its leads
-  5.5 mm apart, so they stand outside the holes in the 3D view.
-- INS-1_Recessed, the same lamp sunk through the board so its lens clears the
-  IN-12 faces by a few millimetres instead of standing 6 mm above them. The
-  milled 8.0 x 5.0 mm slot on Edge.Cuts passes the 7.0 x 4.0 mm pinch blade
-  and keys its rotation so the leads exit along X; the wider flare above the
-  blade seats the lamp. A printed TPU top-hat washer lines the slot and its
-  flange sets the height. Leads land on pads on the back of the board.
+- IN-12B symbol and IN-12-DSUB footprint, the tube socketed on D-SUB machined pins.
+- INS-1 symbol and INS-1_Recessed footprint, the lamp sunk through the board so its lens clears the
+  IN-12 faces by a few millimeters instead of standing 6 mm above them. Leads land on pads on the
+  back of the board. The label sheet in `docs/datasheets/INS-1.pdf` carries no mechanical drawing,
+  so the envelope dimensions are the ones measured for the model below: a 6.50 mm barrel over a
+  7.00 x 3.35 mm pinch blade, on 0.5 mm leads 5.5 mm apart.
+- `INS1_Recessed.wrl`, built in `cad/ins1/` and written by `cad/ins1/export_kicad.py`. Dimensions
+  are measured off a third-party model of the lamp, credited in `cad/ins1/shoulder_profile.py`,
+  which holds the one region of the envelope that is sampled from the original model because
+  FreeCAD can't handle the fillets. No STEP twin, deliberately: KiCad would substitute it and the
+  lamp would arrive grey, where the VRML carries the glass and the lit dot. `cad/test_base` reads
+  this file directly for that reason, as it does `IN-12B.wrl`.
 - CYPD3176 symbol, pins arranged to match the datasheet's application figure
-- Kemet GoldMax radial dipped MLCC footprints: C315, C317, C320, C322, C330
-  case sizes
-- Panasonic ECQ-E film capacitor footprint (7.9 x 5.9 mm, 5.0 mm pitch), and
-  `ECQ-E.stp` with it. Panasonic's own model for ECQ-E2104KB is a plain box 14
-  mm tall, which is H max for the crimped lead form; this part has straight
-  leads and stands 9. The replacement is built in `cad/ecqe/ecqe2104kb.py` from
-  the three outlines on the catalogue drawing.
-- Bourns SRN5040TA inductor footprint, land pattern per the datasheet's
-  recommended layout, and `L_Bourns_SRN5040TA.step` with it. Bourns publish no
-  model; the part is built in `cad/srn5040/srn5040ta.py` from the dimensioned
-  terminal and envelope sizes, with the flange-and-waist profile taken off the
-  catalogue render.
+- Kemet GoldMax radial dipped MLCC footprints: C315, C317, C320, C322, C330 case sizes
+- Panasonic ECQ-E film capacitor footprint, and `ECQ-E.stp` with it. Built in
+  `cad/ecqe/ecqe2104kb.py` from the three outlines on the catalogue drawing.
+- Bourns SRN5040TA inductor footprint, land pattern per the datasheet's recommended layout, and
+  `L_Bourns_SRN5040TA.step` with it; built in `cad/srn5040/srn5040ta.py` from the dimensioned
+  terminal and envelope sizes, with the flange-and-waist profile taken off the catalogue render.
 - DA2032-AL flyback transformer, land pattern from the Coilcraft drawing
 
-## Imported from GrabCAD
-
-- `INS1.STEP`, attached to the INS-1 footprint. Uploaded there in December
-  2020 by Patrick Simon.
-
-Apart from the IN-12B tube, the INS-1 lamp, the ECQ-E capacitor and the
-SRN5040TA inductor, 3D models come from the part manufacturers (Kemet, TI, JAE,
-Coilcraft).
+Other 3D models come from the part manufacturers.

@@ -4,30 +4,41 @@ Run with FreeCAD's interpreter whenever the model or its appearance changes:
 
     "C:/Program Files/FreeCAD 1.1/bin/freecadcmd.exe" cad/ins1/export_kicad.py
 
-KiCad takes appearance from the WRL and mechanical geometry from a STEP of the
-same basename, and picks the STEP up on its own when exporting a board model,
-so the two ship together and the footprint points at the WRL.
+WRL only, deliberately. KiCad would substitute a STEP of the same basename when
+exporting a board model, but the lamp is worth more as VRML: a substituted solid
+arrives grey, and the glass and the lit dot are material properties a STEP
+cannot carry at all. cad/test_base/base_plate.py reads this file directly, the
+same way it reads IN-12B.wrl. Shipping a STEP twin as well would put the lamp in
+the model twice, once here and once through the board export.
 
-Two variants, differing only in where the leads are cut. The flush footprint
-stands the lamp on the board, so its leads want trimming just below it; the
-recessed one sinks the lamp until the board sits at z = 9.74 and solders the
-leads to pads on the back, so they have to reach through.
+Leads are cut for the recessed footprint, which sinks the lamp until the board
+sits at z = 9.74 and solders them to pads on the back, so they have to reach
+through. A flush mounting would want a second variant cut near z = -2.
 
 VRML units here are 0.1 inch, which is what KiCad expects and what IN-12B.wrl
 uses - its 8.0 x 12.0 unit envelope is a 20 x 30 mm tube. The footprint's own
 offset stays in millimetres regardless.
 
-Normals come from the real surface rather than from the triangles, so a face is
-smooth however coarsely it is tessellated, and two faces meeting tangentially -
-the barrel into the dome, the shoulder into either - agree exactly across the
-seam instead of showing it as a crease.
+Meshing goes through MeshPart rather than Shape.tessellate, which takes a
+linear tolerance only. The shoulder is a B-spline surface of 128 by 23 poles
+and its triangle count follows the poles, not the curvature, so a linear
+tolerance alone puts 1.6 million triangles on this lamp. An angular tolerance
+is what actually bounds it. Shape.tessellate also caches its result on the
+shape and hands the same mesh back whatever tolerance you ask for next, which
+makes it look as though the setting does nothing.
+
+Normals are averaged per vertex, but only across facets meeting at less than
+CREASE. The lamp needs both behaviours: the barrel runs into the dome and the
+shoulder into both tangentially and must not show a seam, while the cathode rim
+and the mica faces are real edges and have to stay hard.
 """
 
+import math
 import os
 import sys
 
 import FreeCAD as App
-import Part
+import MeshPart
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ins1 as G  # noqa: E402
@@ -37,52 +48,71 @@ OUT_DIR = os.path.normpath(os.path.join(
     "pcb", "lib", "nixie_clock.3dshapes"))
 
 WRL_UNIT = 2.54  # mm per VRML unit
-DEVIATION = 0.01  # tessellation chord tolerance, mm
+LINEAR = 0.01  # chord tolerance, mm - 40 facets round the barrel
+# Radians, ~23 degrees. This is what bounds the spline faces; the barrel and
+# the other analytic surfaces stay on the linear tolerance, so the silhouette
+# does not move with it. Tightening to 0.25 costs a third more triangles and
+# changes nothing you can see, 0.60 saves only a further 6 per cent.
+ANGULAR = 0.40
+CREASE = math.radians(30)  # smooth across joins shallower than this
 
 # Opaque first, glass last: a renderer blending transparency needs whatever is
 # behind the glass already drawn.
 ORDER = ("Wires", "Micas", "Anode", "Cathode", "Glow", "Glass")
 
+# Not "below the board" - on this footprint the blade passes through the slot,
+# so the board's front face is at z = 9.74 and its back copper at 8.14, while
+# the leads leave the press underside at 4.60, already 3.54 behind the board.
+# They are then formed forward onto the pads, which a straight lead cannot show;
+# 2.00 leaves a visible 2.60 of wire past the press and stays shallower than the
+# pip at 0.00, which is what actually sets the clearance behind the board.
 VARIANTS = {
-    "INS1": G.LEAD_BOTTOM,
-    "INS1_Recessed": 7.74,  # 2.00 below a board sitting at 9.74
+    "INS1_Recessed": 2.00,
 }
 
 
-def _tessellate(shape: Part.Shape, deviation: float = DEVIATION):
-    """(points, normals, triangles) for one solid, in millimetres.
+def _mesh(shape):
+    """(points, triangles, normals, normal indices), in millimetres.
 
-    Tessellated a face at a time, because a face is the largest patch over
-    which the surface normal is continuous. Winding is taken from the normal
-    rather than trusted, so back-face culling cannot turn a part inside out.
+    MeshPart welds the mesh, so a vertex on a real edge is shared by facets
+    facing different ways. Normals are therefore per corner rather than per
+    vertex - VRML indexes them separately from the coordinates for exactly this
+    - and a corner averages only the facets within CREASE of its own.
+
+    Corner normals are then pooled, because most of them repeat: every corner
+    around a cylinder at one angle shares a normal. Written out one per corner
+    they are about half the file.
     """
-    points, normals, triangles = [], [], []
-    for face in shape.Faces:
-        pts, tris = face.tessellate(deviation)
-        base = len(points)
-        surface = face.Surface
-        for p in pts:
-            points.append(p)
-            try:
-                normals.append(face.normalAt(*surface.parameter(p)))
-            except Exception:
-                normals.append(None)  # filled in from the triangles below
-        for tri in tris:
-            a, b, c = (base + i for i in tri)
-            geometric = (points[b] - points[a]).cross(points[c] - points[a])
-            reference = next((normals[i] for i in (a, b, c)
-                              if normals[i] is not None), None)
-            if reference is not None and geometric.dot(reference) < 0:
-                a, c = c, a
-                geometric = -geometric
-            triangles.append((a, b, c))
-            for i in (a, b, c):
-                if normals[i] is None:
-                    normals[i] = geometric
-    # Anything the projection could not place falls back to its facet normal.
-    for i, n in enumerate(normals):
-        normals[i] = (n or App.Vector(0, 0, 1)).normalize()
-    return points, normals, triangles
+    mesh = MeshPart.meshFromShape(Shape=shape, LinearDeflection=LINEAR,
+                                  AngularDeflection=ANGULAR, Relative=False)
+    points, triangles = mesh.Topology
+
+    weighted, incident = [], [[] for _ in points]
+    for index, (a, b, c) in enumerate(triangles):
+        # Length is twice the area, so this weights by facet size on its own.
+        weighted.append((points[b] - points[a]).cross(points[c] - points[a]))
+        for corner in (a, b, c):
+            incident[corner].append(index)
+
+    limit = math.cos(CREASE)
+    unit = [v.normalize() if v.Length > 1e-12 else App.Vector(0, 0, 1)
+            for v in weighted]
+
+    pool, normals, corners = {}, [], []
+    for index, triangle in enumerate(triangles):
+        for corner in triangle:
+            total = App.Vector()
+            for other in incident[corner]:
+                if unit[other].dot(unit[index]) >= limit:
+                    total += weighted[other]
+            n = total.normalize() if total.Length > 1e-12 else unit[index]
+            key = (round(n.x, 4), round(n.y, 4), round(n.z, 4))
+            slot = pool.get(key)
+            if slot is None:
+                slot = pool[key] = len(normals)
+                normals.append(n)
+            corners.append(slot)
+    return points, triangles, normals, corners
 
 
 def _vrml_material(spec: dict) -> str:
@@ -101,32 +131,37 @@ def _vrml_material(spec: dict) -> str:
 
 
 def _vrml_shape(name: str, mesh: tuple) -> str:
-    points, normals, triangles = mesh
+    points, triangles, normals, corners = mesh
     k = 1.0 / WRL_UNIT
 
     def block(rows, tail):
         return ",\n".join(f"          {r}" for r in rows) + f" {tail}"
+
+    corners = [tuple(corners[3 * i:3 * i + 3]) for i in range(len(triangles))]
 
     return (
         f"DEF {name} Transform {{\n"
         f"  children [\n"
         f"    Shape {{\n"
         f"      appearance Appearance {{\n"
-        f"        material Material {{\n"
+        # DEF'd, not anonymous. cad/test_base/vrml.py keys materials off the
+        # name, as IN-12B.wrl carries them, and reads an unnamed one as the
+        # default grey - which silently collapses all six parts into one.
+        f"        material DEF {name} Material {{\n"
         f"{_vrml_material(G.APPEARANCE[name])}"
         f"        }}\n"
         f"      }}\n"
         f"      geometry IndexedFaceSet {{\n"
         f"        normalPerVertex TRUE\n"
         f"        coord Coordinate {{ point [\n"
-        + block([f"{p.x * k:.6f} {p.y * k:.6f} {p.z * k:.6f}" for p in points],
+        + block([f"{p.x * k:.5f} {p.y * k:.5f} {p.z * k:.5f}" for p in points],
                 "] }") + "\n"
         f"        coordIndex [\n"
         + block([f"{a}, {b}, {c}, -1" for a, b, c in triangles], "]") + "\n"
         f"        normal Normal {{ vector [\n"
-        + block([f"{n.x:.6f} {n.y:.6f} {n.z:.6f}" for n in normals], "] }") + "\n"
+        + block([f"{n.x:.5f} {n.y:.5f} {n.z:.5f}" for n in normals], "] }") + "\n"
         f"        normalIndex [\n"
-        + block([f"{a}, {b}, {c}, -1" for a, b, c in triangles], "]") + "\n"
+        + block([f"{a}, {b}, {c}, -1" for a, b, c in corners], "]") + "\n"
         f"      }}\n"
         f"    }}\n"
         f"  ]\n"
@@ -135,20 +170,13 @@ def _vrml_shape(name: str, mesh: tuple) -> str:
 
 
 def write_wrl(path: str, parts: dict) -> tuple:
-    meshes = {name: _tessellate(parts[name]) for name in ORDER}
+    meshes = {name: _mesh(parts[name]) for name in ORDER}
     with open(path, "w", encoding="utf-8") as out:
         out.write("#VRML V2.0 utf8\n")
         out.write("# INS-1 neon indicator, generated by cad/ins1/export_kicad.py\n")
-        out.write(f"# 0.1 inch units, {DEVIATION} mm tessellation\n\n")
+        out.write(f"# 0.1 inch units; {LINEAR} mm and {ANGULAR} rad deflection\n\n")
         out.write("\n".join(_vrml_shape(name, meshes[name]) for name in ORDER))
-    return os.path.getsize(path), sum(len(m[2]) for m in meshes.values())
-
-
-def write_step(path: str, doc, parts: dict) -> int:
-    import Import
-    objects = [doc.getObject(name) for name in ORDER]
-    Import.export(objects, path)
-    return os.path.getsize(path)
+    return os.path.getsize(path), sum(len(m[1]) for m in meshes.values())
 
 
 def main():
@@ -158,10 +186,8 @@ def main():
         parts = {name: doc.getObject(name).Shape for name in ORDER}
 
         wrl = os.path.join(OUT_DIR, f"{stem}.wrl")
-        step = os.path.join(OUT_DIR, f"{stem}.step")
         size, triangles = write_wrl(wrl, parts)
         print(f"  {stem}.wrl   {size / 1024:8.1f} kB  {triangles} triangles")
-        print(f"  {stem}.step  {write_step(step, doc, parts) / 1024:8.1f} kB")
 
 
 # No __main__ guard: freecadcmd imports the script rather than running it, so
