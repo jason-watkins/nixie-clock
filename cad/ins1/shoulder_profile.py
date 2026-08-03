@@ -1,10 +1,6 @@
-"""Shoulder sections measured off INS1.STEP. Generated - do not edit.
-
-Regenerate with sample_shoulder.py, which explains why this region
-is measured rather than modeled.
-
-One quarter of each section, 33 points running counter-
-clockwise from +x to +y. ins1_glass.shoulder_points mirrors them.
+"""
+Shoulder sections measured off INS1.STEP
+downloaded from https://grabcad.com/library/ins-1-neon-bulb-1
 """
 
 SECTION_POINTS = 128

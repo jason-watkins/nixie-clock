@@ -1,7 +1,8 @@
-"""INS-1 neon indicator - outer glass envelope.
+"""INS-1 neon indicator - glass envelope and internals.
 
-Dimensions are taken from pcb/lib/nixie_clock.3dshapes/INS1.STEP, which is the
-only mechanical source we have; the datasheet is electrical only.
+Dimensions are measured off a third-party STEP model of the lamp, which is the
+only mechanical source there is; the datasheet is electrical only. See
+shoulder_profile.py for where that model came from.
 
 The axis is +Z with the origin at the tip of the exhaust pip, so every height in
 this file is the height above the board in the through-hole footprint.
@@ -16,6 +17,14 @@ wires, and drawn down to an exhaust pip.
     barrel    cylinder
     dome      revolved semi-ellipsoid
 
+The internals are a stack on two wires and are all primitives:
+
+    wires     one per electrode, swept along a line-arc-arc-line path
+    micas     two spacer discs threaded onto them
+    anode     open tube, off-axis
+    cathode   open tube
+    glow      the disc across its bore that you see through the dome
+
 Everything except the shoulder is an exact primitive. The press section is
 drawn as arcs and lines exactly as measured off the source, so the part of the
 lamp whose dimensions matter - the 7.00 x 3.35 blade that has to pass the
@@ -24,8 +33,11 @@ milled slot - is not an approximation of anything.
 The shoulder is the one region we cannot build. It is a rolling-ball fillet
 whose topology changes part way round, and OCCT will not make it; the source
 came out of SolidWorks, where Parasolid did the whole thing in one operation.
-Its sections are measured instead and live in shoulder_profile.py - see
-sample_shoulder.py, which is the only file here that reads the STEP.
+Its sections are measured instead and baked into shoulder_profile.py, so
+nothing here reads the source model. _report checks those sections still obey
+the two S-curves that describe them.
+
+export_kicad.py writes the WRL and STEP the footprints point at.
 """
 
 import math
@@ -99,13 +111,69 @@ NECK_R = 0.30  # rolling-ball radius of the neck itself
 PRESS_OVERLAP = 0.01  # see press_solid
 
 # --- interior ------------------------------------------------------------
-WALL = 0.75
+# The source's own cavity is dia 5.00, which its own mica discs pass through by
+# 0.125 and its own anode is exactly tangent to. Two parts reaching at or past
+# it is enough to say the bore, not the parts, is the number the author guessed
+# - it is the one dimension you cannot measure without breaking the lamp. A
+# 0.60 wall puts the bore at 5.30, which is a 0.05 slip fit on the dia 5.25
+# mica. That is what a mica spacer is for: it locates the stack against the
+# bore, so its diameter is the bore less a clearance, and it carries the
+# measurement the bore does not.
+WALL = 0.60
 Z_CAVITY_FLOOR = 11.60
 CAVITY_R = BARREL_R - WALL
 CAVITY_FILLET = 1.00
 CAVITY_DOME_RISE = 0.60
 
 SECTION_POINTS = shoulder_profile.SECTION_POINTS
+
+# --- internals -----------------------------------------------------------
+# Lead and post are one wire. The source breaks its cylindrical faces at the
+# mica heights only because the whole inlay is fused into a single solid; each
+# electrode is fed by one dia 0.50 wire running the full height, out at the
+# 5.50 lead pitch below the seal and in at 4.50 above it.
+LEAD_R = 0.25
+LEAD_PITCH = 5.50  # the one dimension the board depends on
+POST_PITCH = 4.50
+LEAD_BEND = (10.20, 11.95)  # the wires move inward over this
+LEAD_BOTTOM = -2.00  # trimmed for rendering; the source runs them to -14.57
+
+# Six holes at 60 degrees on the post circle, of which the wires use two. The
+# source cuts only the four it needs, the posts being fused into the same
+# solid, but 1.125 and 1.949 are 2.25 cos 60 and 2.25 sin 60 to four places,
+# so the stamping is a six-position pattern.
+MICA_R = 2.625
+MICA_T = 0.50
+MICA_Z = (15.70, 17.95)
+MICA_HOLE_R = 0.25
+
+ANODE_R = 2.00
+ANODE_WALL = 0.10
+ANODE_X = -0.50  # the anode hangs off-axis in the source
+ANODE_H = 2.00
+
+CATHODE_R = 2.375
+CATHODE_WALL = 0.20
+CATHODE_Z = 22.20
+CATHODE_H = 5.00
+CATHODE_FACE_Z = 25.00  # the disc you see through the dome, 2.00 down the bore
+CATHODE_FACE_T = 0.20
+
+# The source stacks the two electrodes straight onto each other: both annuli
+# lie on z = 22.20 and overlap by 0.571 mm2, so with each post welded to one of
+# them its lamp is a dead short. Drop the anode to separate them; it is a
+# cosmetic model and this costs nothing but reads correctly through the glass.
+ANODE_GAP = 0.30
+ANODE_Z = CATHODE_Z - ANODE_GAP - ANODE_H
+
+# Each wire stops inside the wall of the electrode it feeds, which is where the
+# source welds it: (post x, height the wire stops at).
+WIRES = {
+    "anode": (-POST_PITCH / 2, ANODE_Z + 0.44),
+    "cathode": (POST_PITCH / 2, 24.18),
+}
+
+CUT_OVER = 0.01  # cutters run past both faces, so a through-hole cuts through
 
 # Every piece meets its neighbor on a face the two share exactly - the same
 # wire, or the same exact circle - so the fuses need no fuzzy tolerance. Reach
@@ -133,6 +201,15 @@ def s_curve_span(v0: float, v1: float, r: float) -> float:
         raise ValueError(f"blend of {delta} needs radius > {delta / 4}, got {r}")
     theta = math.acos(max(-1.0, min(1.0, 1 - delta / (2 * r))))
     return 2 * r * math.sin(theta)
+
+
+def s_curve_radius(delta: float, span: float) -> float:
+    """Inverse of s_curve_span: the radius that carries delta over span.
+
+    Use it where the two ends are both known and the radius is whatever falls
+    out, which is how a bend in a wire is dimensioned.
+    """
+    return (span**2 + delta**2) / (4 * delta)
 
 
 def s_curve(z: float, z0: float, v0: float, v1: float, r: float) -> float:
@@ -527,19 +604,139 @@ def glass() -> Part.Shape:
 
 
 # =========================================================================
+# internals
+# =========================================================================
+def _bend_edges(x0: float, x1: float, z0: float, z1: float) -> list:
+    """Two tangent arcs in the XZ plane, vertical at both ends.
+
+    The radius is not a choice here - both ends of the bend are known, so it
+    is whatever carries x0 to x1 over the height available.
+    """
+    r = s_curve_radius(abs(x1 - x0), z1 - z0)
+    sign = 1.0 if x1 > x0 else -1.0
+    half = math.asin((z1 - z0) / (2 * r))  # each arc turns through this
+    dx = sign * r * (1 - math.cos(half / 2))
+    dz = r * math.sin(half / 2)
+    xm, zm = (x0 + x1) / 2, (z0 + z1) / 2
+    return [
+        Part.Arc(_point(x0, z0), _point(x0 + dx, z0 + dz), _point(xm, zm)).toShape(),
+        Part.Arc(_point(xm, zm), _point(x1 - dx, z1 - dz), _point(x1, z1)).toShape(),
+    ]
+
+
+def wire_solid(x_post: float, top: float, bottom: float = LEAD_BOTTOM):
+    """One electrode wire, swept along line - arc - arc - line."""
+    x_lead = math.copysign(LEAD_PITCH / 2, x_post)
+    z0, z1 = LEAD_BEND
+    path = Part.Wire([
+        _line(_point(x_lead, bottom), _point(x_lead, z0)),
+        *_bend_edges(x_lead, x_post, z0, z1),
+        _line(_point(x_post, z1), _point(x_post, top)),
+    ])
+    # The profile has to sit on the start of the spine and square to it.
+    start = Part.Wire([Part.makeCircle(LEAD_R, _point(x_lead, bottom),
+                                       App.Vector(0, 0, 1))])
+    return path.makePipeShell([start], True, False)
+
+
+def mica_solid(z0: float) -> Part.Shape:
+    """A spacer disc, locating the stack against the bore."""
+    disc = Part.makeCylinder(MICA_R, MICA_T, _point(0, z0))
+    for k in range(6):
+        angle = 2 * math.pi * k / 6
+        centre = App.Vector((POST_PITCH / 2) * math.cos(angle),
+                            (POST_PITCH / 2) * math.sin(angle), z0 - CUT_OVER)
+        disc = disc.cut(Part.makeCylinder(MICA_HOLE_R, MICA_T + 2 * CUT_OVER,
+                                         centre))
+    return disc
+
+
+def anode_solid() -> Part.Shape:
+    """Open tube, wall 0.10, hung off the axis."""
+    axis = App.Vector(ANODE_X, 0, ANODE_Z)
+    return Part.makeCylinder(ANODE_R, ANODE_H, axis).cut(
+        Part.makeCylinder(ANODE_R - ANODE_WALL, ANODE_H + 2 * CUT_OVER,
+                          axis - App.Vector(0, 0, CUT_OVER)))
+
+
+def cathode_solid() -> Part.Shape:
+    """The open tube. The disc across it is glow_solid, not part of this."""
+    return Part.makeCylinder(CATHODE_R, CATHODE_H, _point(0, CATHODE_Z)).cut(
+        Part.makeCylinder(CATHODE_R - CATHODE_WALL, CATHODE_H + 2 * CUT_OVER,
+                          _point(0, CATHODE_Z - CUT_OVER)))
+
+
+def glow_solid() -> Part.Shape:
+    """The disc you see through the dome, and the only thing that lights up.
+
+    Its own part rather than fused into the cathode, because a WRL carries one
+    material per shape and this is the one that needs an emissive colour.
+
+    Sized a hair over the bore, so its rim buries itself in the tube wall. On
+    the bore exactly the two would share a cylindrical surface and z-fight.
+    """
+    return Part.makeCylinder(CATHODE_R - CATHODE_WALL + CUT_OVER,
+                             CATHODE_FACE_T, _point(0, CATHODE_FACE_Z))
+
+
+# =========================================================================
 # document
 # =========================================================================
 # What this script owns. Anything else in the document is left alone, so you
 # can park sketches, sections or an imported source next to the model without
 # a rebuild eating them.
-MANAGED = ("Glass", "Sections")
+MANAGED = ("Glass", "Wires", "Micas", "Anode", "Cathode", "Glow", "Sections")
 
 # Applied once, when a part is first created. After that the document wins, so
 # anything you change in the GUI survives a rebuild - which matters because
-# KiCad takes its appearance from the WRL, and the WRL takes it from here.
+# KiCad takes its appearance from the WRL, and the WRL takes it from here. Pass
+# reapply_appearance to build() to overwrite what the document says, which is
+# the only way a value changed here reaches a part that already exists.
+#
+# One material per shape in a WRL, so the parts stay separate objects and are
+# never fused into each other. The glow is split out of the cathode for exactly
+# that reason: it is the one surface carrying an emissive colour.
+#
+# Starting values, not measurements. The glass follows IN-12B.wrl's GLASS2,
+# which is the one appearance in this project known to render well in KiCad -
+# note its shininess of 0.03, which is a broad highlight rather than the tight
+# one you would expect, so the glassiness comes from transparency and a full
+# white specular instead. Tune in the GUI, then read the numbers back off
+# ViewObject.ShapeAppearance[0] and put them here.
 APPEARANCE = {
-    "Glass": {"ShapeColor": (0.85, 0.90, 0.90), "Transparency": 82},
+    "Glass": dict(diffuse=(1.00, 1.00, 1.00), specular=(1.00, 1.00, 1.00),
+                  ambient=(1.00, 1.00, 1.00), shininess=0.03, transparency=0.78),
+    "Wires": dict(diffuse=(0.72, 0.72, 0.74), specular=(0.98, 0.98, 0.98),
+                  shininess=0.30),
+    "Micas": dict(diffuse=(0.35, 0.30, 0.26), specular=(0.25, 0.25, 0.25),
+                  shininess=0.15, transparency=0.15),
+    "Anode": dict(diffuse=(0.18, 0.17, 0.18), specular=(0.60, 0.60, 0.60),
+                  shininess=0.25),
+    "Cathode": dict(diffuse=(0.18, 0.17, 0.18), specular=(0.60, 0.60, 0.60),
+                    shininess=0.25),
+    # Neon runs orange-red. Emissive is self-illumination: it is added flat,
+    # independent of the lighting, which is what makes the dot read as lit.
+    "Glow": dict(diffuse=(0.55, 0.30, 0.10), emissive=(1.00, 0.50, 0.12),
+                 specular=(0.30, 0.30, 0.30), shininess=0.20),
 }
+
+
+def _material(diffuse, specular=(0.53, 0.53, 0.53), emissive=(0.0, 0.0, 0.0),
+              ambient=(0.33, 0.33, 0.33), shininess=0.90,
+              transparency=0.0) -> "App.Material":
+    """Build a full appearance. Colours are RGB 0-1, as is transparency.
+
+    ViewObject.Transparency is an int percentage and Material.Transparency a
+    fraction, and they shadow each other; everything here is the fraction.
+    """
+    mat = App.Material()
+    mat.DiffuseColor = (*diffuse, 1.0)
+    mat.SpecularColor = (*specular, 1.0)
+    mat.EmissiveColor = (*emissive, 1.0)
+    mat.AmbientColor = (*ambient, 1.0)
+    mat.Shininess = shininess
+    mat.Transparency = transparency
+    return mat
 
 
 def _document():
@@ -549,22 +746,27 @@ def _document():
     return doc
 
 
-def _place(doc, name: str, shape: Part.Shape):
+def _place(doc, name: str, shape: Part.Shape, reapply: bool = False):
     """Create or update one part, keeping whatever the document already says.
 
-    Assigning to Shape replaces the geometry in place, so colour, transparency
-    and visibility ride through a rebuild. Deleting and re-showing - which is
-    what Part.show does, suffixing the name if one is already there - throws
-    all of that away every run.
+    Assigning to Shape replaces the geometry in place, so appearance and
+    visibility ride through a rebuild. Deleting and re-showing - which is what
+    Part.show does, suffixing the name if one is already there - throws all of
+    that away every run.
+
+    The cost of that is that APPEARANCE only ever reaches a part on the run
+    that creates it, so editing a value here does nothing to a part already in
+    the document. reapply is the way out, and it overwrites GUI edits.
     """
     obj = doc.getObject(name)
-    if obj is None:
+    fresh = obj is None
+    if fresh:
         obj = doc.addObject("Part::Feature", name)
-        view = getattr(obj, "ViewObject", None)
-        if view is not None:
-            for prop, value in APPEARANCE.get(name, {}).items():
-                if hasattr(view, prop):
-                    setattr(view, prop, value)
+    if fresh or reapply:
+        view = getattr(obj, "ViewObject", None)  # None when headless
+        spec = APPEARANCE.get(name)
+        if view is not None and spec is not None and hasattr(view, "ShapeAppearance"):
+            view.ShapeAppearance = (_material(**spec),)
     obj.Shape = shape
     return obj
 
@@ -602,7 +804,7 @@ def _report(shape):
     for label, value, target in [
         ("solids", len(shape.Solids), 1),
         ("valid", shape.isValid(), True),
-        ("volume mm3", f"{shape.Volume:.2f}", "~400 hollow"),
+        ("volume mm3", f"{shape.Volume:.2f}", "~358 hollow"),
         ("height", f"{bb.ZMin:.4f} - {bb.ZMax:.4f}", "0.0000 - 28.6000"),
         ("press width", f"{ob.XLength:.4f}", "7.0000"),
         ("press thickness", f"{ob.YLength:.4f}", "3.3500"),
@@ -621,27 +823,79 @@ def _report(shape):
         worst_b = max(worst_b, abs(max(abs(y) for x, y in pts if abs(x) < 0.05)
                                    - s_curve(z, Z_SHOULDER, PRESS_BEAD, BARREL_R, BLEND_R)))
     print(f"  {'shoulder anchors':<18}"
-          f"{f'width {worst_w:.4f}, bead {worst_b:.4f}':<22}both < 0.01")
+          f"{f'width {worst_w:.4f}, bead {worst_b:.4f}':<22} both < 0.01")
 
 
-def build(show_sections: bool = False):
+def _bore_clearance(shape: Part.Shape) -> float:
+    """Gap from a part to the bore, over the run where the bore is straight.
+
+    Below the floor fillet the wires are meant to be buried in the seal, so
+    there is nothing to measure there. Above it the bore is a cylinder of
+    CAVITY_R and this is arithmetic. distToShape against the glass gives the
+    same four figures and takes twenty seconds a part, the envelope being 136
+    faces; that is too slow to sit in every build.
+    """
+    floor = Z_CAVITY_FLOOR + CAVITY_FILLET
+    reach = max((math.hypot(p.x, p.y)
+                 for edge in shape.Edges for p in edge.discretize(Number=360)
+                 if p.z >= floor), default=0.0)
+    return CAVITY_R - reach
+
+
+def _report_internals(built: dict):
+    """Volume, extent and how close each part comes to the bore.
+
+    The parts total 49.78 against the source inlay's 54.65, and the difference
+    is the 12.57 of lead trimmed off each wire - 4.94 of it - so the whole
+    decomposition reconciles to about a thousandth of the source.
+    """
+    total = 0.0
+    for name in ("Wires", "Micas", "Anode", "Cathode", "Glow"):
+        shape = built[name]
+        bb = shape.optimalBoundingBox()
+        total += shape.Volume
+        print(f"  {name.lower():<18}{f'{shape.Volume:.2f} mm3':<22}"
+              f"z {bb.ZMin:6.2f} - {bb.ZMax:5.2f}, bore clear by "
+              f"{_bore_clearance(shape):.4f}")
+    print(f"  {'internals':<18}{f'{total:.2f} mm3':<22} 49.78 at the default trim")
+
+
+def build(show_sections: bool = False, lead_bottom: float = LEAD_BOTTOM,
+          reapply_appearance: bool = False):
+    """Rebuild the lamp in place.
+
+    lead_bottom trims the wires: the default suits the flush footprint, and the
+    recessed one wants about 7.74, its board sitting at z = 9.74.
+
+    reapply_appearance forces APPEARANCE back onto parts that already exist,
+    discarding whatever they were given in the GUI.
+    """
     doc = _document()
 
+    built = {
+        "Glass": glass(),
+        "Wires": Part.makeCompound([wire_solid(x, top, lead_bottom)
+                                    for x, top in WIRES.values()]),
+        "Micas": Part.makeCompound([mica_solid(z) for z in MICA_Z]),
+        "Anode": anode_solid(),
+        "Cathode": cathode_solid(),
+        "Glow": glow_solid(),
+    }
+    # Additive rather than instead of, so switching it on and off does not
+    # destroy and recreate the parts and throw away their appearance.
     if show_sections:
-        built = {"Sections": Part.makeCompound(
-            [spline_wire(pts, z) for z, pts in shoulder_stations()])}
-    else:
-        built = {"Glass": glass()}
+        built["Sections"] = Part.makeCompound(
+            [spline_wire(pts, z) for z, pts in shoulder_stations()])
 
     for name, shape in built.items():
-        _place(doc, name, shape)
+        _place(doc, name, shape, reapply_appearance)
     _reconcile(doc, built)
     doc.recompute()
 
+    _report(built["Glass"])
+    _report_internals(built)
     if show_sections:
-        print(f"  {len(shoulder_stations())} shoulder sections")
-    else:
-        _report(built["Glass"])
+        print(f"  {'sections':<18}{len(shoulder_stations())}")
 
     if Gui is not None:
         Gui.SendMsgToActiveView("ViewFit")

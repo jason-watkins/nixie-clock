@@ -66,6 +66,7 @@ Usage:
 Output tree (rooted at --output, default fab/):
     <root>/<name>/rev<REV><STEP>/
         erc.rpt, drc.rpt                  reports from the export checks
+        <name>-rev<REV><STEP>-board.stl   bare board mesh, no components
         <fab>/
             gerbers/                      gerber and drill files
             <name>-rev<REV><STEP>-<fab>-gerbers.zip   upload this to the fab
@@ -73,7 +74,9 @@ Output tree (rooted at --output, default fab/):
             positions.csv                 pick-and-place, fab column format
 
 ERC and DRC check the design rather than any one fab, so they run once per
-board and their reports sit above the per-fab directories.
+board and their reports sit above the per-fab directories. The board mesh
+sits there for the same reason: it is the board itself, in a format no fab
+is sent, so it belongs to the revision rather than to any one house.
 
 Fab-specific settings live in FabProfile instances, collected in PROFILES.
 Every profile is exported by default; --profile narrows that to a subset.
@@ -1012,6 +1015,39 @@ def export_gerbers_and_drill(kicad_cli: str, project: Project, profile: FabProfi
          *profile.drill_args, str(project.pcb)])
 
 
+BOARD_MODEL_SUFFIX = "-board.stl"
+
+
+def export_board_model(kicad_cli: str, project: Project, out_stl: Path) -> None:
+    """Export the bare board as a printable mesh: outline, cutouts and holes,
+    with nothing mounted on it.
+
+    A solid of the board is what a fit check is made against -- print it and
+    the enclosure, or cut one from the other in CAD -- and none of that wants
+    the components, which --board-only drops.
+
+    Nothing else is asked for, so the solid is the dielectric core alone and
+    measures 1.510 rather than the stackup's 1.600. Copper and mask are
+    separately exportable and would make up the difference, at the price of
+    dragging 10 um and 35 um features into a mesh meant for a printer. Ninety
+    microns is the wrong ninety microns to chase.
+
+    Via holes stay closed for the same reason: at 0.3 mm they are below what
+    a printer resolves, so cutting them would add several hundred perimeters
+    that come out as blemishes. The pad drills and mounting holes are cut,
+    which is what a fit check is actually looking at.
+
+    The origin is the board file's, matching the gerbers. cad/test_base
+    re-exports on its own terms when it needs a board taken about its centre.
+
+    The file is named for the board and the export rather than sitting under
+    a generic name, because unlike the reports beside it this one is meant to
+    be opened somewhere else, where three files called board.stl are three
+    chances to print the wrong one."""
+    run([kicad_cli, "pcb", "export", "stl", "--board-only", "--force",
+         "-o", str(out_stl), str(project.pcb)])
+
+
 # kicad-cli's pos CSV column names. These are KiCad's, not the fab's, so they
 # are fixed here rather than in the profile.
 POS_SRC_X, POS_SRC_Y, POS_SRC_ROT = "PosX", "PosY", "Rot"
@@ -1618,9 +1654,10 @@ def release(kicad_cli: str, project: Project, profiles: list[FabProfile],
 
     ERC and DRC run once for the board, not once per fab: they check the
     design, and their reports sit at the revision directory above the
-    per-fab ones. Only the profiles being exported are cleared, so quoting a
-    second fab later leaves the first one's files where they are -- they
-    describe the same commit and are still current."""
+    per-fab ones. The board mesh joins them there, being the board rather
+    than any house's view of it. Only the profiles being exported are
+    cleared, so quoting a second fab later leaves the first one's files where
+    they are -- they describe the same commit and are still current."""
     export_id = read_export_id(project)
     gate_doc_revision(project.root, revs)
     gate_git_clean(project)
@@ -1639,6 +1676,13 @@ def release(kicad_cli: str, project: Project, profiles: list[FabProfile],
         (
             "DRC + schematic parity",
             lambda: gate_drc(kicad_cli, project, rev_dir / "drc.rpt"),
+        ),
+        (
+            "board model (STL)",
+            lambda: export_board_model(
+                kicad_cli, project,
+                rev_dir / f"{project.name}-rev{export_id}{BOARD_MODEL_SUFFIX}",
+            ),
         ),
     ]
     for profile in profiles:

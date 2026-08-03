@@ -16,3 +16,7 @@
 (rule "Q2 TO-92 lead spacing is set by the package"
   (condition "A.memberOfFootprint('Q2') && B.memberOfFootprint('Q2')")
   (constraint clearance (min 0.2mm)))
+
+(rule "Q3 TO-92 lead spacing is set by the package"
+  (condition "A.memberOfFootprint('Q3') && B.memberOfFootprint('Q3')")
+  (constraint clearance (min 0.2mm)))

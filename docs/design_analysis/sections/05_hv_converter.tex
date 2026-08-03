@@ -65,7 +65,10 @@ this section are assigned as follows:
 \des{R}{HVUV1}, \des{R}{HVUV2} & Input UVLO divider \\
 
 \hline
-\des{Q}{HVINH}, \des{R}{HVINHPU} & Display inhibit shunt and its gate pull-up \\
+\des{Q}{HVINH}, \des{R}{HVINHPU}, \des{R}{HVINHPD} & Display inhibit shunt and its gate divider \\
+
+\hline
+\des{Q}{HVREL}, \des{R}{HVRELPD} & Inhibit release switch and its gate pull-down \\
 
 \hline
 \des{R}{HVPG} & PGOOD pull-up resistor \\
@@ -210,19 +213,78 @@ before UVLO releases, so one divider serves both comparators.
 UVLO keeps the converter from enabling before the power rail is established, but
 it does not guarantee enough current to drive the tubes. To accomplish this, the
 MCU reads the negotiated contract from the USB-PD chip and provides a
-display-inhibit signal to the converter. This is implemented by \des{Q}{HVINH},
-an N-channel MOSFET that grounds the UVLO/SYNC pin when on, and has its gate
-pulled up to the 3.3~V rail through \des{R}{HVINHPU}. The MCU pulls the gate low
-to disable the inhibit.
+display-inhibit signal to the converter. \des{Q}{HVINH}, an N-channel MOSFET
+across \des{R}{HVUV2}, grounds the UVLO/SYNC pin when on; the MCU releases it.
+Two requirements bound how its gate is biased.
 
-\des{Q}{HVINH} sinks the $V_{\mathrm{BUS}}/\des{R}{HVUV1} =
-\SI{205}{\micro\ampere}$ the divider delivers at the top of the input window and
-must hold the pin below its \SI{1.45}{\volt} falling threshold, so the channel
-need only be under $\SI{1.45}{\volt}/\SI{205}{\micro\ampere} =
-\SI{7.1}{\kilo\ohm}$. What selects the part is therefore conduction at the
-\SI{3.3}{\volt} the gate is driven with: $V_{GS(th)} \leq \SI{2}{\volt}$
-maximum. \des{R}{HVINHPU} $= \SI{100}{\kilo\ohm}$ holds the gate against
-leakage alone and is weak enough for the MCU pin to sink.
+\begin{itemize}[nosep]
+  \item \textbf{The inhibit is asserted before the converter can run, on every
+    ramp.} The converter and the MCU are both supplied from
+    $V_{\mathrm{BUS}}$, but the MCU's 3.3~V rail is the output of a converter of
+    its own (\cref{sec:3v3-converter}) and reaches regulation some time after
+    $V_{\mathrm{BUS}}$ appears. A gate bias referred to that rail would make the
+    default state depend on how two independent converters' start-up times
+    happen to order, a quantity no part of this design controls. Referred to
+    $V_{\mathrm{BUS}}$ instead, the gate drive and the divider it shunts rise
+    together and the ordering is fixed by resistor ratios alone.
+  \item \textbf{The commanding pin does not sit on that node.} A gate biased
+    from $V_{\mathrm{BUS}}$ reaches most of \SI{13}{\volt}, while the module's
+    pins are recommended to \(V_{DD}+0.3\)~V (\cref{sec:esp32}). The gate and
+    the pin that commands it are in different domains and cannot be the same
+    node.
+\end{itemize}
+
+Together these specify the network. \des{R}{HVINHPU} and \des{R}{HVINHPD}
+divide $V_{\mathrm{BUS}}$ onto \des{Q}{HVINH}'s gate, and a second N-channel
+MOSFET, \des{Q}{HVREL}, pulls that gate to ground when the MCU asserts its
+enable. \des{R}{HVRELPD} holds \des{Q}{HVREL} off otherwise, so the MCU pin sees
+only a gate and a pull-down, and the inhibited state is the one a
+high-impedance pin produces with no rail present anywhere. That is the same
+requirement \cref{sec:esp32-usb} places on the data-switch enable, and it is met
+here without reference to a supply.
+
+\paragraph{Gate divider.} $\des{R}{HVINHPU} = \SI{100}{\kilo\ohm}$ and
+$\des{R}{HVINHPD} = \SI{1}{\mega\ohm}$ put $0.909\,V_{\mathrm{BUS}}$ on the
+gate: \SI{4.32}{\volt} at the bottom of the input window and \SI{11.8}{\volt} at
+the top. The upper figure specifies the gate rating, $V_{GS} \geq
+\pm\SI{12}{\volt}$; the threshold ceiling comes from the ordering requirement
+below. The pair draws $V_{\mathrm{BUS}}/\SI{1.1}{\mega\ohm}$,
+\SI{11.8}{\micro\ampere} at the top of the window.
+
+\paragraph{Ordering.} The divider of \cref{sec:hv-uvlo} cannot carry the
+UVLO/SYNC pin to the comparator's \SI{1.425}{\volt} minimum rising threshold
+until $V_{\mathrm{BUS}} = 1.425 \times 2.957 = \SI{4.21}{\volt}$, where the gate
+above stands at \SI{3.83}{\volt}. Establishing the inhibit first therefore
+bounds the shunt at $V_{GS(th)} \leq \SI{3.83}{\volt}$ worst case. The
+$V_{GS(th)} \leq \SI{2}{\volt}$ that the release switch below requires
+independently sits well inside that bound and places the assertion point at
+$V_{\mathrm{BUS}} = 2.0/0.909 = \SI{2.20}{\volt}$: two volts of input below the
+earliest release the tolerance stack permits, at any slew rate the source
+presents. The EN comparator, whose
+\SIrange{0.4}{0.7}{\volt} rising range maps through the same divider to
+\SIrange{1.18}{2.07}{\volt} of input, may be satisfied first; between it and
+\SI{2.20}{\volt} the controller sits in standby, where the CS pin is grounded
+and the GATE output does not switch (\cref{sec:lm5156h}).
+
+\paragraph{Shunt conduction.} \des{Q}{HVINH} sinks the
+$V_{\mathrm{BUS}}/\des{R}{HVUV1} = \SI{205}{\micro\ampere}$ the divider delivers
+at the top of the input window and must hold the pin below its \SI{1.45}{\volt}
+falling threshold, so the channel need only be under
+$\SI{1.45}{\volt}/\SI{205}{\micro\ampere} = \SI{7.1}{\kilo\ohm}$. Against the
+\SI{4.32}{\volt} minimum gate drive derived above, a part specified in single
+ohms clears that by three orders.
+
+\paragraph{Release switch.} \des{Q}{HVREL} blocks $0.909\,V_{\mathrm{BUS}} =
+\SI{11.8}{\volt}$ across its channel when off and sinks
+$V_{\mathrm{BUS}}/\des{R}{HVINHPU} = \SI{130}{\micro\ampere}$ when on, neither
+demanding. What selects it is conduction at the \SI{3.3}{\volt} the MCU drives
+its gate with: $V_{GS(th)} \leq \SI{2}{\volt}$ maximum, which the shunt's
+\SI{3.83}{\volt} bound also admits, so one part serves both positions. Holding the shunt
+gate below \des{Q}{HVINH}'s \SI{0.6}{\volt} minimum threshold at that
+\SI{130}{\micro\ampere} allows up to \SI{4.6}{\kilo\ohm} of channel, which no
+part meeting the drive requirement approaches. $\des{R}{HVRELPD} =
+\SI{100}{\kilo\ohm}$ holds \des{Q}{HVREL} off against leakage alone and costs
+the MCU pin \SI{33}{\micro\ampere} to overcome.
 
 \subsubsection{Controller housekeeping (BIAS, VCC, PGOOD)}\label{sec:hv-house}
 
@@ -1799,10 +1861,12 @@ DA2032 frequency & characterized at \SI{100}{\kilo\hertz} only &
 UVLO \des{R}{HVUV1}/\des{R}{HVUV2} & enable below the \SI{4.75}{\volt} minimum input & on
 \SI{4.44}{\volt} / off \SI{3.97}{\volt}; \SI{63.4}{\kilo\ohm}/\SI{32.4}{\kilo\ohm} \\
 \hline
-Display inhibit \des{Q}{HVINH}/\des{R}{HVINHPU} & default asserted; released only on a contract whose
-\emph{current} allowance carries the display (\cref{sec:pd-sequence}) & shunt across \des{R}{HVUV2}, gate pulled
-to +3V3 through \SI{100}{\kilo\ohm}; \SI{205}{\micro\ampere},
-$V_{GS(th)}\le\SI{2}{\volt}$ maximum \\
+Display inhibit \des{Q}{HVINH}/\des{Q}{HVREL} & default asserted with no
+dependency on a rail outside the converter; released only on a contract whose
+\emph{current} allowance carries the display (\cref{sec:pd-sequence}) & shunt across \des{R}{HVUV2}, gate
+divided from $V_{\mathrm{BUS}}$ through \SI{100}{\kilo\ohm}/\SI{1}{\mega\ohm};
+asserted by \SI{2.20}{\volt} in against a \SI{4.21}{\volt} earliest UVLO
+release; \SI{205}{\micro\ampere}, $V_{GS(th)}\le\SI{2}{\volt}$ maximum \\
 \hline
 EN vs.\ UVLO & EN satisfied before UVLO releases & \SI{1.54}{\volt} $\ll$
 \SI{4.44}{\volt} \\
@@ -1983,7 +2047,9 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   \hline
   \des{Q}{HVSW} & N-channel MOSFET & IRL540N & $V_{DS}\geq\SI{100}{\volt}$; $V_{GS}\geq\pm\SI{16}{\volt}$; logic-level, $R_{DS(\mathrm{on})}$ specified at $V_{GS}=\SI{5}{\volt}$ and $\leq\SI{55}{\milli\ohm}$ at \SI{6.85}{\volt}; $Q_{GD}\leq\SI{38}{\nano\coulomb}$; $I_D\geq\SI{3}{\ampere}$; $\theta_{JA}\leq\SI{62}{\kelvin\per\watt}$ (\cref{sec:hv-switch}) & TO-220, vertical \\
   \hline
-  \des{Q}{HVINH} & N-channel MOSFET & TN2106N3-G & $V_{GS(th)}\leq\SI{2}{\volt}$ maximum (\cref{sec:hv-inhibit}) & TO-92 \\
+  \des{Q}{HVINH} & N-channel MOSFET & TN2106N3-G & $V_{GS}\geq\pm\SI{12}{\volt}$; $V_{GS(th)}\leq\SI{2}{\volt}$ maximum (\cref{sec:hv-inhibit}) & TO-92 \\
+  \hline
+  \des{Q}{HVREL} & N-channel MOSFET & TN2106N3-G & $V_{DS}\geq\SI{12}{\volt}$; $V_{GS(th)}\leq\SI{2}{\volt}$ maximum (\cref{sec:hv-inhibit}) & TO-92 \\
   \hline
   \des{R}{BALDIG} & Fixed resistor & \SIrange{7.50}{13.00}{\kilo\ohm} & 1\,\%; four, matched to one row of \cref{tab:hv-ballast-divider}; $\geq\SI{0.32}{\watt}$ (\cref{sec:hv-load-digit}) & DIN0207 minimum \\
   \hline
@@ -2056,6 +2122,10 @@ Compensation \des{R}{HVCOMP}/\des{C}{HVC1}/\des{C}{HVC2} & $\varphi_m \ge 45^\ci
   \des{R}{HVPG} & Fixed resistor & \SI{100}{\kilo\ohm} & 5\,\% (\cref{sec:hv-house-pgood}) & --- \\
 \hline
 \des{R}{HVINHPU} & Fixed resistor & \SI{100}{\kilo\ohm} & 5\,\% (\cref{sec:hv-inhibit}) & --- \\
+\hline
+\des{R}{HVINHPD} & Fixed resistor & \SI{1}{\mega\ohm} & 5\,\% (\cref{sec:hv-inhibit}) & --- \\
+\hline
+\des{R}{HVRELPD} & Fixed resistor & \SI{100}{\kilo\ohm} & 5\,\% (\cref{sec:hv-inhibit}) & --- \\
 \hline
 \end{longtable}
 }

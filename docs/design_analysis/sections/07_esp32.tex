@@ -495,7 +495,7 @@ requirements bound which pin it may be:
     at attach and must keep owning it until the MCU deliberately takes it.
 \end{itemize}
 The same reasoning governs the display inhibit of \cref{sec:hv-inhibit}, whose
-pull-up holds the tubes dark under exactly the same conditions. Both are
+gate pull-down holds the tubes dark under exactly the same conditions. Both are
 outputs whose safe state is the one a high-impedance pin produces, and both are
 therefore assigned from the module's general-purpose pins.
 
