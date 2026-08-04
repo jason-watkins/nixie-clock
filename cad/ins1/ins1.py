@@ -268,9 +268,63 @@ def _mirror(segments, sx, sy):
     return out
 
 
-def press_outline(z: float = 0.0) -> Part.Wire:
+def press_offset(distance: float) -> list:
+    """PRESS_QUARTER moved out by distance, or in for a negative one.
+
+    The section is tangent continuous, so each segment can be offset on its own
+    normal and the ends still meet: a line shifts sideways, an arc keeps its
+    centre and changes radius. The sign of that follows the arc's sweep - out
+    where it turns with the outline, in where it turns against it - and the
+    quarter's ends stay on the axes, so it still mirrors into a closed section.
+
+    Part.Wire.makeOffset2D is the obvious way to do this and is not usable here.
+    It leaves degenerate edges behind: 24 in, 28 out going inward with four of
+    9.3e-08, and 42 with eight of them going outward. Both fail a BOP check, and
+    the outward one cannot be repaired by dropping them - the survivors fall
+    into four chains, because there the short edges are load bearing.
+    """
+    out = []
+    for kind, p0, p1, centre, radius in PRESS_QUARTER:
+        if kind == "line":
+            tx, ty = p1[0] - p0[0], p1[1] - p0[1]
+            length = math.hypot(tx, ty)
+            # The quarter runs counter-clockwise, so outward is the tangent
+            # turned a quarter turn clockwise.
+            nx, ny = distance * ty / length, -distance * tx / length
+            out.append(("line", (p0[0] + nx, p0[1] + ny),
+                        (p1[0] + nx, p1[1] + ny), None, None))
+            continue
+
+        a0 = math.atan2(p0[1] - centre[1], p0[0] - centre[0])
+        a1 = math.atan2(p1[1] - centre[1], p1[0] - centre[0])
+        sweep = a1 - a0
+        while sweep > math.pi:
+            sweep -= 2 * math.pi
+        while sweep < -math.pi:
+            sweep += 2 * math.pi
+        r = radius + distance if sweep > 0 else radius - distance
+        out.append(("arc",
+                    (centre[0] + r * math.cos(a0), centre[1] + r * math.sin(a0)),
+                    (centre[0] + r * math.cos(a1), centre[1] + r * math.sin(a1)),
+                    centre, r))
+
+    # The junctions in the table are rounded to four decimals, so two arcs that
+    # ought to share a tangent point do not quite, and offsetting each from its
+    # own centre opens that to 1.4e-05 - enough that the ring will not close and
+    # Part.Wire returns a three-edge fragment. Sew each start onto the end
+    # before it. The arcs are built through three points, so an endpoint a few
+    # microns off its own circle costs nothing. The quarter's own ends sit on
+    # the axes and mirror exactly, so only the internal joins need it.
+    for index in range(1, len(out)):
+        kind, _, p1, centre, radius = out[index]
+        out[index] = (kind, out[index - 1][2], p1, centre, radius)
+    return out
+
+
+def press_outline(z: float = 0.0, distance: float = 0.0) -> Part.Wire:
     """The press section as drawn: 24 exact arcs and lines, closed and G1."""
-    half = PRESS_QUARTER + _mirror(PRESS_QUARTER, -1, 1)
+    quarter = PRESS_QUARTER if distance == 0.0 else press_offset(distance)
+    half = quarter + _mirror(quarter, -1, 1)
     segments = half + _mirror(half, 1, -1)
 
     edges = []
@@ -707,12 +761,11 @@ MANAGED = ("Glass", "Wires", "Micas", "Anode", "Cathode", "Glow", "Sections")
 # never fused into each other. The glow is split out of the cathode for exactly
 # that reason: it is the one surface carrying an emissive colour.
 #
-# Starting values, not measurements. The glass follows IN-12B.wrl's GLASS2,
-# which is the one appearance in this project known to render well in KiCad -
-# note its shininess of 0.03, which is a broad highlight rather than the tight
-# one you would expect, so the glassiness comes from transparency and a full
-# white specular instead. Tune in the GUI, then read the numbers back off
-# ViewObject.ShapeAppearance[0] and put them here.
+# Starting values, not measurements. Note the glass's shininess of 0.03, which
+# is a broad highlight rather than the tight one you would expect: the
+# glassiness comes from transparency and a full white specular instead, and
+# that pairing is what renders well in KiCad. Tune in the GUI, then read the
+# numbers back off ViewObject.ShapeAppearance[0] and put them here.
 APPEARANCE = {
     "Glass": dict(diffuse=(1.00, 1.00, 1.00), specular=(1.00, 1.00, 1.00),
                   ambient=(1.00, 1.00, 1.00), shininess=0.03, transparency=0.78),

@@ -50,9 +50,7 @@ docstring explains the revision rules it enforces.
 
 The K155ID1 symbol and its DIP16 footprint started as imports from
 [judge2005's Eagle-and-KiCAD-Nixie-Libs](https://github.com/judge2005/Eagle-and-KiCAD-Nixie-Libs)
-and were modified here. The IN-12B tube model comes from
-[laurivosandi's nixiesp12](https://github.com/laurivosandi/nixiesp12), which credits miniwatt.info
-as its origin. Full library inventory: [pcb/lib/README.md](pcb/lib/README.md).
+and were modified here. Full library inventory: [pcb/lib/README.md](pcb/lib/README.md).
 
 ## AI use
 

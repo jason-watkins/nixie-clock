@@ -206,12 +206,10 @@ REPO = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
 # The glass parts are carried as VRML, so KiCad's STEP export drops them and
-# they have to be inserted here. Worth the trouble twice over: for the IN-12 it
-# is the only way to get the tube at all, having no STEP twin, and for both it
-# is the only way to get the glass, which is a material property a STEP twin
-# could not carry. The INS-1 has a twin available and deliberately does not ship
-# one: a substituted solid would arrive grey, and it would also arrive twice,
-# once here and once in the exported board. See vrml.py.
+# they have to be inserted here. Neither ships a STEP twin, deliberately: a
+# substituted solid would arrive grey, where the VRML carries the glass and the
+# lit dot, and it would also arrive twice - once here and once in the exported
+# board. See vrml.py.
 SHAPES = os.path.join(REPO, "pcb", "lib", "nixie_clock.3dshapes")
 MODEL_SEAT = 1.510  # a front-side model's origin, above the board's underside
 BOARD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boards")
@@ -239,7 +237,7 @@ class Glassware(NamedTuple):
 
 
 GLASSWARE = (
-    Glassware(os.path.join(SHAPES, "IN-12B.wrl"), (3.819, -7.620, 0.0),
+    Glassware(os.path.join(SHAPES, "IN12B.wrl"), (0.0, 0.0, 0.0),
               (("NX1", -44.0, 0.0), ("NX2", -18.0, 0.0),
                ("NX3", 18.0, 0.0), ("NX4", 44.0, 0.0))),
     Glassware(os.path.join(SHAPES, "INS1_Recessed.wrl"), (0.0, 0.0, -9.74),
@@ -1074,11 +1072,11 @@ def glassware() -> list:
     the front and the leads go back through the board. That is a quarter turn
     about X: model +Z lands on -Y and model +Y stands up onto +Z.
 
-    The footprint's model offset is applied in the model's own frame, before the
-    turn, which is why it is rotated here rather than added to the translation.
-    The tube's 3.819 is exactly what centres it on its pads; the lamp's -9.74 is
-    what sinks it through the board, leaving the lens 18.86 proud of the front
-    and 2.00 of lead behind.
+    The footprint's model offset is applied in the model's own frame, before
+    the turn, which is why it is rotated here rather than added to the
+    translation. Both parts are drawn about their own pin rings, so the tube
+    needs none; the lamp's -9.74 is what sinks it through the board, leaving
+    the lens 18.86 proud of the front and 2.00 of lead behind.
 
     One mesh per material per part, so each keeps its own glass.
     """

@@ -1,18 +1,17 @@
 """Read a KiCad VRML model, materials included.
 
-KiCad ships some 3D models only as .wrl, and its STEP exporter cannot use them:
-VRML is a shaded mesh, not a solid, so those parts are silently absent from an
-exported board. IN-12B.wrl is the one that matters here - the nixie tubes.
+Some 3D models are carried only as .wrl, and KiCad's STEP exporter cannot use
+them: VRML is a shaded mesh, not a solid, so those parts are silently absent
+from an exported board. The tubes and the colon lamps are both like that, by
+choice - see cad/ins1/export_kicad.py.
 
-Loading it directly is the way to get them, and it is also the only way to get
-what makes a nixie tube look like one. A STEP twin would carry the geometry and
-throw away the glass; the VRML carries `transparency` per material, and the tube
-is authored as several: GLASS2 at 0.75, GLASS3 at 0.59, BRASS for the anode
-mesh, BLACK for the base, pink for the digits.
+Loading them directly is the way to get them, and it is also the only way to get
+what makes a nixie look like one. A STEP twin would carry the geometry and throw
+away the glass; the VRML carries `transparency` per material, and each part is
+authored as several - glass, electrodes, spacers and markings.
 
-The file this was written against is Wings3D output with a flat structure - one
-top-level Transform holding a list of Shape nodes, no nesting, no per-node
-placement - so the reader is deliberately simple. Materials are DEF'd on first
+The files are a flat structure - one top-level Transform per shape, no nesting
+and no per-node placement - so the reader is deliberately simple. Materials are DEF'd on first
 use and USE'd afterwards, which is the one piece of VRML indirection it does
 handle. Anything more elaborate is not supported and will read as untextured
 geometry rather than failing quietly, so check the material count.

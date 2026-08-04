@@ -13,19 +13,6 @@ Source: <https://github.com/judge2005/Eagle-and-KiCAD-Nixie-Libs>
 Local changes: pin electrical types set to passive, courtyard added. DIP16 carries the stock KiCad
 `DIP-16_W7.62mm` model, rotated to suit this footprint's horizontal, centre-origin pin layout.
 
-## Imported from laurivosandi's nixiesp12
-
-Source: <https://github.com/laurivosandi/nixiesp12>
-(no license stated; used with attribution)
-
-- `IN-12B.wrl` tube model, attached to the IN-12-DSUB footprint. That
-  project credits miniwatt.info as the origin of its 3D models; that site is
-  no longer online.
-
-The model's' pins sit on a 1.27 mm grid rather than the tube's 11.5 x 18 mm oval, so in the 3D view
-they stand off centre in their holes by up to 0.7 mm. Only the twelve and six o'clock pins land
-concentric.
-
 ## Copied from the KiCad 9 stock library, then modified
 
 - `WSON-12-1EP...ThermalVias` (LM5155): exposed-pad stack set to solid zone
@@ -38,6 +25,10 @@ concentric.
 ## Drawn for this project
 
 - IN-12B symbol and IN-12-DSUB footprint, the tube socketed on D-SUB machined pins.
+- `IN12B.wrl`, built in `cad/in12/` and written by `cad/in12/export_kicad.py`. Dimensions come from
+  the dimensioned drawing in `docs/datasheets/IN-12A_IN-12B.pdf`, from the footprint's own hole
+  pattern, and from tubes in hand; the electrode stack and the glass markings are off photographs
+  of those tubes.
 - INS-1 symbol and INS-1_Recessed footprint, the lamp sunk through the board so its lens clears the
   IN-12 faces by a few millimeters instead of standing 6 mm above them. Leads land on pads on the
   back of the board. The label sheet in `docs/datasheets/INS-1.pdf` carries no mechanical drawing,
@@ -48,7 +39,7 @@ concentric.
   which holds the one region of the envelope that is sampled from the original model because
   FreeCAD can't handle the fillets. No STEP twin, deliberately: KiCad would substitute it and the
   lamp would arrive grey, where the VRML carries the glass and the lit dot. `cad/test_base` reads
-  this file directly for that reason, as it does `IN-12B.wrl`.
+  this file directly for that reason, as it does the tube.
 - CYPD3176 symbol, pins arranged to match the datasheet's application figure
 - Kemet GoldMax radial dipped MLCC footprints: C315, C317, C320, C322, C330 case sizes
 - Panasonic ECQ-E film capacitor footprint, and `ECQ-E.stp` with it. Built in

@@ -134,7 +134,7 @@
 	)
 	(property "AUTHOR" "Jason Watkins")
 	(property "REV" "C")
-	(property "STEP" "2")
+	(property "STEP" "4")
 	(property "TITLE" "4 Digit Nixie Clock (IN-12)")
 	(footprint "0_nixie_clock:DIP16"
 		(layer "F.Cu")
@@ -218,14 +218,6 @@
 		(path "/c54f5e18-b308-4d02-9519-1dd6eb9e6310")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "5" "12" "3" "6" "7" "4" "16" "15" "8" "9" "13" "14" "11" "10"
-					"1" "2"
-				)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -557,6 +549,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "resistor/THT"
+			(at 0 0 180)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "db8b8d6d-ecce-467f-acf6-88973e1f7a57")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CFR-25JR-52-240K"
 			(at 0 0 180)
 			(unlocked yes)
@@ -587,12 +591,6 @@
 		(path "/06ffaee9-7869-4c3a-b50e-28765d92ed4e")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -762,6 +760,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "resistor/THT"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "935e74d0-21d5-47be-a442-dff6a711df1d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 0 0 270)
 			(unlocked yes)
@@ -792,12 +802,6 @@
 		(path "/894cc80a-a1e2-40ea-8a9a-6a5d4db8644e")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -999,12 +1003,6 @@
 		(path "/873f27ce-c348-4139-9499-799c7f48994c")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "LHDP" "A")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1304,9 +1302,9 @@
 			(uuid "64464070-da1e-44b3-b91a-b47e0491921a")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN-12B.wrl"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN12B.wrl"
 			(offset
-				(xyz 3.819 -7.62 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -1398,12 +1396,6 @@
 		(path "/65a61c79-2c7f-404c-b05a-1e3cabd76ca4")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "LHDP" "A")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1703,9 +1695,9 @@
 			(uuid "cb2d71c9-dca9-4612-a6e0-a437b58c07b8")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN-12B.wrl"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN12B.wrl"
 			(offset
-				(xyz 3.819 -7.62 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -1767,6 +1759,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "45710c6f-2838-48eb-b17e-195a874c54f2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -1797,12 +1801,6 @@
 		(path "/d6846f3d-b2a0-4ec4-b4f7-3af896914bae")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -1899,6 +1897,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "4a3f01f9-81ca-4878-98ca-48b26a9beaf4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -1929,12 +1939,6 @@
 		(path "/c6b70d96-e77b-42ce-8432-9d14624f462b")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -2029,6 +2033,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "capacitor/THT/other"
+			(at 0 0 90)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ed404132-56c4-4437-92ec-953dc2c5e64f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "A758BG106M1EAAE070"
 			(at 0 0 90)
 			(unlocked yes)
@@ -2059,12 +2075,6 @@
 		(path "/1f254e60-5967-411b-8040-076fa50c2ee7")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3407,6 +3417,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ea9a87c9-c5cb-46a9-b462-b5905136c8b1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -3437,12 +3459,6 @@
 		(path "/b460172b-d1ca-49f2-a5b3-e5f8d3c452b3")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -3567,12 +3583,6 @@
 		(path "/c0e1992a-878e-40cd-8d56-70e85b696b61")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
@@ -3723,14 +3733,6 @@
 		(path "/50ea1b50-2b89-4b48-98f0-e5b9a78ac247")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "5" "12" "3" "6" "7" "4" "16" "15" "8" "9" "13" "14" "11" "10"
-					"1" "2"
-				)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4094,12 +4096,6 @@
 		(path "/6f15e034-0987-4961-8c9f-9eed000ed2e7")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "LHDP" "A")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4399,9 +4395,9 @@
 			(uuid "33b7d5b4-5461-4a97-8748-896ca2bf5e80")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN-12B.wrl"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN12B.wrl"
 			(offset
-				(xyz 3.819 -7.62 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -4493,14 +4489,6 @@
 		(path "/1eb1ad5a-efe9-4998-8ca7-c387e76840dc")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "5" "12" "3" "6" "7" "4" "16" "15" "8" "9" "13" "14" "11" "10"
-					"1" "2"
-				)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4832,6 +4820,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "resistor/THT"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "2574130b-28de-4000-96cb-80a3280dde6a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 0 0 270)
 			(unlocked yes)
@@ -4862,12 +4862,6 @@
 		(path "/85622cf8-f404-45cb-b6bd-2f4135f99cad")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5037,6 +5031,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "resistor/THT"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "beefddb5-9fa5-4767-ac8f-2ca5731d87bf")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 0 0 270)
 			(unlocked yes)
@@ -5067,12 +5073,6 @@
 		(path "/75f8ae24-5728-4e2d-a04a-7a30ecaba130")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5276,12 +5276,6 @@
 		(path "/ee3cb0a6-6d5e-4784-9e7b-6b6d7dd80260")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "A" "K")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
@@ -5551,6 +5545,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "mounting_hardware/mounting_hole"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "8483b1e7-ed17-4672-9cf2-35f21318b5b1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 0)
 			(unlocked yes)
@@ -5581,12 +5587,6 @@
 		(path "/398ac55b-6285-431f-9caa-2d083b8e79f6")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -5681,6 +5681,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "resistor/THT"
+			(at 0 0 180)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "77164f25-683a-4687-8372-e528265940ae")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "CFR-25JR-52-240K"
 			(at 0 0 180)
 			(unlocked yes)
@@ -5711,12 +5723,6 @@
 		(path "/d1ce9f8d-7292-4ce4-8585-a4bfbcbfe06c")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5918,12 +5924,6 @@
 		(path "/857bb3cd-08b9-4924-a69e-3d9b969a07f1")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "LHDP" "A")
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6223,9 +6223,9 @@
 			(uuid "143100c9-b88f-4f0d-b910-587971f5e737")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN-12B.wrl"
+		(model "${KIPRJMOD}/../lib/nixie_clock.3dshapes/IN12B.wrl"
 			(offset
-				(xyz 3.819 -7.62 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -6319,12 +6319,6 @@
 		(path "/8254cf32-4796-4921-82b9-54f82dd23c28")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "A" "K")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
@@ -6592,6 +6586,18 @@
 				)
 			)
 		)
+		(property "KiLib_Generator" "resistor/THT"
+			(at 0 0 270)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "27abe359-9959-4f81-a818-cc765c6a864d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property "MFG Part No" "MFR-25FTE52-7K5"
 			(at 0 0 270)
 			(unlocked yes)
@@ -6609,12 +6615,6 @@
 		(path "/738f62bd-8fe1-4b89-bfb7-895a59b4d933")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6814,12 +6814,6 @@
 		(path "/967ee61c-9aef-4677-b5bb-9521e4b16dca")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
@@ -6970,14 +6964,6 @@
 		(path "/d60de912-6b2b-4b52-ba26-7f4fa45128d7")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "5" "12" "3" "6" "7" "4" "16" "15" "8" "9" "13" "14" "11" "10"
-					"1" "2"
-				)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7508,6 +7494,19 @@
 				(justify mirror)
 			)
 		)
+		(property "KiLib_Generator" "connector/pin_header_socket"
+			(at 0 0 270)
+			(layer "B.SilkS")
+			(hide yes)
+			(uuid "4685a331-2826-4727-b457-1755a8f94768")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
 		(property "MFG Part No" ""
 			(at 0 0 90)
 			(unlocked yes)
@@ -7540,14 +7539,6 @@
 		(path "/b68cf5d6-f9e3-4504-a3d8-74ac3a3b4755")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "3" "5" "7" "9" "11" "13" "15" "17" "19" "21" "23" "25" "2"
-					"4" "6" "8" "10" "12" "14" "16" "18" "20" "22" "24" "26"
-				)
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8187,6 +8178,19 @@
 				(justify mirror)
 			)
 		)
+		(property "KiLib_Generator" "connector/PhoenixContact"
+			(at 0 0 180)
+			(layer "B.SilkS")
+			(hide yes)
+			(uuid "18c3aa02-a6b8-4c54-98a6-7bc3a2d91a09")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
 		(property "MFG Part No" "1755749"
 			(at 0 0 0)
 			(unlocked yes)
@@ -8219,12 +8223,6 @@
 		(path "/99726d60-432b-453b-a826-0903f4f0ba7a")
 		(sheetname "/")
 		(sheetfile "face.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line

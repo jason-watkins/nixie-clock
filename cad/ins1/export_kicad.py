@@ -8,15 +8,14 @@ WRL only, deliberately. KiCad would substitute a STEP of the same basename when
 exporting a board model, but the lamp is worth more as VRML: a substituted solid
 arrives grey, and the glass and the lit dot are material properties a STEP
 cannot carry at all. cad/test_base/base_plate.py reads this file directly, the
-same way it reads IN-12B.wrl. Shipping a STEP twin as well would put the lamp in
+same way it reads the tube. Shipping a STEP twin as well would put the lamp in
 the model twice, once here and once through the board export.
 
 Leads are cut for the recessed footprint, which sinks the lamp until the board
 sits at z = 9.74 and solders them to pads on the back, so they have to reach
 through. A flush mounting would want a second variant cut near z = -2.
 
-VRML units here are 0.1 inch, which is what KiCad expects and what IN-12B.wrl
-uses - its 8.0 x 12.0 unit envelope is a 20 x 30 mm tube. The footprint's own
+VRML units here are 0.1 inch, which is what KiCad expects. The footprint's own
 offset stays in millimetres regardless.
 
 Meshing goes through MeshPart rather than Shape.tessellate, which takes a
@@ -145,8 +144,8 @@ def _vrml_shape(name: str, mesh: tuple) -> str:
         f"    Shape {{\n"
         f"      appearance Appearance {{\n"
         # DEF'd, not anonymous. cad/test_base/vrml.py keys materials off the
-        # name, as IN-12B.wrl carries them, and reads an unnamed one as the
-        # default grey - which silently collapses all six parts into one.
+        # name and reads an unnamed one as the default grey, which silently
+        # collapses all six parts into one.
         f"        material DEF {name} Material {{\n"
         f"{_vrml_material(G.APPEARANCE[name])}"
         f"        }}\n"
