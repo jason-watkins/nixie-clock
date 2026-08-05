@@ -1,4 +1,7 @@
+use std::path::PathBuf;
+
 fn main() {
+    generate_wifi_credentials();
     linker_be_nice();
     println!("cargo:rustc-link-arg=-Tdefmt.x");
     // make sure linkall.x is the last linker script (otherwise might cause problems with flip-link)
@@ -68,4 +71,52 @@ fn linker_be_nice() {
         "cargo:rustc-link-arg=-Wl,--error-handling-script={}",
         std::env::current_exe().unwrap().display()
     );
+}
+
+fn generate_wifi_credentials() {
+    let path =
+        PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("wifi_credentials.txt");
+    println!("cargo:rerun-if-changed={}", path.display());
+
+    let text = std::fs::read_to_string(&path).unwrap_or_else(|_| {
+        panic!(
+            "{} not found - copy wifi_credentials.default.txt to it and fill it in",
+            path.display()
+        )
+    });
+
+    let mut entries = String::new();
+    let mut count = 0;
+    for (n, raw) in text.lines().enumerate() {
+        let line = raw.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let (ssid, password) = line
+            .split_once(':')
+            .unwrap_or_else(|| panic!("{}:{}: expected SSID:PASSWORD", path.display(), n + 1));
+        assert!(
+            !ssid.is_empty() && ssid.len() <= 32,
+            "{}:{}: SSID must be 1-32 bytes",
+            path.display(),
+            n + 1
+        );
+        assert!(
+            password.len() <= 64,
+            "{}:{}: password must be <= 64 bytes",
+            path.display(),
+            n + 1
+        );
+        // {:?} on a &str emits a correctly-escaped Rust string literal.
+        entries.push_str(&format!("    ({ssid:?}, {password:?}),\n"));
+        count += 1;
+    }
+    assert!(count > 0, "{} contains no credentials", path.display());
+
+    let out = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("wifi_credentials.rs");
+    std::fs::write(
+        out,
+        format!("pub static WIFI_CREDENTIALS: &[(&str, &str)] = &[\n{entries}];\n"),
+    )
+    .unwrap();
 }

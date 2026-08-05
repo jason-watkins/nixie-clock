@@ -1,3 +1,6 @@
 #![no_std]
 
-mod nixie;
+extern crate alloc;
+
+pub mod net;
+pub mod nixie;

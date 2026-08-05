@@ -11,7 +11,9 @@ use defmt::info;
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
 use esp_hal::clock::CpuClock;
+use esp_hal::gpio::OutputPin;
 use esp_hal::gpio::{Level, Output, OutputConfig};
+use esp_hal::interrupt::software::SoftwareInterruptControl;
 use esp_hal::timer::timg::TimerGroup;
 use panic_rtt_target as _;
 
@@ -35,12 +37,6 @@ async fn main(spawner: Spawner) -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
-    // The following pins are used to bootstrap the chip. They are available
-    // for use, but check the datasheet of the module for more information on them.
-    // - GPIO0
-    // - GPIO3
-    // - GPIO45
-    // - GPIO46
     // These GPIO pins are in use by some feature of the module and should not be used.
     let _ = peripherals.GPIO27;
     let _ = peripherals.GPIO28;
@@ -49,20 +45,24 @@ async fn main(spawner: Spawner) -> ! {
     let _ = peripherals.GPIO31;
     let _ = peripherals.GPIO32;
 
+    // Enable the USB mux. This steals the USB data pins from the CYPD3176, but if we have power
+    // then power negotiation should already be complete.
+    let _usb_en = UsbEnable::new(peripherals.GPIO36);
+
     esp_alloc::heap_allocator!(#[esp_hal::ram(reclaimed)] size: 73744);
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
-    let sw_interrupt =
-        esp_hal::interrupt::software::SoftwareInterruptControl::new(peripherals.SW_INTERRUPT);
+    let sw_interrupt = SoftwareInterruptControl::new(peripherals.SW_INTERRUPT);
     esp_rtos::start(timg0.timer0, sw_interrupt.software_interrupt0);
 
-    info!("Embassy initialized!");
+    let rng = esp_hal::rng::Rng::new();
 
-    let (mut _wifi_controller, _interfaces) =
-        esp_radio::wifi::new(peripherals.WIFI, Default::default())
-            .expect("Failed to initialize Wi-Fi controller");
+    info!("Embassy initialized...");
 
-    let _usb_en = Output::new(peripherals.GPIO36, Level::Low, OutputConfig::default());
+    let seed = ((rng.random() as u64) << 32) | (rng.random() as u64);
+    nixie_clock::net::init(peripherals.WIFI, seed, &spawner);
+
+    info!("Wi-Fi initialized...");
 
     // TODO: Spawn some tasks
     let _ = spawner;
@@ -77,4 +77,15 @@ async fn main(spawner: Spawner) -> ! {
     // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.1.0/examples
 }
 
-fn init() {}
+/// RAII wrapper to hold the USB enable output pin.
+struct UsbEnable<'a> {
+    _pin: Output<'a>,
+}
+
+impl<'a> UsbEnable<'a> {
+    pub fn new(pin: impl OutputPin + 'a) -> Self {
+        Self {
+            _pin: Output::new(pin, Level::Low, OutputConfig::default()),
+        }
+    }
+}
