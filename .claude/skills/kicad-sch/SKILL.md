@@ -14,8 +14,16 @@ python .claude/skills/kicad-sch/scripts/sch_tool.py <subcommand> [args]
 Always invoke it exactly like that, relative to the repo root, so the
 allowlist rule matches. The script is read-only with respect to the project:
 netlist/ERC/PDF-text artifacts are cached under the system temp directory.
-The schematic is autodetected (the `.kicad_sch` with a `.kicad_pro` sibling);
-override with `--sch <path>` placed *before* the subcommand.
+**`--board {main|hv|face}` is required** on every netlist-based subcommand,
+and goes *after* the subcommand: `sch_tool.py refs --board main U3`. Only
+`pdf` takes no board.
+
+There is no autodetection, by design. The repo holds three board projects
+(`pcb/main`, `pcb/hv`, `pcb/face`) plus the drawing-only figure set under
+`docs/design_analysis/schematics`, which uses its own reference designators
+and carries no real connectivity. A tool that guesses will eventually hand
+back a confident, fully-formed analysis of the wrong hardware — which is
+exactly what it did before this argument existed.
 
 ## Subcommands
 
@@ -35,17 +43,19 @@ unsaved changes open in KiCad — say so rather than re-running repeatedly.
 
 ## Typical workflows
 
-- **Verify the user's latest edits**: `diff` (shows added/removed nodes per net),
-  then `refs` on the touched components for full context.
-- **Trace a subsystem**: `refs U1 L1 J1` or `nets VDD VOUT 'LED\d+'`.
-- **Check a symbol import**: `pins U1` to see pin numbers/names/types.
+- **Verify the user's latest edits**: `diff --board main` (shows added/removed
+  nodes per net), then `refs` on the touched components for full context.
+- **Trace a subsystem**: `refs --board main U1 L1 J1` or
+  `nets --board hv VDD VOUT 'LED\d+'`.
+- **Check a symbol import**: `pins --board main U1` for pin numbers/names/types.
 - **Datasheet lookup**: `pdf tps51375.pdf 'hysteresis' 'Absolute' 'V_?EN'`
   (regexes, case-insensitive; tune `--before/--after/--max-hits` for context).
 
 ## Notes
 
 - `diff` compares against the snapshot taken by the previous run of any
-  netlist-based subcommand in this repo, keyed to the schematic path.
+  netlist-based subcommand, keyed to the schematic path — so each board keeps
+  its own snapshot and they never cross-contaminate.
 - The orderable part number lives in the `MFG Part No` field, not in `value` —
   `value` carries the electrical value (10k, 100nF). Check anything against a
   datasheet using the field, never the value.

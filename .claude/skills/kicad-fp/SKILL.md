@@ -16,9 +16,15 @@ allowlist rule matches. The script is read-only with respect to the project;
 the DRC report is cached under the system temp directory. Footprint and symbol
 libraries are autodetected from project `fp-lib-table` / `sym-lib-table` files
 (with `${KIPRJMOD}` expansion) plus any loose `.pretty` dirs or `.kicad_sym`
-files in the repo. The board is autodetected (the `.kicad_pcb` with a
-`.kicad_pro` sibling); override with `--pcb <path>` placed *before* the
-subcommand.
+files in the repo. All three board projects register the same vendored
+library, so library lookup does not depend on which board you name.
+
+**`--board {main|hv|face}` is required** on every command that reads a
+`.kicad_pcb` — `board`, `drc`, `netlen`, `vias`, `tracks`, `zones` — and goes
+*after* the subcommand: `fp_tool.py drc --board main`. There is no
+autodetection, by design. The repo holds three board projects plus a
+drawing-only figure set, and a tool that guesses will eventually answer
+confidently about the wrong hardware.
 
 `FP` and `SYM` arguments accept `libname:partname`, a bare part name (searched
 across all libraries, errors if ambiguous), or — for footprints — a direct

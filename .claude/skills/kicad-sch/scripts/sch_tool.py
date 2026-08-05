@@ -14,7 +14,13 @@ Subcommands:
   pdf FILE KW [KW ...]  search a PDF's text, print context around each keyword
 
 Every netlist-based command re-exports the netlist first, so results always
-reflect the saved schematic. Use --sch to override schematic autodetection.
+reflect the saved schematic.
+
+--board picks the project and is required on every netlist-based command.
+There is no autodetection: this repo holds several KiCad projects, and the
+drawing-only figure set under docs/design_analysis/schematics would otherwise
+be a candidate. That set uses its own reference designators and carries no
+real connectivity, so analyzing it silently yields confident nonsense.
 """
 
 import argparse
@@ -58,22 +64,24 @@ def find_kicad_cli():
     sys.exit("kicad-cli not found: install KiCad or set KICAD_CLI")
 
 
-def find_sch(arg):
-    if arg:
-        p = Path(arg)
-        if not p.is_file():
-            sys.exit(f"schematic not found: {p}")
-        return p
-    cands = [
-        c for c in Path(".").glob("**/*.kicad_sch")
-        if "backups" not in c.parts and not c.name.startswith("~")
-    ]
-    if not cands:
-        sys.exit("no .kicad_sch found under current directory")
-    for c in cands:
-        if c.with_suffix(".kicad_pro").exists():
-            return c
-    return cands[0]
+BOARDS = ("main", "hv", "face")
+
+# Anchored to the script's own location rather than the cwd, so the board a
+# command names is the board it reads no matter where it was invoked from.
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
+
+def board_sch(board):
+    p = REPO_ROOT / "pcb" / board / f"{board}.kicad_sch"
+    if not p.is_file():
+        sys.exit(f"schematic for board '{board}' not found: {p}")
+    return p
+
+
+def add_board_arg(parser):
+    parser.add_argument("--board", required=True, choices=BOARDS,
+                        help="which board project to read")
+    return parser
 
 
 def cache_dir(sch):
@@ -152,7 +160,7 @@ def print_net(name, nodes):
 
 
 def cmd_components(args):
-    comps, _, _ = parse_netlist(export_netlist(find_sch(args.sch))[0])
+    comps, _, _ = parse_netlist(export_netlist(board_sch(args.board))[0])
     for ref in sorted(comps, key=lambda r: (re.sub(r"\d+$", "", r), int(re.search(r"(\d+)$", r).group(1)) if re.search(r"(\d+)$", r) else 0)):
         c = comps[ref]
         part = c["libpart"][1] if c["libpart"] else ""
@@ -168,7 +176,7 @@ def cmd_components(args):
 
 
 def cmd_nets(args):
-    _, nets, _ = parse_netlist(export_netlist(find_sch(args.sch))[0])
+    _, nets, _ = parse_netlist(export_netlist(board_sch(args.board))[0])
     pats = [re.compile(p, re.I) for p in args.patterns]
     for name in sorted(nets):
         if not pats or any(p.search(name) for p in pats):
@@ -176,7 +184,7 @@ def cmd_nets(args):
 
 
 def cmd_refs(args):
-    _, nets, _ = parse_netlist(export_netlist(find_sch(args.sch))[0])
+    _, nets, _ = parse_netlist(export_netlist(board_sch(args.board))[0])
     want = {r.upper() for r in args.refs}
     for name in sorted(nets):
         if any(ref.upper() in want for ref, _, _ in nets[name]):
@@ -184,7 +192,7 @@ def cmd_refs(args):
 
 
 def cmd_pins(args):
-    comps, _, pinmeta = parse_netlist(export_netlist(find_sch(args.sch))[0])
+    comps, _, pinmeta = parse_netlist(export_netlist(board_sch(args.board))[0])
     comp = comps.get(args.ref)
     if not comp:
         sys.exit(f"no component {args.ref}")
@@ -199,7 +207,7 @@ def cmd_pins(args):
 
 
 def cmd_erc(args):
-    sch = find_sch(args.sch)
+    sch = board_sch(args.board)
     out = cache_dir(sch) / "erc.json"
     if out.exists():
         out.unlink()
@@ -216,7 +224,7 @@ def cmd_erc(args):
 
 
 def cmd_diff(args):
-    cur, prev = export_netlist(find_sch(args.sch))
+    cur, prev = export_netlist(board_sch(args.board))
     if not prev.exists():
         sys.exit("no previous netlist snapshot yet; run any command again after editing")
     _, old, _ = parse_netlist(prev)
@@ -290,25 +298,24 @@ def cmd_pdf(args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--sch", help="path to .kicad_sch (default: autodetect)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("components").set_defaults(func=cmd_components)
+    add_board_arg(sub.add_parser("components")).set_defaults(func=cmd_components)
 
-    p = sub.add_parser("nets")
+    p = add_board_arg(sub.add_parser("nets"))
     p.add_argument("patterns", nargs="*", help="net-name regexes (default: all nets)")
     p.set_defaults(func=cmd_nets)
 
-    p = sub.add_parser("refs")
+    p = add_board_arg(sub.add_parser("refs"))
     p.add_argument("refs", nargs="+", help="component references, e.g. U1 J6")
     p.set_defaults(func=cmd_refs)
 
-    p = sub.add_parser("pins")
+    p = add_board_arg(sub.add_parser("pins"))
     p.add_argument("ref", help="component reference, e.g. U1")
     p.set_defaults(func=cmd_pins)
 
-    sub.add_parser("erc").set_defaults(func=cmd_erc)
-    sub.add_parser("diff").set_defaults(func=cmd_diff)
+    add_board_arg(sub.add_parser("erc")).set_defaults(func=cmd_erc)
+    add_board_arg(sub.add_parser("diff")).set_defaults(func=cmd_diff)
 
     p = sub.add_parser("pdf")
     p.add_argument("file", help="PDF path, e.g. a datasheet")

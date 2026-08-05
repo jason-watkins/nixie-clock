@@ -21,7 +21,14 @@ Subcommands:
 
 FP/SYM are "libname:partname", a bare part name (searched across libraries),
 or a path to a .kicad_mod file. Libraries are found via project fp-lib-table /
-sym-lib-table files plus any loose .pretty / .kicad_sym under the repo.
+sym-lib-table files plus any loose .pretty / .kicad_sym under the repo; all
+three board projects register the same vendored library, so library lookup is
+board-independent.
+
+--board picks the project and is required on every board-reading command
+(board, drc, netlen, vias, tracks, zones). There is no autodetection: this
+repo holds several KiCad projects, and guessing silently produces confident
+answers about the wrong hardware.
 """
 
 import argparse
@@ -452,23 +459,28 @@ def cmd_symcheck(args):
         print("  OK: every pin has a pad and vice versa")
 
 
-def find_pcb(arg):
-    if arg:
-        p = Path(arg)
-        if not p.is_file():
-            sys.exit(f"board not found: {p}")
-        return p
-    cands = [c for c in _iter_files("**/*.kicad_pcb")]
-    if not cands:
-        sys.exit("no .kicad_pcb found under current directory")
-    for c in cands:
-        if c.with_suffix(".kicad_pro").exists():
-            return c
-    return cands[0]
+BOARDS = ("main", "hv", "face")
+
+# Anchored to the script's own location rather than the cwd, so the board a
+# command names is the board it reads no matter where it was invoked from.
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
+
+def board_pcb(board):
+    p = REPO_ROOT / "pcb" / board / f"{board}.kicad_pcb"
+    if not p.is_file():
+        sys.exit(f"board '{board}' not found: {p}")
+    return p
+
+
+def add_board_arg(parser):
+    parser.add_argument("--board", required=True, choices=BOARDS,
+                        help="which board project to read")
+    return parser
 
 
 def cmd_board(args):
-    root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    root = parse_sexpr(board_pcb(args.board).read_text(encoding="utf-8"))
     fps = kids(root, "footprint")
     if not fps:
         print("no footprints on board")
@@ -532,7 +544,7 @@ def _arc_length(x1, y1, xm, ym, x2, y2):
 
 
 def cmd_netlen(args):
-    root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    root = parse_sexpr(board_pcb(args.board).read_text(encoding="utf-8"))
     nets = _net_table(root)
     pats = [re.compile(p) for p in args.patterns] if args.patterns else None
     stats = {}
@@ -562,7 +574,7 @@ def cmd_netlen(args):
 
 
 def cmd_vias(args):
-    root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    root = parse_sexpr(board_pcb(args.board).read_text(encoding="utf-8"))
     nets = _net_table(root)
     pats = [re.compile(p) for p in args.patterns] if args.patterns else None
     count = 0
@@ -584,7 +596,7 @@ def cmd_vias(args):
 
 
 def cmd_tracks(args):
-    root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    root = parse_sexpr(board_pcb(args.board).read_text(encoding="utf-8"))
     nets = _net_table(root)
     pats = [re.compile(p) for p in args.patterns] if args.patterns else None
     count, total = 0, 0.0
@@ -618,7 +630,7 @@ def cmd_tracks(args):
 
 
 def cmd_zones(args):
-    root = parse_sexpr(find_pcb(args.pcb).read_text(encoding="utf-8"))
+    root = parse_sexpr(board_pcb(args.board).read_text(encoding="utf-8"))
     nets = _net_table(root)
     for z in kids(root, "zone"):
         # Through KiCad 9 the readable name was in (net_name "..."); KiCad 10
@@ -674,7 +686,7 @@ def find_kicad_cli():
 
 
 def cmd_drc(args):
-    pcb = find_pcb(args.pcb)
+    pcb = board_pcb(args.board)
     tag = hashlib.md5(str(pcb.resolve()).lower().encode()).hexdigest()[:10]
     d = Path(tempfile.gettempdir()) / "kicad_fp_analysis" / tag
     d.mkdir(parents=True, exist_ok=True)
@@ -703,7 +715,6 @@ def cmd_drc(args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--pcb", help="path to .kicad_pcb (default: autodetect)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("libs").set_defaults(func=cmd_libs)
@@ -738,27 +749,27 @@ def main():
     p.add_argument("fp", help="footprint: lib:name, bare name, or .kicad_mod path")
     p.set_defaults(func=cmd_symcheck)
 
-    sub.add_parser("board").set_defaults(func=cmd_board)
-    sub.add_parser("drc").set_defaults(func=cmd_drc)
+    add_board_arg(sub.add_parser("board")).set_defaults(func=cmd_board)
+    add_board_arg(sub.add_parser("drc")).set_defaults(func=cmd_drc)
 
-    p = sub.add_parser("netlen")
+    p = add_board_arg(sub.add_parser("netlen"))
     p.add_argument("patterns", nargs="*", help="net-name regexes (default: all)")
     p.set_defaults(func=cmd_netlen)
 
-    p = sub.add_parser("vias")
+    p = add_board_arg(sub.add_parser("vias"))
     p.add_argument("patterns", nargs="*", help="net-name regexes (default: all)")
     p.add_argument("--bbox", nargs=4, type=float, metavar=("X1", "Y1", "X2", "Y2"),
                    help="only vias inside this rectangle (mm)")
     p.set_defaults(func=cmd_vias)
 
-    p = sub.add_parser("tracks")
+    p = add_board_arg(sub.add_parser("tracks"))
     p.add_argument("patterns", nargs="*", help="net-name regexes (default: all)")
     p.add_argument("--bbox", nargs=4, type=float, metavar=("X1", "Y1", "X2", "Y2"),
                    help="only tracks with an endpoint inside this rectangle (mm)")
     p.add_argument("--layer", help="only this layer (e.g. B.Cu)")
     p.set_defaults(func=cmd_tracks)
 
-    sub.add_parser("zones").set_defaults(func=cmd_zones)
+    add_board_arg(sub.add_parser("zones")).set_defaults(func=cmd_zones)
 
     args = ap.parse_args()
     args.func(args)
