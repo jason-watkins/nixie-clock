@@ -5,6 +5,9 @@
 *-backups/
 *.bak
 
+# --- KiCad local history  ---
+**/.history/
+
 # --- FreeCAD rolling backups (cad/) ---
 *.FCStd[0-9]*
 *.FCBak
