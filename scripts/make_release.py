@@ -471,8 +471,6 @@ PCBWAY = FabProfile(
 
 DIGIKEY = FabProfile(
     name="digikey",
-    # A distributor, not a fab: no board is made here, so every output but
-    # the parts order is left undescribed and therefore never written.
     gerber_layer_patterns=(),
     gerber_args=(),
     drill_args=(),
@@ -485,7 +483,7 @@ DIGIKEY = FabProfile(
     bom_part_fields=("MFG Part No",),
     bom_comment_fields=("MFG Part No", "Value"),
     bom_value_prefixes=("C", "L", "R"),
-    # Headers Digi-Key's list import recognises, so the upload maps itself.
+    # Headers Digi-Key's list import recognizes, so the upload maps itself.
     # Designators ride in Customer Reference, which is what puts a line item
     # back on a board once the order arrives.
     purchase_columns=(
@@ -541,21 +539,30 @@ def _version_key(path: Path) -> list[int]:
 
 
 def find_kicad_cli(explicit: str | None) -> str:
-    """Locate kicad-cli: --kicad-cli flag, KICAD_CLI env, the newest version
-    under C:\\Program Files\\KiCad, then PATH.
+    """Locate kicad-cli: --kicad-cli flag, KICAD_CLI env, the platform's
+    standard install location, then PATH.
 
-    The versioned install is preferred over PATH so that installing a new
-    KiCad takes effect without also having to fix a stale PATH entry."""
+    The standard install is preferred over PATH so that installing a new
+    KiCad takes effect without also having to fix a stale PATH entry. Windows
+    keeps versions side by side under C:\\Program Files\\KiCad\\<version>\\,
+    so that one is picked by newest version; macOS's installer instead
+    overwrites a single KiCad.app in place, and does not put its
+    Contents/MacOS/ on PATH."""
     for candidate in (explicit, os.environ.get("KICAD_CLI")):
         if candidate:
             return candidate
-    base = Path(r"C:\Program Files\KiCad")
-    if base.is_dir():
-        installs = [p for p in base.iterdir() if p.is_dir()]
-        for version_dir in sorted(installs, key=_version_key, reverse=True):
-            cli = version_dir / "bin" / "kicad-cli.exe"
-            if cli.is_file():
-                return str(cli)
+    if sys.platform == "win32":
+        base = Path(r"C:\Program Files\KiCad")
+        if base.is_dir():
+            installs = [p for p in base.iterdir() if p.is_dir()]
+            for version_dir in sorted(installs, key=_version_key, reverse=True):
+                cli = version_dir / "bin" / "kicad-cli.exe"
+                if cli.is_file():
+                    return str(cli)
+    elif sys.platform == "darwin":
+        cli = Path("/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli")
+        if cli.is_file():
+            return str(cli)
     found = shutil.which("kicad-cli")
     if found:
         return found
@@ -565,7 +572,7 @@ def find_kicad_cli(explicit: str | None) -> str:
 def run(cmd: list[str], cwd: Path | None = None, ok_codes: tuple[int, ...] = (0,)) -> subprocess.CompletedProcess:
     """Run a command and return the completed process. Raises ReleaseError
     with the captured output if the exit code is not in ok_codes."""
-    proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, cwd=cwd, check=False, capture_output=True, text=True)
     if proc.returncode not in ok_codes:
         detail = (proc.stderr.strip() or proc.stdout.strip())[-2000:]
         raise ReleaseError(f"command failed ({proc.returncode}): {' '.join(cmd)}\n{detail}")
@@ -647,12 +654,7 @@ SHARED_LIB_DIR = Path("pcb/lib")
 
 def gate_lib_scope(project: Project) -> None:
     """Refuse a lib table pointing at an in-repo library that export_sources
-    does not cover.
-
-    That scope is stated as whole directories, which is what keeps it simple
-    to reason about; the cost is that a library placed somewhere else would
-    go unguarded with nothing saying so. Naming it here turns that into a
-    failure at the gate instead of a quietly weaker check."""
+    does not cover."""
     root = project.root.resolve()
     proj_dir = project.pro.parent.resolve()
     lib_dir = (root / SHARED_LIB_DIR).resolve()
@@ -681,17 +683,7 @@ def gate_lib_scope(project: Project) -> None:
 
 def export_sources(project: Project) -> list[Path]:
     """Every path whose content decides this board's exported files: the
-    board's project directory, the shared library directory, and this script.
-
-    The library and the script are both shared, so either can change a
-    board's output while its project directory sits untouched -- a check
-    scoped to pcb/<name>/ alone would let an edited footprint or an edited
-    BOM column reach a tagged export.
-
-    The library is taken whole rather than entry by entry from the lib
-    tables. A footprint is then in scope from the moment it lands in the
-    directory, which is what makes the rule statable: three directories,
-    no dependence on which of them a board happens to reference today."""
+    board's project directory, the shared library directory, and this script."""
     root = project.root.resolve()
     found = [project.pro.parent.resolve(),
              (root / SHARED_LIB_DIR).resolve(),
@@ -716,11 +708,7 @@ def dirty_sources(project: Project) -> list[str]:
 
 def gate_git_clean(project: Project) -> None:
     """Require this board's sources to be committed, so its tag names a
-    commit that reproduces the exported files.
-
-    Scoped to the board, not the repository: work on the design document,
-    on another board, or on an unrelated script cannot change these outputs
-    and so must not block the export. export_sources() defines the scope."""
+    commit that reproduces the exported files."""
     gate_lib_scope(project)
     lines = dirty_sources(project)
     if lines:
@@ -739,7 +727,7 @@ def read_text_var(project: Project, name: str) -> str:
 
 def read_rev(project: Project) -> str:
     """The REV text variable: the design revision, bumped when the board is
-    respun. Title blocks and silkscreen render it as ${REV}."""
+    respun."""
     rev = read_text_var(project, "REV")
     if not rev:
         raise ReleaseError(
@@ -756,13 +744,7 @@ def read_rev(project: Project) -> str:
 
 
 def read_step(project: Project) -> str:
-    """The STEP text variable: which export of this revision is being built.
-
-    A revision is exported several times while it is brought up, and those
-    exports have to be told apart -- on the bench as much as in git. STEP is
-    a source field rather than a number this script allocates, precisely so
-    the board can print it: render ${REV}${STEP} on the silkscreen and a
-    board in hand names the commit it was built from."""
+    """The STEP text variable: which export of this revision is being built."""
     step = read_text_var(project, "STEP")
     if not step:
         raise ReleaseError(
@@ -787,11 +769,7 @@ STEP_VAR_RE = re.compile(r'("STEP"\s*:\s*")([^"]*)(")')
 
 
 def write_step(project: Project, step: str) -> None:
-    """Set the STEP text variable in place.
-
-    A targeted substitution rather than a JSON round-trip: .kicad_pro holds
-    several hundred settings, many of them floats, and reserialising them
-    risks a diff that buries the one line that changed."""
+    """Set the STEP text variable in place."""
     text = project.pro.read_text(encoding="utf-8")
     new_text, count = STEP_VAR_RE.subn(
         lambda m: m.group(1) + step + m.group(3), text)
@@ -824,18 +802,7 @@ def next_step(project: Project, rev: str, step: str) -> tuple[str | None, str]:
     current one is free.
 
     Free means untagged, or tagged at HEAD with nothing uncommitted that
-    could change this board's output. The second condition is what makes
-    this answer hold: a step tagged at HEAD is only reusable because
-    rebuilding there reproduces the same files, and that stops being true
-    the moment an edit is pending. Whatever is uncommitted has to be
-    committed before an export is allowed at all, and that commit moves HEAD
-    off the tag -- so a step that looks free now would be spent by the time
-    it was used. Predicting that here is the whole value of running this
-    before committing rather than after.
-
-    A bump goes to the next number past every spent step, which is not
-    always current+1: steps 1 and 2 may both be tagged while the file still
-    says 1."""
+    could change this board's output."""
     spent = spent_steps(project, rev)
     if int(step) not in spent:
         return None, "unspent"
@@ -846,9 +813,10 @@ def next_step(project: Project, rev: str, step: str) -> tuple[str | None, str]:
     pending = dirty_sources(project)
     if not pending:
         return None, "tagged at HEAD, nothing pending: a rebuild of itself"
-    return (str(max(spent) + 1),
-            f"tagged at HEAD, but {len(pending)} pending source change(s) "
-            f"will move HEAD off it")
+    return (
+        str(max(spent) + 1),
+        f"tagged at HEAD, but {len(pending)} pending source change(s) will move HEAD off it",
+    )
 
 
 def bump_steps(boards: list[Project]) -> list[Project]:
