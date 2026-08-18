@@ -6829,7 +6829,7 @@
 				)
 			)
 		)
-		(property "Value" "EN_{USB}"
+		(property "Value" "FLASH"
 			(at 77.978 143.002 0)
 			(show_name no)
 			(do_not_autoplace no)

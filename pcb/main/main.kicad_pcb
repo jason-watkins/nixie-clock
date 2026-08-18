@@ -14503,8 +14503,8 @@
 				)
 			)
 		)
-		(property "Value" "EN_{USB}"
-			(at 0 3.015 0)
+		(property "Value" "FLASH"
+			(at 0 3 0)
 			(layer "F.SilkS")
 			(uuid "333c0e23-3406-4216-b9f2-18a920625079")
 			(effects
@@ -26635,14 +26635,6 @@
 		(uuid "55acff71-5b3f-4b0a-b673-efa7ca21f0d0")
 	)
 	(segment
-		(start 109.51 105)
-		(end 109.51 100.7)
-		(width 0.2)
-		(layer "F.Cu")
-		(net "+3V3")
-		(uuid "5852b7a4-ac28-49a2-947c-fb4d2822cf39")
-	)
-	(segment
 		(start 118.5 82.451)
 		(end 118.525 82.476)
 		(width 0.2)
@@ -26843,6 +26835,14 @@
 		(uuid "b5a53ab7-fe33-41f4-b172-2fbf779bc88f")
 	)
 	(segment
+		(start 109.51 105)
+		(end 109.51 100.7)
+		(width 0.2)
+		(layer "F.Cu")
+		(net "+3V3")
+		(uuid "c21dff8f-1672-4f49-b69c-ad1a5d5eed0d")
+	)
+	(segment
 		(start 114.196 104.076)
 		(end 114.6425 104.076)
 		(width 0.2)
@@ -26857,14 +26857,6 @@
 		(layer "F.Cu")
 		(net "+3V3")
 		(uuid "c6513247-59e0-4c40-b451-b9f6b89677d9")
-	)
-	(segment
-		(start 109.51 103.91)
-		(end 109.51 103)
-		(width 0.2)
-		(layer "F.Cu")
-		(net "+3V3")
-		(uuid "c7265696-ca7d-45ba-83c2-e27487b164d9")
 	)
 	(segment
 		(start 119.9 83.6)
