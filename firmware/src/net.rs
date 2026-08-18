@@ -17,7 +17,7 @@ use esp_radio::wifi::sta::ScanMethod;
 use esp_radio::wifi::sta::StationConfig;
 use static_cell::StaticCell;
 
-mod credentials;
+include!(concat!(env!("OUT_DIR"), "/wifi_credentials.rs"));
 
 struct WifiManager {
     controller: WifiController<'static>,
@@ -47,7 +47,7 @@ impl WifiManager {
             if !self.controller.is_connected()
                 && let Some(last_good) = self.last_good
             {
-                let (ssid, password) = credentials::WIFI_CREDENTIALS[last_good];
+                let (ssid, password) = WIFI_CREDENTIALS[last_good];
                 if self.try_one(ssid, password.to_string()).await {
                     info!("Reconnected to {}", ssid);
                 } else {
@@ -82,7 +82,7 @@ impl WifiManager {
     }
 
     async fn connect_any(&mut self) -> Option<usize> {
-        for (i, &(ssid, password)) in credentials::WIFI_CREDENTIALS.iter().enumerate() {
+        for (i, &(ssid, password)) in WIFI_CREDENTIALS.iter().enumerate() {
             if self.try_one(ssid, password.to_string()).await {
                 info!("Connected to {}", ssid);
                 return Some(i);
