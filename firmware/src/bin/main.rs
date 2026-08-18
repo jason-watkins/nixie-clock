@@ -55,14 +55,16 @@ async fn main(spawner: Spawner) -> ! {
     let sw_interrupt = SoftwareInterruptControl::new(peripherals.SW_INTERRUPT);
     esp_rtos::start(timg0.timer0, sw_interrupt.software_interrupt0);
 
-    let rng = esp_hal::rng::Rng::new();
-
     info!("Embassy initialized...");
 
     let mut led = Output::new(peripherals.GPIO38, Level::Low, OutputConfig::default());
     // TODO: Create a status LED task that drives the status LED based on overall clock state
 
-    let seed = ((rng.random() as u64) << 32) | (rng.random() as u64);
+    let seed = {
+        let _trng = esp_hal::rng::TrngSource::new(peripherals.RNG, peripherals.ADC1);
+        let rng = esp_hal::rng::Rng::new();
+        ((rng.random() as u64) << 32) | (rng.random() as u64)
+    };
     let wifi_stack = nixie_clock::net::init(peripherals.WIFI, seed, &spawner);
 
     info!("Wi-Fi initialized...");

@@ -9,10 +9,11 @@ use embassy_net::Stack;
 use embassy_net::StackResources;
 use embassy_time::Duration;
 use embassy_time::Timer;
-use embassy_time::WithTimeout;
 use esp_hal::peripherals::WIFI;
+use esp_radio::wifi::AuthenticationMethod;
 use esp_radio::wifi::Interface;
 use esp_radio::wifi::WifiController;
+use esp_radio::wifi::sta::ScanMethod;
 use esp_radio::wifi::sta::StationConfig;
 use static_cell::StaticCell;
 
@@ -47,7 +48,9 @@ impl WifiManager {
                 && let Some(last_good) = self.last_good
             {
                 let (ssid, password) = credentials::WIFI_CREDENTIALS[last_good];
-                if !self.try_one(ssid, password.to_string(), true).await {
+                if self.try_one(ssid, password.to_string()).await {
+                    info!("Reconnected to {}", ssid);
+                } else {
                     warn!("Last good Wi-Fi credentials failed, trying all credentials...");
                     self.last_good = None;
                 }
@@ -80,7 +83,8 @@ impl WifiManager {
 
     async fn connect_any(&mut self) -> Option<usize> {
         for (i, &(ssid, password)) in credentials::WIFI_CREDENTIALS.iter().enumerate() {
-            if self.try_one(ssid, password.to_string(), false).await {
+            if self.try_one(ssid, password.to_string()).await {
+                info!("Connected to {}", ssid);
                 return Some(i);
             } else {
                 Timer::after(Duration::from_secs(2)).await;
@@ -89,39 +93,30 @@ impl WifiManager {
         None
     }
 
-    async fn try_one(&mut self, ssid: &str, password: String, reconnect: bool) -> bool {
+    async fn try_one(&mut self, ssid: &str, password: String) -> bool {
         use esp_radio::wifi::Config;
 
+        let auth_method = if password.is_empty() {
+            AuthenticationMethod::None
+        } else {
+            // Wep allows upgrading to any more secure auth method here. For this application,
+            // security isn't a real concern so there's no point in blocking obsolete auth methods.
+            AuthenticationMethod::Wep
+        };
         let config = StationConfig::default()
             .with_ssid(ssid)
-            .with_password(password);
+            .with_password(password)
+            .with_auth_method(auth_method)
+            .with_scan_method(ScanMethod::AllChannels)
+            .with_failure_retry_cnt(2);
         let config = Config::Station(config);
         if self.controller.set_config(&config).is_err() {
+            warn!("Failed to set WiFi controller config");
             return false;
         }
-        let connected = self
-            .controller
-            .connect_async()
-            .with_timeout(Duration::from_secs(20))
-            .await;
-        let connected = match connected {
-            Ok(Ok(_)) => true,
-            Ok(Err(e)) => {
-                error!("Failed to connect: {}", e);
-                false
-            }
-            Err(_) => {
-                warn!("Timeout exceeded while trying to connect");
-                false
-            }
-        };
+        let connected = self.controller.connect_async().await.is_ok();
         if connected {
             self.backoff = Self::default_backoff();
-            if reconnect {
-                info!("Reconnected to {}", ssid);
-            } else {
-                info!("Connected to {}", ssid);
-            }
         }
         connected
     }
