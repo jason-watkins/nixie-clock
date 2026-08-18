@@ -59,22 +59,26 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized...");
 
+    let mut led = Output::new(peripherals.GPIO38, Level::Low, OutputConfig::default());
+    // TODO: Create a status LED task that drives the status LED based on overall clock state
+
     let seed = ((rng.random() as u64) << 32) | (rng.random() as u64);
-    nixie_clock::net::init(peripherals.WIFI, seed, &spawner);
+    let wifi_stack = nixie_clock::net::init(peripherals.WIFI, seed, &spawner);
 
     info!("Wi-Fi initialized...");
 
-    // TODO: Spawn some tasks
-    let _ = spawner;
+    // TODO: Gracefully display something while waiting for wi-fi to connect
+    wifi_stack.wait_config_up().await;
+    info!(
+        "Connected at IP {}",
+        wifi_stack.config_v4().expect("No IP after WiFi init")
+    );
 
-    let mut led = Output::new(peripherals.GPIO38, Level::Low, OutputConfig::default());
     loop {
         info!("Hello world!");
         led.toggle();
         Timer::after(Duration::from_secs(1)).await;
     }
-
-    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.1.0/examples
 }
 
 /// RAII wrapper to hold the USB enable output pin.

@@ -9,6 +9,7 @@ use embassy_net::Stack;
 use embassy_net::StackResources;
 use embassy_time::Duration;
 use embassy_time::Timer;
+use embassy_time::WithTimeout;
 use esp_hal::peripherals::WIFI;
 use esp_radio::wifi::Interface;
 use esp_radio::wifi::WifiController;
@@ -98,7 +99,22 @@ impl WifiManager {
         if self.controller.set_config(&config).is_err() {
             return false;
         }
-        let connected = self.controller.connect_async().await.is_ok();
+        let connected = self
+            .controller
+            .connect_async()
+            .with_timeout(Duration::from_secs(20))
+            .await;
+        let connected = match connected {
+            Ok(Ok(_)) => true,
+            Ok(Err(e)) => {
+                error!("Failed to connect: {}", e);
+                false
+            }
+            Err(_) => {
+                warn!("Timeout exceeded while trying to connect");
+                false
+            }
+        };
         if connected {
             self.backoff = Self::default_backoff();
             if reconnect {
