@@ -718,7 +718,7 @@
         "uuid": "f225fc02-d36f-4469-bac4-82a576baae3a"
       }
     ],
-    "used_designators": "Q102,Q122,Q131,#PWR11-12,#PWR117,#PWR208,#PWR210,#PWR212,#PWR234,#PWR243,#PWR253,#PWR507,R129-130,J6,J131,TP102,TP123",
+    "used_designators": "Q102,Q122,Q131,#PWR11-12,#PWR114,#PWR117,#PWR208,#PWR210,#PWR212,#PWR234,#PWR243,#PWR253,#PWR507,R129-130,J6-7,J131,TP102,TP123",
     "variants": []
   },
   "sheets": [
@@ -745,8 +745,8 @@
   ],
   "text_variables": {
     "AUTHOR": "Jason Watkins",
-    "REV": "C",
-    "STEP": "4",
+    "REV": "D",
+    "STEP": "1",
     "TITLE": "4 Digit Nixie Clock Controller"
   },
   "tuning_profiles": {
