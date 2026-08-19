@@ -66,10 +66,7 @@ impl WifiManager {
                         self.backoff.as_secs()
                     );
                     Timer::after(self.backoff).await;
-                    self.backoff = (self.backoff * 3) / 2;
-                    if self.backoff > Self::max_backoff() {
-                        self.backoff = Self::max_backoff();
-                    }
+                    self.backoff = (self.backoff * 3 / 2).min(Self::max_backoff());
                 }
             } else {
                 let result = self.controller.wait_for_disconnect_async().await;
@@ -138,8 +135,8 @@ pub fn init(wifi: WIFI<'static>, seed: u64, spawner: &Spawner) -> Stack<'static>
         seed,
     );
 
-    let net_token = net_task(runner).expect("Failed to spawn net_task");
-    let wifi_token = wifi_task(wifi_controller).expect("Failed to spawn wifi_task");
+    let net_token = net_task(runner).expect("Failed to create net_task");
+    let wifi_token = wifi_task(wifi_controller).expect("Failed to create wifi_task");
 
     spawner.spawn(net_token);
     spawner.spawn(wifi_token);

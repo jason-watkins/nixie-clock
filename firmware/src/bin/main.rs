@@ -76,10 +76,13 @@ async fn main(spawner: Spawner) -> ! {
         wifi_stack.config_v4().expect("No IP after WiFi init")
     );
 
+    nixie_clock::time::init(wifi_stack, &spawner);
+    info!("Time initialized...");
+
     loop {
-        info!("Hello world!");
+        info!("Hello world! {}", nixie_clock::time::local_now());
         led.toggle();
-        Timer::after(Duration::from_secs(1)).await;
+        Timer::after(Duration::from_secs(5)).await;
     }
 }
 
