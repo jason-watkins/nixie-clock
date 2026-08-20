@@ -8,6 +8,7 @@ use embassy_net::Runner;
 use embassy_net::Stack;
 use embassy_net::StackResources;
 use embassy_time::Duration;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use esp_hal::peripherals::WIFI;
 use esp_radio::wifi::AuthenticationMethod;
@@ -44,6 +45,7 @@ impl WifiManager {
 
     pub async fn run(mut self) -> ! {
         loop {
+            let start = Instant::now();
             if !self.controller.is_connected()
                 && let Some(last_good) = self.last_good
             {
@@ -74,6 +76,16 @@ impl WifiManager {
                     Ok(_) => info!("Wi-Fi disconnected, retrying..."),
                     Err(e) => error!("Wi-Fi error: {:?}, retrying...", e),
                 }
+            }
+
+            // Forcing each loop to take a minimum time acts as a backstop against error paths that
+            // don't introduce their own backoff time, which could otherwise let this loop run away and
+            // wedge the firmware.
+            const MIN_ITERATION_TIME: Duration = Duration::from_millis(500);
+            if let Some(remaining) =
+                (start + MIN_ITERATION_TIME).checked_duration_since(Instant::now())
+            {
+                Timer::after(remaining).await;
             }
         }
     }

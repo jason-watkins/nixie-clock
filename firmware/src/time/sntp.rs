@@ -297,8 +297,6 @@ pub fn init(stack: Stack<'static>, spawner: &Spawner) {
 
 #[embassy_executor::task]
 async fn sync(stack: Stack<'static>) -> ! {
-    const RESYNC: Duration = Duration::from_secs(60 * 60);
-    const MIN_ITERATION_TIME: Duration = Duration::from_millis(100);
     let context = NtpContext::new(EmbassyTimestampGenerator::default());
     let mut state = NtpState::new();
     loop {
@@ -309,6 +307,7 @@ async fn sync(stack: Stack<'static>) -> ! {
                 let outcome = try_one(stack, ip, context).await;
                 state.apply_outcome(ip, outcome);
                 if outcome == SyncOutcome::Synced {
+                    const RESYNC: Duration = Duration::from_secs(60 * 60);
                     Timer::after(RESYNC).await;
                 }
             }
@@ -322,6 +321,7 @@ async fn sync(stack: Stack<'static>) -> ! {
         // Forcing each loop to take a minimum time acts as a backstop against error paths that
         // don't introduce their own backoff time, which could otherwise let this loop run away and
         // wedge the firmware.
+        const MIN_ITERATION_TIME: Duration = Duration::from_millis(100);
         if let Some(remaining) = (start + MIN_ITERATION_TIME).checked_duration_since(Instant::now())
         {
             Timer::after(remaining).await;
