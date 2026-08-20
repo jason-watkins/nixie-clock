@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 fn main() {
     generate_wifi_credentials();
+    generate_build_epoch();
     linker_be_nice();
     println!("cargo:rustc-link-arg=-Tdefmt.x");
     // make sure linkall.x is the last linker script (otherwise might cause problems with flip-link)
@@ -119,4 +120,26 @@ fn generate_wifi_credentials() {
         format!("pub static WIFI_CREDENTIALS: &[(&str, &str)] = &[\n{entries}];\n"),
     )
     .unwrap();
+}
+
+fn generate_build_epoch() {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    println!("cargo:rerun-if-env-changed=SOURCE_DATE_EPOCH");
+
+    let secs: u64 = match std::env::var("SOURCE_DATE_EPOCH") {
+        Ok(v) => v.parse().expect("SOURCE_DATE_EPOCH must be an integer"),
+        Err(_) => SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("build clock is before the unix epoch")
+            .as_secs(),
+    };
+
+    assert!(
+        secs > 1_735_689_600,
+        "build clock reads before 2025-01-01; the NTP era pivot would be wrong"
+    );
+
+    let out = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("build_epoch.rs");
+    std::fs::write(out, format!("pub const BUILD_EPOCH_SECS: u64 = {secs};\n")).unwrap();
 }

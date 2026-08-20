@@ -19,9 +19,41 @@ use smoltcp::wire::DnsQueryType;
 use sntpc::Error;
 use sntpc::KissOfDeathCode;
 use sntpc::NtpContext;
+use sntpc::NtpTimestampGenerator;
 use sntpc::get_time;
 use sntpc_net_embassy::UdpSocketWrapper;
-use sntpc_time_embassy::EmbassyTimestampGenerator;
+
+include!(concat!(env!("OUT_DIR"), "/build_epoch.rs"));
+
+/// Timestamp source for `sntpc` based on the firmware build time. This should be strictly better
+/// than `sntpc_time_embassy::EmbassyTimestampGenerator`, which uses the monotonic since-boot clock
+/// and so reads near 1970 when treated as an NTP era pivot.
+#[derive(Clone, Copy)]
+struct BuildEpochTimestampGenerator {
+    since_boot: Instant,
+}
+
+impl Default for BuildEpochTimestampGenerator {
+    fn default() -> Self {
+        BuildEpochTimestampGenerator {
+            since_boot: Instant::from_secs(0),
+        }
+    }
+}
+
+impl NtpTimestampGenerator for BuildEpochTimestampGenerator {
+    fn init(&mut self) {
+        self.since_boot = Instant::now();
+    }
+
+    fn timestamp_sec(&self) -> u64 {
+        BUILD_EPOCH_SECS + self.since_boot.as_secs()
+    }
+
+    fn timestamp_subsec_micros(&self) -> u32 {
+        (self.since_boot.as_micros() % 1_000_000) as u32
+    }
+}
 
 /// A set of IP Addresses that have replied to NTP requests with responses indicating they should
 /// never be queried again.
@@ -269,17 +301,17 @@ impl NtpState {
     }
 
     pub async fn next_candidate(&mut self, stack: Stack<'static>) -> CandidateResult {
-        let mut soonest: Option<Instant> = None;
+        let mut soonest: Instant = Instant::MAX;
         for host in self.hosts.iter_mut() {
             match host.get_candidate(stack).await {
                 CandidateResult::Ready(ip) => {
                     return CandidateResult::Ready(ip);
                 }
-                CandidateResult::NotBefore(t) => soonest = Some(soonest.map_or(t, |s| s.min(t))),
+                CandidateResult::NotBefore(t) => soonest = soonest.min(t),
             }
         }
 
-        CandidateResult::NotBefore(soonest.expect("NTP_HOSTS is non-empty"))
+        CandidateResult::NotBefore(soonest)
     }
 
     pub fn apply_outcome(&mut self, ip: IpAddr, outcome: SyncOutcome) {
@@ -297,7 +329,7 @@ pub fn init(stack: Stack<'static>, spawner: &Spawner) {
 
 #[embassy_executor::task]
 async fn sync(stack: Stack<'static>) -> ! {
-    let context = NtpContext::new(EmbassyTimestampGenerator::default());
+    let context = NtpContext::new(BuildEpochTimestampGenerator::default());
     let mut state = NtpState::new();
     loop {
         let start = Instant::now();
@@ -332,7 +364,7 @@ async fn sync(stack: Stack<'static>) -> ! {
 async fn try_one(
     stack: Stack<'static>,
     ip: IpAddr,
-    context: NtpContext<EmbassyTimestampGenerator>,
+    context: NtpContext<BuildEpochTimestampGenerator>,
 ) -> SyncOutcome {
     const MAX_ROUNDTRIP: Duration = Duration::from_millis(500);
     let mut rx_meta = [PacketMetadata::EMPTY; 1];

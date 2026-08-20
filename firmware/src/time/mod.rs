@@ -4,6 +4,7 @@ use chrono::DateTime;
 use chrono::FixedOffset;
 use chrono::Utc;
 use critical_section::Mutex;
+use defmt::error;
 use embassy_executor::Spawner;
 use embassy_net::Stack;
 use embassy_time::Duration;
@@ -66,19 +67,24 @@ pub fn local_now() -> Option<DateTime<FixedOffset>> {
 /// Gets the raw NTP clock state
 pub fn state() -> Clock {
     let mcu_now = Instant::now();
-    let state = read_state();
-    match state {
-        None => Clock::Never,
-        Some(value) => {
-            let mcu_now_us = mcu_now.as_micros() as i64;
-            let now = DateTime::from_timestamp_micros(mcu_now_us + value.offset_us)
-                .expect("Failed to construct Datetime");
-            if value.at + STALE_THRESHOLD < mcu_now {
-                Clock::Stale(now)
-            } else {
-                Clock::Synced(now)
-            }
-        }
+    let Some(value) = read_state() else {
+        return Clock::Never;
+    };
+
+    let mcu_now_us = mcu_now.as_micros() as i64;
+    let ticks = mcu_now_us.saturating_add(value.offset_us);
+    let Some(now) = DateTime::from_timestamp_micros(ticks) else {
+        error!(
+            "Failed to construct DateTime from {} + {} = {}",
+            mcu_now_us, value.offset_us, ticks
+        );
+        return Clock::Never;
+    };
+
+    if value.at + STALE_THRESHOLD < mcu_now {
+        Clock::Stale(now)
+    } else {
+        Clock::Synced(now)
     }
 }
 

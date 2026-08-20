@@ -7,6 +7,7 @@
 )]
 #![deny(clippy::large_stack_frames)]
 
+use defmt::error;
 use defmt::info;
 use embassy_executor::Spawner;
 use esp_hal::clock::CpuClock;
@@ -78,10 +79,10 @@ async fn main(spawner: Spawner) -> ! {
     info!("Clock initialized");
 
     wifi_stack.wait_config_up().await;
-    info!(
-        "Connected at IP {}",
-        wifi_stack.config_v4().expect("No IP after WiFi init")
-    );
+    match wifi_stack.config_v4() {
+        Some(config) => info!("Connected at IP {}", config.address),
+        None => error!("No wifi config after up"),
+    }
 
     // All of the operational logic lives in tasks. Park main now that setup is complete.
     core::future::pending::<()>().await;
