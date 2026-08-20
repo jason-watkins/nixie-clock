@@ -70,18 +70,18 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Wi-Fi initialized...");
 
-    wifi_stack.wait_config_up().await;
-    info!(
-        "Connected at IP {}",
-        wifi_stack.config_v4().expect("No IP after WiFi init")
-    );
-
     nixie_clock::time::init(wifi_stack, &spawner);
     info!("Time initialized...");
 
     let clock_pins = nixie_pins!(peripherals);
     nixie_clock::nixie::init(clock_pins, &spawner);
     info!("Clock initialized");
+
+    wifi_stack.wait_config_up().await;
+    info!(
+        "Connected at IP {}",
+        wifi_stack.config_v4().expect("No IP after WiFi init")
+    );
 
     // All of the operational logic lives in tasks. Park main now that setup is complete.
     core::future::pending::<()>().await;

@@ -185,9 +185,9 @@ async fn update_clock(mut clock_face: ClockFace<'static>) -> ! {
                     warn!("HV rail failed");
                     clock_face.disable_hv();
                     break;
-                } else {
-                    hv_fail_count = 0;
                 }
+            } else {
+                hv_fail_count = 0;
             }
 
             let now = time::local_now().map(digits).unwrap_or(DEFAULT_DISPLAY);
