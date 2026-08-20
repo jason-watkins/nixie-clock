@@ -9,12 +9,12 @@
 
 use defmt::info;
 use embassy_executor::Spawner;
-use embassy_time::{Duration, Timer};
 use esp_hal::clock::CpuClock;
 use esp_hal::gpio::OutputPin;
 use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::interrupt::software::SoftwareInterruptControl;
 use esp_hal::timer::timg::TimerGroup;
+use nixie_clock::nixie_pins;
 use panic_rtt_target as _;
 
 extern crate alloc;
@@ -58,6 +58,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized...");
 
     let mut led = Output::new(peripherals.GPIO38, Level::Low, OutputConfig::default());
+    led.set_low();
     // TODO: Create a status LED task that drives the status LED based on overall clock state
 
     let seed = {
@@ -69,7 +70,6 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Wi-Fi initialized...");
 
-    // TODO: Gracefully display something while waiting for wi-fi to connect
     wifi_stack.wait_config_up().await;
     info!(
         "Connected at IP {}",
@@ -79,11 +79,13 @@ async fn main(spawner: Spawner) -> ! {
     nixie_clock::time::init(wifi_stack, &spawner);
     info!("Time initialized...");
 
-    loop {
-        info!("Hello world! {}", nixie_clock::time::local_now());
-        led.toggle();
-        Timer::after(Duration::from_secs(5)).await;
-    }
+    let clock_pins = nixie_pins!(peripherals);
+    nixie_clock::nixie::init(clock_pins, &spawner);
+    info!("Clock initialized");
+
+    // All of the operational logic lives in tasks. Park main now that setup is complete.
+    core::future::pending::<()>().await;
+    unreachable!("core::future::pending never completes");
 }
 
 /// RAII wrapper to hold the USB enable output pin.
