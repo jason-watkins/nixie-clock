@@ -23,6 +23,9 @@ use sntpc::NtpTimestampGenerator;
 use sntpc::get_time;
 use sntpc_net_embassy::UdpSocketWrapper;
 
+use crate::status;
+use crate::status::TimeStatus;
+
 include!(concat!(env!("OUT_DIR"), "/build_epoch.rs"));
 
 /// Timestamp source for `sntpc` based on the firmware build time. This should be strictly better
@@ -339,6 +342,7 @@ async fn sync(stack: Stack<'static>) -> ! {
                 let outcome = try_one(stack, ip, context).await;
                 state.apply_outcome(ip, outcome);
                 if outcome == SyncOutcome::Synced {
+                    status::report(TimeStatus::Synced);
                     const RESYNC: Duration = Duration::from_secs(60 * 60);
                     Timer::after(RESYNC).await;
                 }

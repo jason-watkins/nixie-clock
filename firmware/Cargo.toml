@@ -2,7 +2,7 @@
 edition      = "2024"
 name         = "nixie-clock"
 rust-version = "1.88"
-version      = "0.2.1"
+version      = "1.0.0"
 
 [[bin]]
 name = "nixie-clock"
@@ -35,9 +35,9 @@ embedded-io-async = { version = "0.7.0", features = ["defmt"] }
 esp-alloc = { version = "0.10.0", features = ["defmt"] }
 panic-rtt-target = { version = "0.2.0", features = ["defmt"] }
 rtt-target = { version = "0.6.2", features = ["defmt"] }
-# for more networking protocol support see https://crates.io/crates/edge-net
 embassy-executor = { version = "0.10.0", features = ["defmt"] }
 embassy-time = { version = "0.5.0", features = ["defmt"] }
+embassy-sync = { version = "0.8", features = ["defmt"] }
 esp-radio = { version = "0.18.0", features = [
   "defmt",
   "esp-alloc",

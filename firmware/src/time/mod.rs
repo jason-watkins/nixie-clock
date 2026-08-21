@@ -5,10 +5,14 @@ use chrono::FixedOffset;
 use chrono::Utc;
 use critical_section::Mutex;
 use defmt::error;
+use defmt::info;
 use embassy_executor::Spawner;
 use embassy_net::Stack;
 use embassy_time::Duration;
 use embassy_time::Instant;
+
+use crate::status;
+use crate::status::TimeStatus;
 
 mod sntp;
 mod tz;
@@ -82,8 +86,10 @@ pub fn state() -> Clock {
     };
 
     if value.at + STALE_THRESHOLD < mcu_now {
+        status::report(TimeStatus::Stale);
         Clock::Stale(now)
     } else {
+        status::report(TimeStatus::Synced);
         Clock::Synced(now)
     }
 }
@@ -97,4 +103,5 @@ fn set_ntp_offset(offset_us: i64) -> Option<i64> {
 
 pub fn init(stack: Stack<'static>, spawner: &Spawner) {
     sntp::init(stack, spawner);
+    info!("Time initialized...");
 }

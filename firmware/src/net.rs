@@ -18,6 +18,9 @@ use esp_radio::wifi::sta::ScanMethod;
 use esp_radio::wifi::sta::StationConfig;
 use static_cell::StaticCell;
 
+use crate::status;
+use crate::status::WifiStatus;
+
 include!(concat!(env!("OUT_DIR"), "/wifi_credentials.rs"));
 
 struct WifiManager {
@@ -50,6 +53,7 @@ impl WifiManager {
                 && let Some(last_good) = self.last_good
             {
                 let (ssid, password) = WIFI_CREDENTIALS[last_good];
+                status::report(WifiStatus::Associating);
                 if self.try_one(ssid, password.to_string()).await {
                     info!("Reconnected to {}", ssid);
                 } else {
@@ -57,6 +61,7 @@ impl WifiManager {
                     self.last_good = None;
                 }
             } else if !self.controller.is_connected() {
+                status::report(WifiStatus::Associating);
                 self.last_good = self.connect_any().await;
 
                 // Still not connected, wait a bit before trying again. If it doesn't work the first
@@ -67,6 +72,7 @@ impl WifiManager {
                         "No Wi-Fi credentials worked, retrying in {} seconds...",
                         self.backoff.as_secs()
                     );
+                    status::report(WifiStatus::Down);
                     Timer::after(self.backoff).await;
                     self.backoff = (self.backoff * 3 / 2).min(Self::max_backoff());
                 }
@@ -76,6 +82,7 @@ impl WifiManager {
                     Ok(_) => info!("Wi-Fi disconnected, retrying..."),
                     Err(e) => error!("Wi-Fi error: {:?}, retrying...", e),
                 }
+                status::report(WifiStatus::Down);
             }
 
             // Forcing each loop to take a minimum time acts as a backstop against error paths that
@@ -126,6 +133,7 @@ impl WifiManager {
         let connected = self.controller.connect_async().await.is_ok();
         if connected {
             self.backoff = Self::default_backoff();
+            status::report(WifiStatus::Connected);
         }
         connected
     }
@@ -153,6 +161,7 @@ pub fn init(wifi: WIFI<'static>, seed: u64, spawner: &Spawner) -> Stack<'static>
     spawner.spawn(net_token);
     spawner.spawn(wifi_token);
 
+    info!("Wi-Fi initialized...");
     stack
 }
 

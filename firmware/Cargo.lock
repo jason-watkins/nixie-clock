@@ -1501,13 +1501,14 @@ checksum = "8d5439c4ad607c3c23abf66de8c8bf57ba8adcd1f129e699851a6e43935d339d"
 
 [[package]]
 name = "nixie-clock"
-version = "0.2.1"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "critical-section",
  "defmt 1.1.1",
  "embassy-executor",
  "embassy-net",
+ "embassy-sync 0.8.0",
  "embassy-time",
  "embedded-io 0.7.1",
  "embedded-io-async 0.7.0",

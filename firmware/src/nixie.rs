@@ -1,6 +1,7 @@
 use chrono::DateTime;
 use chrono::FixedOffset;
 use chrono::Timelike;
+use defmt::error;
 use defmt::info;
 use defmt::warn;
 use embassy_executor::Spawner;
@@ -16,6 +17,8 @@ use esp_hal::gpio::Output;
 use esp_hal::gpio::OutputConfig;
 use esp_hal::gpio::OutputPin;
 
+use crate::status;
+use crate::status::ClockStatus;
 use crate::time;
 
 /// Binds the board's GPIO assignments to the display.
@@ -118,8 +121,9 @@ impl<'a> ClockFace<'a> {
 
     pub async fn enable_hv(&mut self) {
         info!("Enabling HV rail");
+        const MAX_ATTEMPTS: usize = 5;
         let mut fail_count = 0;
-        loop {
+        for _ in 0..MAX_ATTEMPTS {
             self.hv_en.set_high();
             const HV_STARTUP_MAX: Duration = Duration::from_millis(250);
             match with_timeout(HV_STARTUP_MAX, self.hv_pgood.wait_for_high()).await {
@@ -129,7 +133,6 @@ impl<'a> ClockFace<'a> {
                 }
                 Err(TimeoutError) => {
                     self.hv_en.set_low();
-                    warn!("HV rail did not come up");
                     fail_count += 1;
 
                     const HV_RETRY_BASE: Duration = Duration::from_millis(250);
@@ -139,6 +142,12 @@ impl<'a> ClockFace<'a> {
                 }
             }
         }
+
+        // Fall through loop indicates we failed MAX_ATTEMPTS times. Give up and park the clock task.
+        status::report(ClockStatus::Failed);
+        error!("Failed to start HV converter");
+        core::future::pending::<()>().await;
+        unreachable!("core::future::pending never completes");
     }
 
     pub fn disable_hv(&mut self) {
@@ -166,6 +175,7 @@ pub fn init(clock_face: ClockFace<'static>, spawner: &Spawner) {
     let clock_token = update_clock(clock_face).expect("Failed to create clock task token");
 
     spawner.spawn(clock_token);
+    info!("Clock initialized");
 }
 
 #[embassy_executor::task]
@@ -174,6 +184,7 @@ async fn update_clock(mut clock_face: ClockFace<'static>) -> ! {
     let mut shown = DEFAULT_DISPLAY;
 
     loop {
+        status::report(ClockStatus::Starting);
         clock_face.enable_hv().await;
 
         const HV_FAIL_LIMIT: usize = 3;
@@ -190,6 +201,7 @@ async fn update_clock(mut clock_face: ClockFace<'static>) -> ! {
                 hv_fail_count = 0;
             }
 
+            status::report(ClockStatus::Good);
             let now = time::local_now().map(digits).unwrap_or(DEFAULT_DISPLAY);
             if now != shown {
                 let glyphs = now.map(|d| match d {

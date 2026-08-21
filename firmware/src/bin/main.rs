@@ -16,6 +16,8 @@ use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::interrupt::software::SoftwareInterruptControl;
 use esp_hal::timer::timg::TimerGroup;
 use nixie_clock::nixie_pins;
+use nixie_clock::status;
+use nixie_clock::status::BootPhase;
 use panic_rtt_target as _;
 
 extern crate alloc;
@@ -37,6 +39,7 @@ async fn main(spawner: Spawner) -> ! {
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
+    let status_led = status::init(peripherals.LEDC, peripherals.GPIO38);
 
     // These GPIO pins are in use by some feature of the module and should not be used.
     let _ = peripherals.GPIO27;
@@ -58,10 +61,9 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized...");
 
-    let mut led = Output::new(peripherals.GPIO38, Level::Low, OutputConfig::default());
-    led.set_low();
-    // TODO: Create a status LED task that drives the status LED based on overall clock state
+    status::spawn(status_led, &spawner);
 
+    status::report(BootPhase::Net);
     let seed = {
         let _trng = esp_hal::rng::TrngSource::new(peripherals.RNG, peripherals.ADC1);
         let rng = esp_hal::rng::Rng::new();
@@ -69,14 +71,12 @@ async fn main(spawner: Spawner) -> ! {
     };
     let wifi_stack = nixie_clock::net::init(peripherals.WIFI, seed, &spawner);
 
-    info!("Wi-Fi initialized...");
-
+    status::report(BootPhase::Time);
     nixie_clock::time::init(wifi_stack, &spawner);
-    info!("Time initialized...");
 
+    status::report(BootPhase::Display);
     let clock_pins = nixie_pins!(peripherals);
     nixie_clock::nixie::init(clock_pins, &spawner);
-    info!("Clock initialized");
 
     wifi_stack.wait_config_up().await;
     match wifi_stack.config_v4() {
@@ -85,6 +85,7 @@ async fn main(spawner: Spawner) -> ! {
     }
 
     // All of the operational logic lives in tasks. Park main now that setup is complete.
+    status::report(BootPhase::Running);
     core::future::pending::<()>().await;
     unreachable!("core::future::pending never completes");
 }
