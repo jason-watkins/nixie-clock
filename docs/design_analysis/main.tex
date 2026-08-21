@@ -11,9 +11,10 @@
 
 \usepackage[letterpaper,margin=1in]{geometry}
 
-% Project-local font (PT Serif: Latin + Cyrillic, OFL-licensed, committed
-% under fonts/ so the build has no system-font dependency). Requires
-% XeLaTeX or LuaLaTeX -- fontspec does not work under pdfLaTeX.
+% Project-local fonts (PT Serif for text, IBM Plex Mono for monospace; both
+% carry Latin and Cyrillic, are OFL-licensed, and are committed under fonts/ so
+% the build has no system-font dependency). Requires XeLaTeX or LuaLaTeX --
+% fontspec does not work under pdfLaTeX.
 \usepackage{fontspec}
 \setmainfont{PTSerif}[
   Path = fonts/,
@@ -23,11 +24,15 @@
   ItalicFont = *-Italic,
   BoldItalicFont = *-BoldItalic,
 ]
-\setmonofont{BerkeleyMono}[
+% Plex Mono sets a shade larger than PT Serif at the same nominal size;
+% MatchLowercase equalises the x-heights, trimming about 3 percent, so inline
+% \texttt does not read oversized against the surrounding text.
+\setmonofont{IBMPlexMono}[
   Path = fonts/,
-  Extension = .otf,
+  Extension = .ttf,
   UprightFont = *-Regular,
   BoldFont = *-Bold,
+  Scale = MatchLowercase,
 ]
 
 \usepackage{amsmath,amssymb}

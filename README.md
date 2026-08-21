@@ -75,3 +75,16 @@ This work is licensed under a
 [cc-by-sa]: http://creativecommons.org/licenses/by-sa/4.0/
 [cc-by-sa-image]: https://licensebuttons.net/l/by-sa/4.0/88x31.png
 [cc-by-sa-shield]: https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg
+
+except for third-party material carrying its own terms:
+
+- `docs/datasheets/` — manufacturer datasheets and scanned Soviet tube
+  documentation, redistributed for reference; sources in
+  [docs/tube_notes.md](docs/tube_notes.md).
+- `docs/design_analysis/fonts/` — PT Serif and IBM Plex Mono, under the SIL
+  Open Font License 1.1.
+- The K155ID1 symbol and DIP16 footprint, from judge2005 (no license stated,
+  used with attribution); the manufacturer 3D models in
+  `pcb/lib/nixie_clock.3dshapes/`; and the section data in
+  `cad/ins1/shoulder_profile.py`, sampled from a third-party model. Provenance
+  in [pcb/lib/README.md](pcb/lib/README.md).

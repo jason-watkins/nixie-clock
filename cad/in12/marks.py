@@ -48,9 +48,9 @@ QUALITY_MARK = [
     ((+0.5000, +0.0961), (+0.4192, +0.1189), (+0.4347, +0.0737)),
     ((+0.5000, +0.0961), (+0.4192, +0.1189), (+0.3894, +0.1086)),
 ]
-# Sans with a real Cyrillic set. Berkeley Mono, which the repo already had,
-# renders С, Р, И and Б as notdef slashes - and reports them as glyphs while
-# doing it, so only looking at the result catches it.
+# Sans with a real Cyrillic set. A face without one renders С, Р, И and Б as
+# notdef slashes - and reports them as glyphs while doing it, so only looking at
+# the result catches it.
 #
 # First that exists wins, and a bare name is looked for among the repo's own
 # fonts. Calibri Light draws a 1 with no foot bar, which is what the tubes have,
