@@ -1,7 +1,7 @@
 use crate::status::PdStatus;
 
 use super::BootPhase;
-use super::ClockStatus;
+use super::HvStatus;
 use super::TimeStatus;
 use super::WifiStatus;
 
@@ -11,7 +11,7 @@ pub enum Report {
     Pd(PdStatus),
     Wifi(WifiStatus),
     Time(TimeStatus),
-    Clock(ClockStatus),
+    Hv(HvStatus),
 }
 
 impl From<BootPhase> for Report {
@@ -38,8 +38,8 @@ impl From<TimeStatus> for Report {
     }
 }
 
-impl From<ClockStatus> for Report {
-    fn from(value: ClockStatus) -> Self {
-        Report::Clock(value)
+impl From<HvStatus> for Report {
+    fn from(value: HvStatus) -> Self {
+        Report::Hv(value)
     }
 }

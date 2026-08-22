@@ -210,10 +210,7 @@ impl PdManager {
             let policy = evaluate(&snapshot);
             match policy {
                 Policy::Deny => Self::deny(),
-                Policy::Grant {
-                    voltage_mv,
-                    current_ma,
-                } => Self::grant(voltage_mv, current_ma),
+                Policy::Grant { .. } => Self::grant(),
                 Policy::Renegotiate(rdo) => {
                     Self::deny();
                     if !self.negotiation_inhibited {
@@ -327,16 +324,12 @@ impl PdManager {
         status::report(status::PdStatus::Limited);
     }
 
-    fn grant(voltage_mv: u32, current_ma: u32) {
-        let permission = HvPermission::Granted {
-            voltage_mv,
-            current_ma,
-        };
+    fn grant() {
         HV_PERMISSION.sender().send_if_modified(|v| {
-            if *v == Some(permission) {
+            if *v == Some(HvPermission::Granted) {
                 false
             } else {
-                *v = Some(permission);
+                *v = Some(HvPermission::Granted);
                 true
             }
         });
@@ -478,9 +471,8 @@ pub fn evaluate(snapshot: &HpiSnapshot) -> Policy {
             },
             ChargingMode::Qc2 | ChargingMode::Afc => {
                 if snapshot.bus_voltage_mv >= 8500 {
-                    let voltage_mv = ((snapshot.bus_voltage_mv + 250) / 500) * 500;
                     Policy::Grant {
-                        voltage_mv,
+                        voltage_mv: snapshot.bus_voltage_mv,
                         current_ma: 750,
                     }
                 } else {

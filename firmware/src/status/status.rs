@@ -30,10 +30,10 @@ pub enum TimeStatus {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, defmt::Format)]
-pub enum ClockStatus {
+pub enum HvStatus {
     Off,
     Starting,
-    Good,
+    Up,
     Failed,
 }
 
@@ -43,7 +43,7 @@ pub struct Status {
     pub pd: PdStatus,
     pub wifi: WifiStatus,
     pub time: TimeStatus,
-    pub clock: ClockStatus,
+    pub hv: HvStatus,
 }
 
 impl Status {
@@ -53,7 +53,7 @@ impl Status {
             pd: PdStatus::Fault,
             wifi: WifiStatus::Down,
             time: TimeStatus::Never,
-            clock: ClockStatus::Off,
+            hv: HvStatus::Off,
         }
     }
 }

@@ -23,7 +23,7 @@ use hpi::HpiClient;
 #[derive(Clone, Copy, PartialEq, Eq, defmt::Format)]
 pub enum HvPermission {
     Denied,
-    Granted { voltage_mv: u32, current_ma: u32 },
+    Granted,
 }
 
 static HV_PERMISSION: Watch<CriticalSectionRawMutex, HvPermission, 1> = Watch::new();

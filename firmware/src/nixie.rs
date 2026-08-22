@@ -1,25 +1,16 @@
+use crate::time;
 use chrono::DateTime;
 use chrono::FixedOffset;
 use chrono::Timelike;
-use defmt::error;
 use defmt::info;
 use defmt::warn;
 use embassy_executor::Spawner;
 use embassy_time::Duration;
-use embassy_time::TimeoutError;
 use embassy_time::Timer;
-use embassy_time::with_timeout;
-use esp_hal::gpio::Input;
-use esp_hal::gpio::InputConfig;
-use esp_hal::gpio::InputPin;
 use esp_hal::gpio::Level;
 use esp_hal::gpio::Output;
 use esp_hal::gpio::OutputConfig;
 use esp_hal::gpio::OutputPin;
-
-use crate::status;
-use crate::status::ClockStatus;
-use crate::time;
 
 /// Binds the board's GPIO assignments to the display.
 #[macro_export]
@@ -30,8 +21,6 @@ macro_rules! nixie_pins {
             $crate::nixie::Bcd::new($p.GPIO47, $p.GPIO12, $p.GPIO10, $p.GPIO14),
             $crate::nixie::Bcd::new($p.GPIO18, $p.GPIO7, $p.GPIO5, $p.GPIO16),
             $crate::nixie::Bcd::new($p.GPIO4, $p.GPIO15, $p.GPIO17, $p.GPIO6),
-            $p.GPIO8,
-            $p.GPIO48,
         )
     };
 }
@@ -87,29 +76,11 @@ pub struct ClockFace<'a> {
     h1: Bcd<'a>,
     m10: Bcd<'a>,
     m1: Bcd<'a>,
-    hv_en: Output<'a>,
-    hv_pgood: Input<'a>,
 }
 
 impl<'a> ClockFace<'a> {
-    pub fn new(
-        h10: Bcd<'a>,
-        h1: Bcd<'a>,
-        m10: Bcd<'a>,
-        m1: Bcd<'a>,
-        hv_en: impl OutputPin + 'a,
-        hv_pgood: impl InputPin + 'a,
-    ) -> ClockFace<'a> {
-        let hv_en = Output::new(hv_en, Level::Low, OutputConfig::default());
-        let hv_pgood = Input::new(hv_pgood, InputConfig::default());
-        ClockFace {
-            h10,
-            h1,
-            m10,
-            m1,
-            hv_en,
-            hv_pgood,
-        }
+    pub fn new(h10: Bcd<'a>, h1: Bcd<'a>, m10: Bcd<'a>, m1: Bcd<'a>) -> ClockFace<'a> {
+        ClockFace { h10, h1, m10, m1 }
     }
 
     pub fn write_digits(&mut self, digits: [Option<u8>; 4]) {
@@ -117,45 +88,6 @@ impl<'a> ClockFace<'a> {
         self.h1.write(digits[1]);
         self.m10.write(digits[2]);
         self.m1.write(digits[3]);
-    }
-
-    pub async fn enable_hv(&mut self) {
-        info!("Enabling HV rail");
-        const MAX_ATTEMPTS: usize = 5;
-        let mut fail_count = 0;
-        for _ in 0..MAX_ATTEMPTS {
-            self.hv_en.set_high();
-            const HV_STARTUP_MAX: Duration = Duration::from_millis(250);
-            match with_timeout(HV_STARTUP_MAX, self.hv_pgood.wait_for_high()).await {
-                Ok(()) => {
-                    info!("HV rail up");
-                    return;
-                }
-                Err(TimeoutError) => {
-                    self.hv_en.set_low();
-                    fail_count += 1;
-
-                    const HV_RETRY_BASE: Duration = Duration::from_millis(250);
-                    const HV_RETRY_MAX: Duration = Duration::from_secs(60);
-                    let retry_delay = (HV_RETRY_BASE * fail_count).min(HV_RETRY_MAX);
-                    Timer::after(retry_delay).await
-                }
-            }
-        }
-
-        // Fall through loop indicates we failed MAX_ATTEMPTS times. Give up and park the clock task.
-        status::report(ClockStatus::Failed);
-        error!("Failed to start HV converter");
-        core::future::pending::<()>().await;
-        unreachable!("core::future::pending never completes");
-    }
-
-    pub fn disable_hv(&mut self) {
-        self.hv_en.set_low();
-    }
-
-    pub fn hv_good(&self) -> bool {
-        self.hv_pgood.is_high()
     }
 }
 
@@ -184,37 +116,18 @@ async fn update_clock(mut clock_face: ClockFace<'static>) -> ! {
     let mut shown = DEFAULT_DISPLAY;
 
     loop {
-        status::report(ClockStatus::Starting);
-        clock_face.enable_hv().await;
-
-        const HV_FAIL_LIMIT: usize = 3;
-        let mut hv_fail_count = 0;
-        loop {
-            if !clock_face.hv_good() {
-                hv_fail_count += 1;
-                if hv_fail_count >= HV_FAIL_LIMIT {
-                    warn!("HV rail failed");
-                    clock_face.disable_hv();
-                    break;
-                }
-            } else {
-                hv_fail_count = 0;
-            }
-
-            status::report(ClockStatus::Good);
-            let now = time::local_now().map(digits).unwrap_or(DEFAULT_DISPLAY);
-            if now != shown {
-                let glyphs = now.map(|d| match d {
-                    Some(d) => char::from_digit(d as u32, 10).unwrap_or('?'),
-                    None => ' ',
-                });
-                info!("{}{}:{}{}", glyphs[0], glyphs[1], glyphs[2], glyphs[3]);
-                clock_face.write_digits(now);
-                shown = now;
-            }
-
-            const TICK: Duration = Duration::from_millis(200);
-            Timer::after(TICK).await
+        let now = time::local_now().map(digits).unwrap_or(DEFAULT_DISPLAY);
+        if now != shown {
+            let glyphs = now.map(|d| match d {
+                Some(d) => char::from_digit(d as u32, 10).unwrap_or('?'),
+                None => ' ',
+            });
+            info!("{}{}:{}{}", glyphs[0], glyphs[1], glyphs[2], glyphs[3]);
+            clock_face.write_digits(now);
+            shown = now;
         }
+
+        const TICK: Duration = Duration::from_millis(200);
+        Timer::after(TICK).await
     }
 }

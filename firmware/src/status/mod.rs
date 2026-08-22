@@ -70,9 +70,9 @@ pub fn report(report: impl Into<Report>) {
                     return true;
                 }
             }
-            Report::Clock(v) => {
-                if v != s.clock {
-                    s.clock = v;
+            Report::Hv(v) => {
+                if v != s.hv {
+                    s.hv = v;
                     return true;
                 }
             }
@@ -155,7 +155,7 @@ fn pattern_for(s: &Status) -> &'static Pattern {
     pd_pattern(&s.pd)
         .or_else(|| wifi_pattern(&s.wifi))
         .or_else(|| time_pattern(&s.time))
-        .or_else(|| clock_pattern(&s.clock))
+        .or_else(|| hv_pattern(&s.hv))
         .unwrap_or_else(|| boot_pattern(&s.boot))
 }
 
@@ -206,12 +206,13 @@ fn time_pattern(status: &TimeStatus) -> Option<&'static Pattern> {
     }
 }
 
-fn clock_pattern(status: &ClockStatus) -> Option<&'static Pattern> {
-    static P_CLOCK_FAILED: Pattern<[Segment; 8]> = Pattern::blink_code(2, 2, true);
+fn hv_pattern(status: &HvStatus) -> Option<&'static Pattern> {
+    static P_HV_STARTING: Pattern<[Segment; 8]> = Pattern::blink_code(2, 2, true);
+    static P_HV_FAILED: Pattern<[Segment; 10]> = Pattern::blink_code(2, 3, true);
     match status {
-        ClockStatus::Off => None,
-        ClockStatus::Starting => None,
-        ClockStatus::Good => None,
-        ClockStatus::Failed => Some(&P_CLOCK_FAILED),
+        HvStatus::Off => None,
+        HvStatus::Starting => Some(&P_HV_STARTING),
+        HvStatus::Up => None,
+        HvStatus::Failed => Some(&P_HV_FAILED),
     }
 }
