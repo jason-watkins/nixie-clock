@@ -104,10 +104,10 @@ load without modification.
 The converter's input is the OR node of \cref{sec:3v3-diodeor}, which spans
 disjoint bands depending on which source is present:
 \begin{description}
-  \item[Bus-powered, full operation] a \SI{9}{\volt} or \SI{12}{\volt} contract,
+  \item[Bus-powered, high-voltage contract] \SI{9}{\volt} or \SI{12}{\volt},
     $V_{\mathrm{BUS}}$ \SIrange{8.5}{13}{\volt} through \des{Q}{3V3BUS}, giving
     \SIrange{8.48}{13.0}{\volt} at the node.
-  \item[Bus-powered, limited operation] the \SI{5}{\volt} contract of
+  \item[Bus-powered, \SI{5}{\volt} result] either operating class of
     \cref{sec:pd-classes}, $V_{\mathrm{BUS}}$ \SIrange{4.75}{5.5}{\volt}, giving
     \SIrange{4.71}{5.47}{\volt} at the node.
   \item[Header-powered] an externally supplied \SI{3.3}{\volt} or \SI{5}{\volt}
@@ -359,9 +359,9 @@ The node follows whichever source is higher, with the other branch blocking.
 
 Both branches use MOSFETs, for different reasons. The header branch cannot
 tolerate a diode drop at all, as derived below. The bus branch could tolerate
-one but not afford it: at the \SI{0.24}{\ampere} it carries in
-full operation a Schottky dissipates \SI{92}{\milli\watt}, and in limited
-operation \SI{0.44}{\ampere} at \SI{0.35}{\volt} is \SI{154}{\milli\watt}
+one but not afford it: at the \SI{0.24}{\ampere} it carries on a high-voltage
+contract a Schottky dissipates \SI{92}{\milli\watt}, and on a \SI{5}{\volt}
+bus \SI{0.44}{\ampere} at \SI{0.35}{\volt} is \SI{154}{\milli\watt}
 together with \SI{29}{\milli\ampere} of port current spent on the drop instead
 of delivered to the load (\cref{sec:pd-classes} budgets that current against a
 \SI{500}{\milli\ampere} port). That is the largest avoidable loss in the
@@ -434,11 +434,11 @@ direction, and recedes further as either source rises.
 \textbf{Configuration} & $V_{\mathrm{BUS}}$ & $V_{\mathrm{HDR}}$ & $V_N$ &
   $V_{GS}$ \des{Q}{3V3BUS} & $V_{GS}$ \des{Q}{3V3HDR} \\
 \hline
-Bus only, full operation & \SIrange{8.5}{13}{\volt} & \SI{0.14}{\volt} &
+Bus only, high-voltage contract & \SIrange{8.5}{13}{\volt} & \SI{0.14}{\volt} &
   \SIrange{8.48}{13.0}{\volt} & \SIrange{-8.3}{-12.9}{\volt} &
   $+\SI{0.02}{\volt}$ \\
 \hline
-Bus only, limited operation & \SIrange{4.75}{5.5}{\volt} & \SI{0.14}{\volt} &
+Bus only, \SI{5}{\volt} bus & \SIrange{4.75}{5.5}{\volt} & \SI{0.14}{\volt} &
   \SIrange{4.71}{5.47}{\volt} & \SIrange{-4.6}{-5.3}{\volt} &
   $+\SI{0.04}{\volt}$ \\
 \hline
@@ -448,11 +448,11 @@ Header only, \SI{3.3}{\volt} & \SI{0.23}{\volt} & \SI{3.2}{\volt} &
 Header only, \SI{5}{\volt} & \SI{0.23}{\volt} & \SI{5.0}{\volt} &
   \SI{4.99}{\volt} & $+\SI{0.01}{\volt}$ & $-\SI{4.76}{\volt}$ \\
 \hline
-Both, full operation & \SIrange{8.5}{13}{\volt} & \SIrange{3.3}{5}{\volt} &
+Both, high-voltage contract & \SIrange{8.5}{13}{\volt} & \SIrange{3.3}{5}{\volt} &
   \SIrange{8.48}{13.0}{\volt} & \SIrange{-3.5}{-9.7}{\volt} &
   $+\SI{0.02}{\volt}$ \\
 \hline
-Both, limited operation & \SIrange{4.75}{5.5}{\volt} & \SIrange{3.3}{5}{\volt} &
+Both, \SI{5}{\volt} bus & \SIrange{4.75}{5.5}{\volt} & \SIrange{3.3}{5}{\volt} &
   \multicolumn{3}{l|}{neither enhanced; see below} \\
 \hline
 \end{tabular}
@@ -630,8 +630,8 @@ derating. Specification: a P-channel MOSFET meeting both requirements, in SOT-23
 or larger, where the conduction figure and the \SI{6.2}{\volt} gate rating are
 both readily met.
 
-\des{Q}{3V3BUS} is selected on on-resistance at the gate drive limited operation
-affords, \SI{4.75}{\volt}, and on the \SI{16.3}{\volt} gate rating derived
+\des{Q}{3V3BUS} is selected on on-resistance at the gate drive a \SI{5}{\volt}
+bus affords, \SI{4.75}{\volt}, and on the \SI{16.3}{\volt} gate rating derived
 above. Holding the node drop to \SI{50}{\milli\volt} at the
 \SI{0.41}{\ampere} that band draws requires $R_{DSon}\leq\SI{120}{\milli\ohm}$
 hot, so $\leq\SI{110}{\milli\ohm}$ at \SI{25}{\celsius}. The DMP3099L
@@ -923,9 +923,9 @@ a check that has to be run at all. The other difference is that both branches of
 its input OR carry transistors. On the header branch a diode is excluded
 outright, the \SI{200}{\milli\volt} between an adapter's guaranteed output and
 the converter's start-up threshold being smaller than any diode's forward drop.
-On the bus branch a diode would function but costs \SI{92}{\milli\watt} in full
-operation and \SI{29}{\milli\ampere} of a \SI{500}{\milli\ampere} port budget in
-limited operation. That second choice carries a consequence: cross-referenced
+On the bus branch a diode would function but costs \SI{92}{\milli\watt} on a
+high-voltage contract and \SI{29}{\milli\ampere} of a \SI{500}{\milli\ampere}
+port budget on the weakest \SI{5}{\volt} source. That second choice carries a consequence: cross-referenced
 gates arbitrate between two sources only while those sources are separated by a
 threshold, so removing the loss adds an operating restriction
 (\cref{sec:3v3-adapter}).
@@ -984,7 +984,7 @@ the electrical requirement.
 \hline
 \des{R}{3V3BLEED} & Film resistor & \SI{100}{\kilo\ohm} & $\pm5\,\%$ sufficient; header supply pin to ground; carries \si{\micro\ampere}-level leakage while unattached and \SI{50}{\micro\ampere} while attached & 0402 \\
 \hline
-\des{Q}{3V3BUS} & P-channel MOSFET & DMP3099L & $R_{DSon}\leq\SI{110}{\milli\ohm}$ \emph{specified at} $\leq\SI{4.5}{\volt}$ of gate drive, limited operation affording no more; $|V_{GS}|\geq\SI{16.3}{\volt}$, the criterion that excludes the $\pm\SI{12}{\volt}$ parts most of this class carries; $V_{DS}\geq\SI{6.3}{\volt}$; $I_D\geq\SI{0.5}{\ampere}$ continuous; source on the converter node, drain on $V_{\mathrm{BUS}}$ & SOT-23 \\
+\des{Q}{3V3BUS} & P-channel MOSFET & DMP3099L & $R_{DSon}\leq\SI{110}{\milli\ohm}$ \emph{specified at} $\leq\SI{4.5}{\volt}$ of gate drive, a \SI{5}{\volt} bus affording no more; $|V_{GS}|\geq\SI{16.3}{\volt}$, the criterion that excludes the $\pm\SI{12}{\volt}$ parts most of this class carries; $V_{DS}\geq\SI{6.3}{\volt}$; $I_D\geq\SI{0.5}{\ampere}$ continuous; source on the converter node, drain on $V_{\mathrm{BUS}}$ & SOT-23 \\
 \hline
 \des{Q}{3V3HDR} & P-channel MOSFET & --- & $R_{DSon}\leq\SI{0.42}{\ohm}$ \emph{specified at} $\leq\SI{3}{\volt}$ of gate drive; $V_{DS}\geq\SI{16.3}{\volt}$; $|V_{GS}|\geq\SI{6.2}{\volt}$; $I_D\geq\SI{0.2}{\ampere}$ continuous; source-drain diode $\geq\SI{0.37}{\ampere}$ continuous dissipating $\SI{0.44}{\watt}$ at a \SI{40}{\celsius} ambient, requiring $R_{th(j\text{-}a)}\leq\SI{193}{\kelvin\per\watt}$ (\cref{sec:3v3-adapter}); source on the converter node, drain on the header pin & SOT-23 or larger, the diode rating excluding SC-70 \\
 \hline

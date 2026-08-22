@@ -340,7 +340,7 @@ the datasheet's JEDEC-board value; its evaluation-board figure is
 \SI{60}{\celsius\per\watt}, so the result above is the pessimistic of the two.
 No thermal management beyond the footprint's own copper is required.
 
-\subsection{Limited operation}\label{sec:5v-limited}
+\subsection{Operation on a \SI{5}{\volt} contract}\label{sec:5v-limited}
 
 A \SI{5}{\volt} contract (\cref{sec:pd-classes}) puts $V_{\mathrm{BUS}}$ between
 \SI{4.75}{\volt} and \SI{5.5}{\volt}, below the input this rail is derived
@@ -356,17 +356,23 @@ at the \SI{100}{\milli\ampere} bound. The rail therefore lands between
 \SI{4.72}{\volt} and \SI{5.47}{\volt} and is unregulated, tracking whatever the
 bus does.
 
-At the bottom of that range the K155ID1 packages sit below the
-\SI{4.75}{\volt} floor of their recommended supply window
-(\cref{sec:bcd-driver}), by at most \SI{30}{\milli\volt}. Two things bound what
-that costs. The parts are idle: the \SI{170}{\volt} rail is inhibited in this
-class (\cref{sec:hv-inhibit}), so every output is an open collector with no
-anode supply behind it and no cathode current to switch. And an undervolted
+The K155ID1 packages ride that rail across the excursion, and whether they are
+switching depends on the operating class of \cref{sec:pd-classes}, not on the
+voltage. In limited operation they idle: the \SI{170}{\volt} rail is inhibited,
+so every output is an open collector with no anode supply behind it and no
+cathode current to switch. In full operation on a \SI{5}{\volt} contract they
+switch their rated cathode currents from the tracking rail, and the supply
+window bounds what that costs. At the contract's floor the supply sits
+\SI{30}{\milli\volt} below the recommended \SI{4.75}{\volt}; an undervolted
 bipolar TTL supply shifts input thresholds and output levels without stressing
-anything; the recommended window is a specification boundary, and the rating
-lies further out. The rail's accuracy result of \cref{sec:5v-cout} is therefore
-conditional on a \SI{9}{\volt} or \SI{12}{\volt} contract, and no other result
-in this section is.
+anything, and the on-state drop the ballast sizing of \cref{sec:hv-load-digit}
+carries is a saturation figure that moves weakly with supply. At the contract's
+\SI{5.5}{\volt} ceiling the supply reaches \SI{5.47}{\volt}, above the
+recommended \SI{5.25}{\volt} and at \SI{78}{\percent} of the \SI{7}{\volt}
+absolute maximum (\cref{sec:bcd-driver}), inside the \SI{80}{\percent} derating
+this document applies to voltage ratings throughout. The rail's accuracy result
+of \cref{sec:5v-cout} is therefore conditional on a \SI{9}{\volt} or
+\SI{12}{\volt} contract, and no other result in this section is.
 
 \subsection{Summary}\label{sec:5v-summary}
 
@@ -395,8 +401,10 @@ Load current & --- & $4\times I_{CC}$: \SI{64}{\milli\ampere} typ /
   \SI{100}{\milli\ampere} max, static \\
 \hline
 Input window & inside \SIrange{3}{17}{\volt} recommended; \SI{80}{\percent} of
-  the \SI{18}{\volt} absolute maximum & $V_{\mathrm{BUS}}$
-  \SIrange{8.5}{13}{\volt}, direct; \SI{72}{\percent} of rating \\
+  the \SI{18}{\volt} absolute maximum & regulation across
+  \SIrange{8.5}{13}{\volt}; tracking in dropout across
+  \SIrange{4.75}{5.5}{\volt} (\cref{sec:5v-limited}); \SI{72}{\percent} of
+  rating at \SI{13}{\volt} \\
 \hline
 Duty cycle & --- & 0.385--0.588; \SI{100}{\percent} mode unreachable above
   \SI{5.04}{\volt} input \\
