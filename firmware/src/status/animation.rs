@@ -130,7 +130,7 @@ impl<const N: usize> Pattern<[Segment; N]> {
             segments[i * 2 + 1] = Segment::hold(0, 250);
             i += 1
         }
-        while i < short as usize {
+        while i < (short + long) as usize {
             segments[i * 2] = Segment::hold(100, 250);
             segments[i * 2 + 1] = Segment::hold(0, 250);
             i += 1

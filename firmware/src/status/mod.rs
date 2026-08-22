@@ -52,6 +52,12 @@ pub fn report(report: impl Into<Report>) {
                     return true;
                 }
             }
+            Report::Pd(v) => {
+                if v != s.pd {
+                    s.pd = v;
+                    return true;
+                }
+            }
             Report::Wifi(v) => {
                 if v != s.wifi {
                     s.wifi = v;
@@ -146,25 +152,37 @@ async fn led_task(led: StatusLed) -> ! {
 }
 
 fn pattern_for(s: &Status) -> &'static Pattern {
-    info!("{}", s);
-    wifi_pattern(&s.wifi)
+    pd_pattern(&s.pd)
+        .or_else(|| wifi_pattern(&s.wifi))
         .or_else(|| time_pattern(&s.time))
         .or_else(|| clock_pattern(&s.clock))
         .unwrap_or_else(|| boot_pattern(&s.boot))
 }
 
 fn boot_pattern(phase: &BootPhase) -> &'static Pattern {
-    static P1: Pattern<[Segment; 2]> = Pattern::pulse(1, true);
-    static P2: Pattern<[Segment; 4]> = Pattern::pulse(2, true);
-    static P3: Pattern<[Segment; 6]> = Pattern::pulse(3, true);
-    static P4: Pattern<[Segment; 8]> = Pattern::pulse(4, true);
-    static P5: Pattern<[Segment; 2]> = Pattern::heartbeat(25, 10000);
+    static P_HAL: Pattern<[Segment; 2]> = Pattern::pulse(1, true);
+    static P_PD: Pattern<[Segment; 4]> = Pattern::pulse(2, true);
+    static P_NET: Pattern<[Segment; 6]> = Pattern::pulse(3, true);
+    static P_TIME: Pattern<[Segment; 8]> = Pattern::pulse(4, true);
+    static P_DISPLAY: Pattern<[Segment; 10]> = Pattern::pulse(5, true);
+    static P_RUNNING: Pattern<[Segment; 2]> = Pattern::heartbeat(25, 10000);
     match phase {
-        BootPhase::Hal => &P1,
-        BootPhase::Net => &P2,
-        BootPhase::Time => &P3,
-        BootPhase::Display => &P4,
-        BootPhase::Running => &P5,
+        BootPhase::Hal => &P_HAL,
+        BootPhase::Pd => &P_PD,
+        BootPhase::Net => &P_NET,
+        BootPhase::Time => &P_TIME,
+        BootPhase::Display => &P_DISPLAY,
+        BootPhase::Running => &P_RUNNING,
+    }
+}
+
+fn pd_pattern(status: &PdStatus) -> Option<&'static Pattern> {
+    static P_LIMITED: Pattern<[Segment; 10]> = Pattern::blink_code(3, 2, true);
+    static P_FAULT: Pattern<[Segment; 12]> = Pattern::blink_code(3, 3, true);
+    match status {
+        PdStatus::Limited => Some(&P_LIMITED),
+        PdStatus::Full => None,
+        PdStatus::Fault => Some(&P_FAULT),
     }
 }
 
@@ -179,7 +197,7 @@ fn wifi_pattern(status: &WifiStatus) -> Option<&'static Pattern> {
 }
 
 fn time_pattern(status: &TimeStatus) -> Option<&'static Pattern> {
-    static P1: Pattern<[Segment; 4]> = Pattern::blink_code(1, 1, true);
+    static P1: Pattern<[Segment; 6]> = Pattern::blink_code(1, 2, true);
     static P2: Pattern<[Segment; 2]> = Pattern::heartbeat(100, 2000);
     match status {
         TimeStatus::Never => Some(&P1),
@@ -189,11 +207,11 @@ fn time_pattern(status: &TimeStatus) -> Option<&'static Pattern> {
 }
 
 fn clock_pattern(status: &ClockStatus) -> Option<&'static Pattern> {
-    static P4: Pattern<[Segment; 6]> = Pattern::blink_code(2, 1, true);
+    static P_CLOCK_FAILED: Pattern<[Segment; 8]> = Pattern::blink_code(2, 2, true);
     match status {
         ClockStatus::Off => None,
         ClockStatus::Starting => None,
         ClockStatus::Good => None,
-        ClockStatus::Failed => Some(&P4),
+        ClockStatus::Failed => Some(&P_CLOCK_FAILED),
     }
 }

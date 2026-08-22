@@ -11,11 +11,10 @@ use defmt::error;
 use defmt::info;
 use embassy_executor::Spawner;
 use esp_hal::clock::CpuClock;
-use esp_hal::gpio::OutputPin;
-use esp_hal::gpio::{Level, Output, OutputConfig};
 use esp_hal::interrupt::software::SoftwareInterruptControl;
 use esp_hal::timer::timg::TimerGroup;
 use nixie_clock::nixie_pins;
+use nixie_clock::pd;
 use nixie_clock::status;
 use nixie_clock::status::BootPhase;
 use panic_rtt_target as _;
@@ -49,10 +48,6 @@ async fn main(spawner: Spawner) -> ! {
     let _ = peripherals.GPIO31;
     let _ = peripherals.GPIO32;
 
-    // Enable the USB mux. This steals the USB data pins from the CYPD3176, but if we have power
-    // then power negotiation should already be complete.
-    let _usb_en = UsbEnable::new(peripherals.GPIO36);
-
     esp_alloc::heap_allocator!(#[esp_hal::ram(reclaimed)] size: 73744);
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
@@ -62,6 +57,17 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized...");
 
     status::spawn(status_led, &spawner);
+
+    status::report(BootPhase::Pd);
+    pd::init(
+        peripherals.I2C0,
+        peripherals.GPIO1,
+        peripherals.GPIO2,
+        peripherals.GPIO35,
+        peripherals.GPIO37,
+        peripherals.GPIO36,
+        &spawner,
+    );
 
     status::report(BootPhase::Net);
     let seed = {
@@ -88,17 +94,4 @@ async fn main(spawner: Spawner) -> ! {
     status::report(BootPhase::Running);
     core::future::pending::<()>().await;
     unreachable!("core::future::pending never completes");
-}
-
-/// RAII wrapper to hold the USB enable output pin.
-struct UsbEnable<'a> {
-    _pin: Output<'a>,
-}
-
-impl<'a> UsbEnable<'a> {
-    pub fn new(pin: impl OutputPin + 'a) -> Self {
-        Self {
-            _pin: Output::new(pin, Level::Low, OutputConfig::default()),
-        }
-    }
 }

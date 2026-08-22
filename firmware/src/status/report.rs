@@ -1,3 +1,5 @@
+use crate::status::PdStatus;
+
 use super::BootPhase;
 use super::ClockStatus;
 use super::TimeStatus;
@@ -6,6 +8,7 @@ use super::WifiStatus;
 #[derive(Clone, Copy, PartialEq, Eq, defmt::Format)]
 pub enum Report {
     Boot(BootPhase),
+    Pd(PdStatus),
     Wifi(WifiStatus),
     Time(TimeStatus),
     Clock(ClockStatus),
@@ -14,6 +17,12 @@ pub enum Report {
 impl From<BootPhase> for Report {
     fn from(value: BootPhase) -> Self {
         Report::Boot(value)
+    }
+}
+
+impl From<PdStatus> for Report {
+    fn from(value: PdStatus) -> Self {
+        Report::Pd(value)
     }
 }
 
