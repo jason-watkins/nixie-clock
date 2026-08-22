@@ -51,7 +51,7 @@ impl Status {
     pub const fn new() -> Self {
         Status {
             boot: BootPhase::Hal,
-            pd: PdStatus::Fault,
+            pd: PdStatus::Limited,
             wifi: WifiStatus::Down,
             time: TimeStatus::Never,
             hv: HvStatus::Off,

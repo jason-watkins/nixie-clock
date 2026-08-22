@@ -125,7 +125,6 @@ impl PdManager {
             .await
             {
                 Ok(Either::First(())) | Err(TimeoutError) => {
-                    // Interrupt
                     if let Err(e) = self.sync().await {
                         error!("PD sync failed: {}", e);
                     }
