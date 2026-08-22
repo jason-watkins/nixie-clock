@@ -13,6 +13,7 @@ use embassy_executor::Spawner;
 use esp_hal::clock::CpuClock;
 use esp_hal::interrupt::software::SoftwareInterruptControl;
 use esp_hal::timer::timg::TimerGroup;
+use nixie_clock::hv;
 use nixie_clock::nixie_pins;
 use nixie_clock::pd;
 use nixie_clock::status;
@@ -68,6 +69,9 @@ async fn main(spawner: Spawner) -> ! {
         peripherals.GPIO36,
         &spawner,
     );
+
+    status::report(BootPhase::Hv);
+    hv::init(peripherals.GPIO8, peripherals.GPIO48, &spawner);
 
     status::report(BootPhase::Net);
     let seed = {

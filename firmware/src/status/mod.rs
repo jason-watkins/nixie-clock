@@ -162,12 +162,14 @@ fn pattern_for(s: &Status) -> &'static Pattern {
 fn boot_pattern(phase: &BootPhase) -> &'static Pattern {
     static P_HAL: Pattern<[Segment; 2]> = Pattern::pulse(1, true);
     static P_PD: Pattern<[Segment; 4]> = Pattern::pulse(2, true);
-    static P_NET: Pattern<[Segment; 6]> = Pattern::pulse(3, true);
-    static P_TIME: Pattern<[Segment; 8]> = Pattern::pulse(4, true);
-    static P_DISPLAY: Pattern<[Segment; 10]> = Pattern::pulse(5, true);
+    static P_HV: Pattern<[Segment; 6]> = Pattern::pulse(3, true);
+    static P_NET: Pattern<[Segment; 8]> = Pattern::pulse(4, true);
+    static P_TIME: Pattern<[Segment; 10]> = Pattern::pulse(5, true);
+    static P_DISPLAY: Pattern<[Segment; 12]> = Pattern::pulse(6, true);
     static P_RUNNING: Pattern<[Segment; 2]> = Pattern::heartbeat(25, 10000);
     match phase {
         BootPhase::Hal => &P_HAL,
+        BootPhase::Hv => &P_HV,
         BootPhase::Pd => &P_PD,
         BootPhase::Net => &P_NET,
         BootPhase::Time => &P_TIME,

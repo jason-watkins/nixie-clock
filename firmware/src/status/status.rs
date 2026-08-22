@@ -2,6 +2,7 @@
 pub enum BootPhase {
     Hal,
     Pd,
+    Hv,
     Net,
     Time,
     Display,
