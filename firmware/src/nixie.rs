@@ -1,3 +1,5 @@
+use crate::hv;
+use crate::status::HvStatus;
 use crate::time;
 use chrono::DateTime;
 use chrono::FixedOffset;
@@ -5,6 +7,7 @@ use chrono::Timelike;
 use defmt::info;
 use defmt::warn;
 use embassy_executor::Spawner;
+use embassy_sync::watch::DynReceiver;
 use embassy_time::Duration;
 use embassy_time::Timer;
 use esp_hal::gpio::Level;
@@ -71,23 +74,118 @@ impl<'a> Bcd<'a> {
     }
 }
 
+const DEFAULT_DISPLAY: [Option<u8>; 4] = [None, None, None, None];
+
 pub struct ClockFace<'a> {
     h10: Bcd<'a>,
     h1: Bcd<'a>,
     m10: Bcd<'a>,
     m1: Bcd<'a>,
+    hv_status_rx: DynReceiver<'static, HvStatus>,
+    hv_status: HvStatus,
+    shown: [Option<u8>; 4],
 }
 
 impl<'a> ClockFace<'a> {
     pub fn new(h10: Bcd<'a>, h1: Bcd<'a>, m10: Bcd<'a>, m1: Bcd<'a>) -> ClockFace<'a> {
-        ClockFace { h10, h1, m10, m1 }
+        ClockFace {
+            h10,
+            h1,
+            m10,
+            m1,
+            hv_status_rx: hv::status_receiver(),
+            hv_status: HvStatus::Off,
+            shown: DEFAULT_DISPLAY,
+        }
     }
 
-    pub fn write_digits(&mut self, digits: [Option<u8>; 4]) {
-        self.h10.write(digits[0]);
-        self.h1.write(digits[1]);
-        self.m10.write(digits[2]);
+    pub async fn write_digits(&mut self, digits: [Option<u8>; 4]) {
         self.m1.write(digits[3]);
+        if self.shown[3] == None {
+            Timer::after_millis(100).await;
+        }
+        self.m10.write(digits[2]);
+        if self.shown[2] == None {
+            Timer::after_millis(100).await;
+        }
+        self.h1.write(digits[1]);
+        if self.shown[1] == None {
+            Timer::after_millis(100).await;
+        }
+        self.h10.write(digits[0]);
+        self.shown = digits;
+    }
+
+    pub async fn blank(&mut self) {
+        self.write_digits(DEFAULT_DISPLAY).await;
+    }
+
+    pub async fn run(mut self) -> ! {
+        loop {
+            self.wait_for_hv().await;
+
+            let now = time::local_now().map(digits).unwrap_or(DEFAULT_DISPLAY);
+            if now != self.shown {
+                let glyphs = now.map(|d| match d {
+                    Some(d) => char::from_digit(d as u32, 10).unwrap_or('?'),
+                    None => ' ',
+                });
+                info!("{}{}:{}{}", glyphs[0], glyphs[1], glyphs[2], glyphs[3]);
+                self.write_digits(now).await;
+            }
+
+            const TICK: Duration = Duration::from_millis(200);
+            Timer::after(TICK).await
+        }
+    }
+
+    async fn wait_for_hv(&mut self) {
+        let last_status = self.hv_status;
+        self.hv_status = self.hv_status_rx.get().await;
+        if self.status_good(last_status).await {
+            return;
+        }
+
+        loop {
+            let last_status = self.hv_status;
+            self.hv_status = self.hv_status_rx.changed().await;
+            if self.status_good(last_status).await {
+                return;
+            }
+        }
+    }
+
+    async fn status_good(&mut self, last_status: HvStatus) -> bool {
+        const RAIL_STABILIZATION_TIME: Duration = Duration::from_millis(100);
+        match self.hv_status {
+            HvStatus::Off => {
+                self.blank().await;
+                info!("Clock detected HV rail turn off. Blanking display");
+                false
+            }
+            HvStatus::Starting => false,
+            HvStatus::Up => {
+                if last_status == HvStatus::Up {
+                    // Previously up, so we've already waited for the rail to stabilize, and still up so we can
+                    // continue operation without delay.
+                    true
+                } else {
+                    info!(
+                        "HV rail up, clock waiting {}ms to give it time to stabilize",
+                        RAIL_STABILIZATION_TIME.as_millis()
+                    );
+                    Timer::after(RAIL_STABILIZATION_TIME).await; // Give the rail time to stabilize
+                    self.hv_status = self.hv_status_rx.get().await;
+                    if self.hv_status == HvStatus::Up {
+                        info!("Clock wait complete. Resuming normal operation");
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+            HvStatus::Failed => false,
+        }
     }
 }
 
@@ -112,22 +210,6 @@ pub fn init(clock_face: ClockFace<'static>, spawner: &Spawner) {
 
 #[embassy_executor::task]
 async fn update_clock(mut clock_face: ClockFace<'static>) -> ! {
-    const DEFAULT_DISPLAY: [Option<u8>; 4] = [None, None, None, None];
-    let mut shown = DEFAULT_DISPLAY;
-
-    loop {
-        let now = time::local_now().map(digits).unwrap_or(DEFAULT_DISPLAY);
-        if now != shown {
-            let glyphs = now.map(|d| match d {
-                Some(d) => char::from_digit(d as u32, 10).unwrap_or('?'),
-                None => ' ',
-            });
-            info!("{}{}:{}{}", glyphs[0], glyphs[1], glyphs[2], glyphs[3]);
-            clock_face.write_digits(now);
-            shown = now;
-        }
-
-        const TICK: Duration = Duration::from_millis(200);
-        Timer::after(TICK).await
-    }
+    clock_face.blank().await;
+    clock_face.run().await;
 }

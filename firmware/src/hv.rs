@@ -4,10 +4,11 @@ use defmt::warn;
 use embassy_executor::Spawner;
 use embassy_futures::select::Either;
 use embassy_futures::select::select;
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::watch::DynReceiver;
+use embassy_sync::watch::Watch;
 use embassy_time::Duration;
 use embassy_time::TimeoutError;
-use embassy_time::Timer;
 use embassy_time::with_timeout;
 use esp_hal::gpio::Input;
 use esp_hal::gpio::InputConfig;
@@ -21,6 +22,13 @@ use crate::pd;
 use crate::pd::HvPermission;
 use crate::status;
 use crate::status::HvStatus;
+
+static HV_STATUS: Watch<CriticalSectionRawMutex, HvStatus, 1> = Watch::new();
+
+/// Get a receiver for the HV permission state. Panics on failure.
+pub fn status_receiver() -> DynReceiver<'static, HvStatus> {
+    HV_STATUS.dyn_receiver().unwrap()
+}
 
 struct HvManager {
     en: Output<'static>,
@@ -45,6 +53,14 @@ impl HvManager {
         let mut state = HvStatus::Off;
         loop {
             status::report(state);
+            HV_STATUS.sender().send_if_modified(|v| {
+                if *v == Some(state) {
+                    false
+                } else {
+                    *v = Some(state);
+                    true
+                }
+            });
             state = match state {
                 HvStatus::Off => self.off().await,
                 HvStatus::Starting => self.starting().await,
@@ -71,7 +87,7 @@ impl HvManager {
         const MAX_ATTEMPTS: u32 = 5;
         for attempt in 1..=MAX_ATTEMPTS {
             self.en.set_high();
-            const HV_STARTUP_MAX: Duration = Duration::from_millis(250);
+            const HV_STARTUP_MAX: Duration = Duration::from_millis(100);
             match with_timeout(
                 HV_STARTUP_MAX,
                 select(
@@ -86,7 +102,7 @@ impl HvManager {
                     return HvStatus::Up;
                 }
                 Ok(Either::Second(_)) => {
-                    info!("HV startup cancelled, permission revoked");
+                    warn!("HV startup cancelled, permission revoked");
                     return HvStatus::Off;
                 }
                 Err(TimeoutError) => {
@@ -95,15 +111,21 @@ impl HvManager {
                         break;
                     }
 
-                    const HV_RETRY_BASE: Duration = Duration::from_millis(250);
+                    const HV_RETRY_BASE: Duration = Duration::from_millis(500);
+                    let retry_duration = HV_RETRY_BASE * attempt;
+                    warn!(
+                        "HV Failed to come up within {}ms. Retrying in {}ms",
+                        HV_STARTUP_MAX.as_millis(),
+                        retry_duration.as_millis()
+                    );
                     match with_timeout(
-                        HV_RETRY_BASE * attempt,
+                        retry_duration,
                         self.receiver.changed_and(|p| *p == HvPermission::Denied),
                     )
                     .await
                     {
                         Ok(_) => {
-                            info!("HV startup cancelled, permission revoked");
+                            warn!("HV startup cancelled, permission revoked");
                             return HvStatus::Off;
                         }
                         Err(TimeoutError) => {
@@ -114,6 +136,7 @@ impl HvManager {
             }
         }
 
+        error!("HV rail startup failed");
         HvStatus::Failed
     }
 
@@ -121,18 +144,28 @@ impl HvManager {
         match select(self.receiver.changed(), self.pgood.wait_for_low()).await {
             Either::First(new_permission) => match new_permission {
                 HvPermission::Denied => {
-                    info!("HV disabled, permission revoked");
+                    warn!("HV disabled, permission revoked");
                     HvStatus::Off
                 }
                 HvPermission::Granted => HvStatus::Up,
             },
             Either::Second(()) => {
-                Timer::after_millis(50).await;
+                const PGOOD_MAX_GLITCH: Duration = Duration::from_millis(2);
+                if let Ok(_) = with_timeout(
+                    PGOOD_MAX_GLITCH,
+                    self.receiver.changed_and(|p| *p == HvPermission::Denied),
+                )
+                .await
+                {
+                    warn!("HV startup cancelled, permission revoked during glitch");
+                    return HvStatus::Off;
+                }
                 if self.pgood.is_high() {
                     // Glitch. Stay up
                     warn!("HV PGOOD glitch");
                     HvStatus::Up
                 } else {
+                    error!("PGOOD asserted low for too long");
                     HvStatus::Failed
                 }
             }

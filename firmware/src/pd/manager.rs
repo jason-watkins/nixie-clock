@@ -250,6 +250,7 @@ impl PdManager {
                     }
                     Attach | Overcurrent | Overvoltage | HardReset | SoftReset | GotoMin
                     | RpChange | SourceCapabilities | SourceDisabled | CCOvervoltage => {
+                        warn!("PD Event: {} caused HV deny", event);
                         Self::deny()
                     }
                     Detach => {
@@ -466,13 +467,13 @@ pub fn evaluate(snapshot: &HpiSnapshot) -> Policy {
             },
             ChargingMode::Bc12 => Policy::Grant {
                 voltage_mv: 5000,
-                current_ma: 1500,
+                current_ma: 2000,
             },
             ChargingMode::Qc2 | ChargingMode::Afc => {
                 if snapshot.bus_voltage_mv >= 8500 {
                     Policy::Grant {
                         voltage_mv: snapshot.bus_voltage_mv,
-                        current_ma: 750,
+                        current_ma: 1600,
                     }
                 } else {
                     Policy::Deny
@@ -485,8 +486,9 @@ pub fn evaluate(snapshot: &HpiSnapshot) -> Policy {
 
 fn required_current_ma(voltage_mv: u32) -> Option<u32> {
     match voltage_mv {
-        5000 => Some(1250),
-        9000 | 12000 => Some(750),
+        5000 => Some(2000),
+        9000 => Some(1600),
+        12000 => Some(1200),
         _ => None,
     }
 }
