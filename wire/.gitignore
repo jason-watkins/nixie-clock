@@ -18,6 +18,3 @@ target/
 
 # Ignore .DS_Store file in mac
 **/.DS_Store
-
-# Wifi password file
-wifi_credentials.txt

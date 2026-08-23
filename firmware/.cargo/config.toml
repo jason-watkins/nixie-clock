@@ -7,6 +7,9 @@ DEFMT_LOG="info"
 [build]
 rustflags = [
   "-C", "link-arg=-nostartfiles",
+  # Code and data share SRAM on this target; the RWX segment is inherent
+  # to esp-hal's layout
+  "-C", "link-arg=-Wl,--no-warn-rwx-segments",
 ]
 
 target = "xtensa-esp32s3-none-elf"

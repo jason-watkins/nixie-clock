@@ -6,6 +6,7 @@
         "editor.formatOnType": false
     },
     "cSpell.words": [
+        "acks",
         "Apdo",
         "circumradius",
         "Coilcraft",
@@ -53,8 +54,10 @@
         "ratiometrically",
         "respins",
         "respun",
+        "roundtrips",
         "Rstr",
         "rustflags",
+        "serde",
         "smoltcp",
         "sntp",
         "sntpc",

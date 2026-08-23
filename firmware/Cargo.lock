@@ -1519,6 +1519,7 @@ dependencies = [
  "esp-radio",
  "esp-rtos",
  "heapless 0.9.3",
+ "nixie-wire",
  "panic-rtt-target",
  "rtt-target",
  "smoltcp",
@@ -1526,6 +1527,14 @@ dependencies = [
  "sntpc-net-embassy",
  "sntpc-time-embassy",
  "static_cell",
+]
+
+[[package]]
+name = "nixie-wire"
+version = "0.1.0"
+dependencies = [
+ "defmt 1.1.1",
+ "serde",
 ]
 
 [[package]]
