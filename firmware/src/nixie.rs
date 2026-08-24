@@ -9,6 +9,7 @@ use defmt::warn;
 use embassy_executor::Spawner;
 use embassy_sync::watch::DynReceiver;
 use embassy_time::Duration;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use esp_hal::gpio::Level;
 use esp_hal::gpio::Output;
@@ -134,9 +135,41 @@ impl<'a> ClockFace<'a> {
                 self.write_digits(now).await;
             }
 
-            const TICK: Duration = Duration::from_millis(200);
-            Timer::after(TICK).await
+            // Try to keep clock updates precise. On the normal path, tick slowly to just before the
+            // next update, then busy wait. The slow ticks rather than a single sleep bound how long
+            // it takes us to pick up on an NTP update. On all other paths, degrade gracefully in
+            // ways that don't hog the core too badly.
+            let remaining = Self::until_next_minute();
+            const GUARD: Duration = Duration::from_millis(1);
+            let remaining = remaining
+                .checked_sub(GUARD)
+                .unwrap_or_default()
+                .max(Duration::from_micros(100))
+                .min(Duration::from_secs(5));
+            Timer::after(remaining).await;
+
+            let remaining = Self::until_next_minute();
+            if remaining <= GUARD {
+                let deadline = Instant::now() + remaining;
+                while Instant::now() < deadline {
+                    core::hint::spin_loop();
+                }
+            }
         }
+    }
+
+    fn until_next_minute() -> Duration {
+        let Some(now) = time::local_now() else {
+            const DEFAULT_TICK: Duration = Duration::from_secs(5);
+            return DEFAULT_TICK;
+        };
+
+        const ONE_MINUTE: Duration = Duration::from_secs(60);
+        let current_minute_fraction = Duration::from_secs(now.second() as u64)
+            + Duration::from_micros(now.timestamp_subsec_micros() as u64);
+        ONE_MINUTE
+            .checked_sub(current_minute_fraction)
+            .unwrap_or_default()
     }
 
     async fn wait_for_hv(&mut self) {
