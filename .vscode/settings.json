@@ -8,6 +8,7 @@
     "cSpell.words": [
         "acks",
         "Apdo",
+        "bytemuck",
         "circumradius",
         "Coilcraft",
         "commoned",
@@ -48,6 +49,7 @@
         "NPTH",
         "pcbunlimited",
         "PCBWAY",
+        "Persistable",
         "PGOOD",
         "printability",
         "Protel",
@@ -64,6 +66,7 @@
         "soldermask",
         "subsec",
         "superellipse",
+        "tctm",
         "Tdefmt",
         "Timelike",
         "timg",

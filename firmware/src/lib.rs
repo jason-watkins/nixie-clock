@@ -7,4 +7,5 @@ pub mod net;
 pub mod nixie;
 pub mod pd;
 pub mod status;
+pub mod tctm;
 pub mod time;

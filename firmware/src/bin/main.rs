@@ -18,6 +18,7 @@ use nixie_clock::nixie_pins;
 use nixie_clock::pd;
 use nixie_clock::status;
 use nixie_clock::status::BootPhase;
+use nixie_clock::tctm;
 use panic_rtt_target as _;
 
 extern crate alloc;
@@ -35,7 +36,7 @@ async fn main(spawner: Spawner) -> ! {
     // generator version: 1.3.0
     // generator parameters: --chip esp32s3 -o esp32s3-wroom-1 -o unstable-hal -o alloc -o wifi -o embassy -o vscode -o esp -o probe-rs -o defmt -o panic-rtt-target
 
-    rtt_target::rtt_init_defmt!();
+    tctm::init_logging();
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);

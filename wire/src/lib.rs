@@ -7,7 +7,7 @@ use serde::Serialize;
 pub const PROTOCOL_VERSION: u16 = 1;
 
 /// Upper bound on the size of one encoded defmt frame
-pub const MAX_LOG_FRAME: usize = 256;
+pub const MAX_LOG_FRAME_SIZE: u16 = 256;
 
 /// A command is any payload sent to the device.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]

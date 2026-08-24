@@ -1521,7 +1521,6 @@ dependencies = [
  "heapless 0.9.3",
  "nixie-wire",
  "panic-rtt-target",
- "rtt-target",
  "smoltcp",
  "sntpc",
  "sntpc-net-embassy",
@@ -1797,7 +1796,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7afed1f4302eeba88c601636cf2c554c45e1cbb464bab44c6012bab0e71473c"
 dependencies = [
  "critical-section",
- "defmt 0.3.100",
  "portable-atomic",
  "ufmt-write",
 ]
