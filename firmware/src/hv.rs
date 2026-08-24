@@ -87,7 +87,7 @@ impl HvManager {
         const MAX_ATTEMPTS: u32 = 5;
         for attempt in 1..=MAX_ATTEMPTS {
             self.en.set_high();
-            const HV_STARTUP_MAX: Duration = Duration::from_millis(100);
+            const HV_STARTUP_MAX: Duration = Duration::from_millis(500);
             match with_timeout(
                 HV_STARTUP_MAX,
                 select(
