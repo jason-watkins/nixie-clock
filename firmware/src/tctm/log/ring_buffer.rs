@@ -1,6 +1,6 @@
 use nixie_wire::MAX_LOG_FRAME_SIZE;
 
-const CAPACITY: usize = 4 * 1024;
+pub const CAPACITY: usize = 4 * 1024;
 
 // Power of two guarantees wrapping arithmetic on indexes works as expected.
 const _: () = assert!(CAPACITY.is_power_of_two());
@@ -66,6 +66,10 @@ impl RingBuffer {
         self.read_index = 0;
         self.write_index = 0;
         self.records[..].fill(0);
+    }
+
+    pub fn dropped(&self) -> u32 {
+        self.dropped
     }
 
     fn free_bytes(&self) -> usize {

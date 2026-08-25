@@ -7,6 +7,10 @@
 )]
 #![deny(clippy::large_stack_frames)]
 
+use core::panic::PanicInfo;
+use core::sync::atomic::AtomicBool;
+use core::sync::atomic::Ordering;
+
 use defmt::error;
 use defmt::info;
 use embassy_executor::Spawner;
@@ -19,13 +23,27 @@ use nixie_clock::pd;
 use nixie_clock::status;
 use nixie_clock::status::BootPhase;
 use nixie_clock::tctm;
-use panic_rtt_target as _;
 
 extern crate alloc;
 
 // This creates a default app-descriptor required by the esp-idf bootloader.
 // For more information see: <https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/app_image_format.html#application-description>
 esp_bootloader_esp_idf::esp_app_desc!();
+
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    static PANICKING: AtomicBool = AtomicBool::new(false);
+    critical_section::with(|_| {
+        if !PANICKING.swap(true, Ordering::Relaxed) {
+            tctm::panic_flush();
+            defmt::error!("{}", defmt::Display2Format(info));
+            tctm::panic_flush();
+        }
+        loop {
+            core::hint::spin_loop();
+        }
+    })
+}
 
 #[allow(
     clippy::large_stack_frames,
@@ -37,6 +55,10 @@ async fn main(spawner: Spawner) -> ! {
     // generator parameters: --chip esp32s3 -o esp32s3-wroom-1 -o unstable-hal -o alloc -o wifi -o embassy -o vscode -o esp -o probe-rs -o defmt -o panic-rtt-target
 
     tctm::init_logging();
+    info!(
+        "Reset reason: {}",
+        defmt::Debug2Format(&esp_hal::system::reset_reason())
+    );
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
@@ -81,6 +103,7 @@ async fn main(spawner: Spawner) -> ! {
         ((rng.random() as u64) << 32) | (rng.random() as u64)
     };
     let wifi_stack = nixie_clock::net::init(peripherals.WIFI, seed, &spawner);
+    nixie_clock::tctm::init(wifi_stack, &spawner);
 
     status::report(BootPhase::Time);
     nixie_clock::time::init(wifi_stack, &spawner);

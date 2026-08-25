@@ -145,7 +145,7 @@ pub fn init(wifi: WIFI<'static>, seed: u64, spawner: &Spawner) -> Stack<'static>
     let (wifi_controller, interfaces) = esp_radio::wifi::new(wifi, Default::default())
         .expect("Failed to initialize Wi-Fi controller");
 
-    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
+    static RESOURCES: StaticCell<StackResources<4>> = StaticCell::new();
     let resources = RESOURCES.init(StackResources::new());
 
     let (stack, runner) = embassy_net::new(

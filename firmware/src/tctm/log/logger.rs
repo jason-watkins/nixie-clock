@@ -18,12 +18,14 @@ static mut STAGING: [u8; MAX_LOG_FRAME_SIZE as usize] = [0; MAX_LOG_FRAME_SIZE a
 static mut STAGED: usize = 0;
 static mut OVERFLOWED: bool = false;
 
-static DROPPED: AtomicU32 = AtomicU32::new(0);
+pub static DROPPED: AtomicU32 = AtomicU32::new(0);
 
 #[esp_hal::ram(unstable(rtc_fast, persistent))]
 pub static mut LOG_QUEUE: RingBuffer = RingBuffer::new();
 
-static LOG_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+pub static LOG_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+
+defmt::timestamp!("{=u64:us}", embassy_time::Instant::now().as_micros());
 
 #[defmt::global_logger]
 pub struct Logger;

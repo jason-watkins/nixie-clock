@@ -9,6 +9,14 @@ pub const PROTOCOL_VERSION: u16 = 1;
 /// Upper bound on the size of one encoded defmt frame
 pub const MAX_LOG_FRAME_SIZE: u16 = 256;
 
+/// Device TCTM listens on this port
+pub const TCTM_PORT: u16 = 2718;
+
+/// Current worst case is Telemetry::Log at 269 bytes encoded, rounded up to 512 to give ourselves a
+/// fighting chance when we forget to update this.
+pub const MAX_MESSAGE_SIZE: usize = 512;
+const _: () = assert!(MAX_MESSAGE_SIZE >= MAX_LOG_FRAME_SIZE as usize + 13);
+
 /// A command is any payload sent to the device.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -48,6 +56,8 @@ pub enum Telemetry<'a> {
     InitAck {
         version: u16,
     },
+    /// Sent in reply to commands that generate no other telemetry. The wrapping packet carries the
+    /// updated sequence number.
     Ack,
     Log {
         /// The log frame number. Incremented by the device for each log frame generated. Skipped
