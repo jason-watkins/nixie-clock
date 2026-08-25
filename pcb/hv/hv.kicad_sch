@@ -14254,7 +14254,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "470nF"
+		(property "Value" "2.2uF"
 			(at 91.44 95.2499 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -14298,7 +14298,7 @@
 				)
 			)
 		)
-		(property "MFG Part No" "C322C474K5R5TA7301"
+		(property "MFG Part No" "C322C225K5R5TA"
 			(at 87.63 93.98 0)
 			(hide yes)
 			(show_name no)
