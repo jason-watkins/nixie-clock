@@ -75,6 +75,12 @@ board body checks, self-intersections included, in under 0.1 s.
 
 ```
 cad/kicad_wrl.py              shared VRML writer: mesh(), material(), write()
+cad/kicad_sexpr.py            reader for .kicad_pcb and the other s-expression
+                              files; the kicad-fp skill script imports it too
+cad/case/face_board.py        the face board's geometry as a VarSet the
+                              hand-built case model binds expressions to,
+                              read from pcb/face/face.kicad_pcb (see "Board
+                              geometry for the case")
 cad/<part>/<part>.py          the model: constants, geometry, document, build()
 cad/in12/export_kicad.py      builds, then kicad_wrl.write()
 cad/ins1/export_kicad.py      builds, then its own older copy of that writer
@@ -470,6 +476,30 @@ with the timestamp removed, entity numbers stripped and entities sorted, and
 keeps the previous file when geometry and color match, so a regenerated STEP
 that shows in `git status` has really changed. Do the same by hand before
 committing one regenerated any other way.
+
+## Board geometry for the case
+
+The case parts are modeled by hand in the GUI. What they take from KiCad is a
+VarSet named `FaceBoard`, written by `cad/case/face_board.py` from
+`pcb/face/face.kicad_pcb`: outline extents and corner radius, board thickness,
+mounting hole pitch and drill, the six tube positions, the tube envelopes from
+`in12.py` and `ins1.py`, and provenance (`source_rev`, `source_step`,
+`source_sha`) so a stale VarSet says what it was read from. Sketch constraints
+bind to it by expression (`FaceBoard.hole_dx / 2`); nothing is retyped and
+nothing is projected, so there is no topological naming to preserve.
+
+The frame is the board's centre, X as drawn, Y negated, Z = 0 on the front
+face. A `kicad-cli pcb export step --user-origin=<origin_x>x<origin_y>mm` of
+the board lands in it at Z = -board_t.
+
+`update()` sets values in place, adds a property when one is missing and never
+deletes or recreates the object, because expressions bind by name. It also
+asserts the topology the property table encodes (a rounded rectangle, four
+centred holes, four IN-12 and two INS-1) and stops on anything else; a change
+of topology is a case redesign and starts at `PROPERTIES`. Run it from the GUI
+with the reload macro against the active document, or headless:
+`fc_tool run cad/case/face_board.py` prints the values, and with a `.FCStd`
+argument opens (or creates) that document, updates it and saves.
 
 ## GUI workflow for the user
 

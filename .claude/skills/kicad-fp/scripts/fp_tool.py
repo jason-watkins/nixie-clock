@@ -46,58 +46,24 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 
+# Anchored to the script's own location rather than the cwd, so the board a
+# command names is the board it reads no matter where it was invoked from.
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
 # ---------- s-expression parsing ----------
+# The reader lives in cad/kicad_sexpr.py, shared with the case model, which
+# reads the face board through the same code.
+sys.path.insert(0, str(REPO_ROOT / "cad"))
+import kicad_sexpr  # noqa: E402
+
+kids, kid, kidval = kicad_sexpr.kids, kicad_sexpr.kid, kicad_sexpr.kidval
+
 
 def parse_sexpr(text):
-    i, n = 0, len(text)
-    stack = [[]]
-    while i < n:
-        c = text[i]
-        if c in " \t\r\n":
-            i += 1
-        elif c == "(":
-            stack.append([])
-            i += 1
-        elif c == ")":
-            done = stack.pop()
-            stack[-1].append(done)
-            i += 1
-        elif c == '"':
-            j, buf = i + 1, []
-            while j < n:
-                if text[j] == "\\" and j + 1 < n:
-                    buf.append(text[j + 1])
-                    j += 2
-                elif text[j] == '"':
-                    break
-                else:
-                    buf.append(text[j])
-                    j += 1
-            stack[-1].append("".join(buf))
-            i = j + 1
-        else:
-            j = i
-            while j < n and text[j] not in ' \t\r\n()"':
-                j += 1
-            stack[-1].append(text[i:j])
-            i = j
-    if len(stack) != 1 or not stack[0]:
-        sys.exit("malformed s-expression input")
-    return stack[0][0]
-
-
-def kids(node, tag):
-    return [c for c in node[1:] if isinstance(c, list) and c and c[0] == tag]
-
-
-def kid(node, tag):
-    k = kids(node, tag)
-    return k[0] if k else None
-
-
-def kidval(node, tag, default=""):
-    k = kid(node, tag)
-    return k[1] if k and len(k) > 1 else default
+    try:
+        return kicad_sexpr.parse(text)
+    except ValueError as e:
+        sys.exit(str(e))
 
 
 def natkey(s):
@@ -460,10 +426,6 @@ def cmd_symcheck(args):
 
 
 BOARDS = ("main", "hv", "face")
-
-# Anchored to the script's own location rather than the cwd, so the board a
-# command names is the board it reads no matter where it was invoked from.
-REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def board_pcb(board):
