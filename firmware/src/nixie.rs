@@ -103,15 +103,15 @@ impl<'a> ClockFace<'a> {
     pub async fn write_digits(&mut self, digits: [Option<u8>; 4]) {
         self.m1.write(digits[3]);
         if self.shown[3] == None {
-            Timer::after_millis(100).await;
+            Timer::after_millis(25).await;
         }
         self.m10.write(digits[2]);
         if self.shown[2] == None {
-            Timer::after_millis(100).await;
+            Timer::after_millis(25).await;
         }
         self.h1.write(digits[1]);
         if self.shown[1] == None {
-            Timer::after_millis(100).await;
+            Timer::after_millis(25).await;
         }
         self.h10.write(digits[0]);
         self.shown = digits;
@@ -189,7 +189,7 @@ impl<'a> ClockFace<'a> {
     }
 
     async fn status_good(&mut self, last_status: HvStatus) -> bool {
-        const RAIL_STABILIZATION_TIME: Duration = Duration::from_millis(100);
+        const RAIL_STABILIZATION_TIME: Duration = Duration::from_millis(50);
         match self.hv_status {
             HvStatus::Off => {
                 self.blank().await;

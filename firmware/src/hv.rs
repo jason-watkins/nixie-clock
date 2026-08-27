@@ -8,6 +8,7 @@ use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::watch::DynReceiver;
 use embassy_sync::watch::Watch;
 use embassy_time::Duration;
+use embassy_time::Instant;
 use embassy_time::TimeoutError;
 use embassy_time::with_timeout;
 use esp_hal::gpio::Input;
@@ -22,6 +23,7 @@ use crate::pd;
 use crate::pd::HvPermission;
 use crate::status;
 use crate::status::HvStatus;
+use crate::time;
 
 static HV_STATUS: Watch<CriticalSectionRawMutex, HvStatus, 1> = Watch::new();
 
@@ -72,6 +74,8 @@ impl HvManager {
 
     async fn off(&mut self) -> HvStatus {
         self.en.set_low();
+        time::wait_for_ntp().await;
+
         if let HvPermission::Granted = self.receiver.get().await {
             HvStatus::Starting
         } else {
@@ -86,6 +90,7 @@ impl HvManager {
         info!("Enabling HV rail");
         const MAX_ATTEMPTS: u32 = 5;
         for attempt in 1..=MAX_ATTEMPTS {
+            let start = Instant::now();
             self.en.set_high();
             const HV_STARTUP_MAX: Duration = Duration::from_millis(500);
             match with_timeout(
@@ -98,7 +103,7 @@ impl HvManager {
             .await
             {
                 Ok(Either::First(())) => {
-                    info!("HV rail up");
+                    info!("HV rail up in {}ms", start.elapsed().as_millis());
                     return HvStatus::Up;
                 }
                 Ok(Either::Second(_)) => {

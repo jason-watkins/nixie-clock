@@ -1,13 +1,12 @@
-use core::cell::Cell;
-
 use chrono::DateTime;
 use chrono::FixedOffset;
 use chrono::Utc;
-use critical_section::Mutex;
 use defmt::error;
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_net::Stack;
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::watch::Watch;
 use embassy_time::Duration;
 use embassy_time::Instant;
 
@@ -18,6 +17,8 @@ mod sntp;
 mod tz;
 
 const STALE_THRESHOLD: Duration = Duration::from_secs(24 * 60 * 60);
+
+static SNAPSHOT: Watch<CriticalSectionRawMutex, Snapshot, 1> = Watch::new();
 
 #[derive(Clone, Copy)]
 struct Snapshot {
@@ -48,16 +49,6 @@ impl Clock {
     }
 }
 
-static SNAPSHOT: Mutex<Cell<Option<Snapshot>>> = Mutex::new(Cell::new(None));
-
-fn read_state() -> Option<Snapshot> {
-    critical_section::with(|cs| SNAPSHOT.borrow(cs).get())
-}
-
-fn write_state(value: Snapshot) -> Option<Snapshot> {
-    critical_section::with(|cs| SNAPSHOT.borrow(cs).replace(Some(value)))
-}
-
 /// Gets the current NTP time
 pub fn now() -> Option<DateTime<Utc>> {
     state().utc()
@@ -71,7 +62,7 @@ pub fn local_now() -> Option<DateTime<FixedOffset>> {
 /// Gets the raw NTP clock state
 pub fn state() -> Clock {
     let mcu_now = Instant::now();
-    let Some(value) = read_state() else {
+    let Some(value) = SNAPSHOT.try_get() else {
         return Clock::Never;
     };
 
@@ -97,8 +88,16 @@ pub fn state() -> Clock {
 fn set_ntp_offset(offset_us: i64) -> Option<i64> {
     let at = Instant::now();
     let state = Snapshot { offset_us, at };
-    let previous = write_state(state);
+    let previous = SNAPSHOT.try_get();
+    SNAPSHOT.sender().send(state);
     previous.map(|p| offset_us - p.offset_us)
+}
+
+/// Future that completes when NTP sync has completed. The future completes immediately if NTP sync
+/// is already complete.
+pub async fn wait_for_ntp() {
+    let mut rx = SNAPSHOT.dyn_receiver().unwrap();
+    rx.get().await;
 }
 
 pub fn init(stack: Stack<'static>, spawner: &Spawner) {
