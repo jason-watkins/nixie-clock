@@ -28,6 +28,8 @@ _autosave-*
 # --- KiCad board geometry exported for the CAD assembly ---
 # Regenerate with the kicad-cli line in cad/test_base/base_plate.py
 cad/**/boards/
+cad/case/bodies/
+cad/case/*.step
 
 # --- Caches (regenerated automatically) ---
 fp-info-cache

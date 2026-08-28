@@ -77,11 +77,19 @@ board body checks, self-intersections included, in under 0.1 s.
 cad/kicad_wrl.py              shared VRML writer: mesh(), material(), write()
 cad/kicad_sexpr.py            reader for .kicad_pcb and the other s-expression
                               files; the kicad-fp skill script imports it too
-cad/case/face_board.py        the face board's geometry as a VarSet the
-                              hand-built case model binds expressions to,
-                              read from pcb/face/face.kicad_pcb (see "Board
+cad/case/boards.py            the three boards' geometry as VarSets
+                              (FaceBoard, MainBoard, HvBoard) the hand-built
+                              case model binds expressions to, read from
+                              pcb/<board>/<board>.kicad_pcb (see "Board
                               geometry for the case")
+cad/case/bodies/*.step        kicad-cli board-only exports about each board's
+                              centre (gitignored; boards.update() refreshes
+                              stale ones and imports them as <VarSet>Body)
 cad/<part>/<part>.py          the model: constants, geometry, document, build()
+cad/ins1-holder/ins1_holder.py
+                              the PETG collar glued over the two colon lamps;
+                              reads ins1.py, washer.py and boards.py, writes
+                              print/ins1_holder.stl plate-down for the slicer
 cad/in12/export_kicad.py      builds, then kicad_wrl.write()
 cad/ins1/export_kicad.py      builds, then its own older copy of that writer
 cad/<part>/*.py               supporting data and tools: digits.py, marks.py,
@@ -479,27 +487,45 @@ committing one regenerated any other way.
 
 ## Board geometry for the case
 
-The case parts are modeled by hand in the GUI. What they take from KiCad is a
-VarSet named `FaceBoard`, written by `cad/case/face_board.py` from
-`pcb/face/face.kicad_pcb`: outline extents and corner radius, board thickness,
-mounting hole pitch and drill, the six tube positions, the tube envelopes from
-`in12.py` and `ins1.py`, and provenance (`source_rev`, `source_step`,
-`source_sha`) so a stale VarSet says what it was read from. Sketch constraints
-bind to it by expression (`FaceBoard.hole_dx / 2`); nothing is retyped and
-nothing is projected, so there is no topological naming to preserve.
+The case parts are modeled by hand in the GUI. What they take from KiCad is
+one VarSet per board, `FaceBoard`, `MainBoard` and `HvBoard`, written by
+`cad/case/boards.py` from `pcb/<board>/<board>.kicad_pcb`: outline extents
+and corner radius, board thickness, mounting hole pitch and drill, and
+provenance (`source_rev`, `source_step`, `source_sha`) so a stale VarSet says
+what it was read from. `FaceBoard` also carries the six tube positions and the
+tube envelopes from `in12.py` and `ins1.py`. Sketch constraints bind to them by
+expression (`MainBoard.hole_dx / 2`); nothing is retyped and nothing is
+projected, so there is no topological naming to preserve.
 
-The frame is the board's centre, X as drawn, Y negated, Z = 0 on the front
-face. A `kicad-cli pcb export step --user-origin=<origin_x>x<origin_y>mm` of
-the board lands in it at Z = -board_t.
+The frame is the same for every board: its centre, X as drawn, Y negated,
+Z = 0 on the F.Cu face, +Z toward the components on it. A `kicad-cli pcb
+export step --user-origin=<origin_x>x<origin_y>mm` of the board lands in it
+at Z = -board_t.
+
+`update()` also imports each bare board as a `Part::Feature` named
+`<VarSet>Body` from a `kicad-cli pcb export step` taken about the board's
+centre (`cad/case/bodies/`, re-exported when the `.kicad_pcb` is newer or the
+arguments recorded in the `.cmd` file beside it changed). A board with a
+`components` list in `BOARDS` exports with `--component-filter` and carries
+those 3D models (MainBoardBody carries J101, the USB-C, for its slot); the
+rest export `--board-only`. The shape is shifted so its F.Cu face lies on Z = 0 of the VarSet
+frame; the object's Placement is the user's, identity on creation and
+preserved on every later update, which assigns the Shape only (and restores
+the Placement, since assigning a Shape overwrites it). The export is checked
+against the VarSet as an independent read of the same file: extents equal
+`board_w` x `board_h` and exactly four cylindrical faces of drill `hole_d`.
+`bodies=False` skips all of it.
 
 `update()` sets values in place, adds a property when one is missing and never
-deletes or recreates the object, because expressions bind by name. It also
-asserts the topology the property table encodes (a rounded rectangle, four
-centred holes, four IN-12 and two INS-1) and stops on anything else; a change
-of topology is a case redesign and starts at `PROPERTIES`. Run it from the GUI
-with the reload macro against the active document, or headless:
-`fc_tool run cad/case/face_board.py` prints the values, and with a `.FCStd`
-argument opens (or creates) that document, updates it and saves.
+deletes or recreates an object, because expressions bind by name. It also
+asserts the topology the property tables encode (a rounded rectangle, four
+centred holes, and on the face board four IN-12 and two INS-1) and stops on
+anything else; a change of topology is a case redesign and starts at the
+`*_PROPERTIES` tables and `BOARDS`. Run it from the GUI with the reload macro
+against the active document (`boards.update()`, or `boards.update(boards=
+["main"])` for one), or headless: `fc_tool run cad/case/boards.py [BOARD ...]`
+prints the values, and with a `.FCStd` first argument opens (or creates) that
+document, updates it and saves.
 
 ## GUI workflow for the user
 
