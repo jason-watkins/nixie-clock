@@ -176,6 +176,7 @@ impl<'a> CommandAndTelemetry<'a> {
             self.sequence,
             Telemetry::InitAck {
                 version: PROTOCOL_VERSION,
+                firmware_id: env!("NIXIE_FIRMWARE_ID"),
             },
         );
         self.connection.write(&reply).await?;

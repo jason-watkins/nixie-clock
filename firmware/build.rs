@@ -1,8 +1,13 @@
+use std::hash::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+use std::path::Path;
 use std::path::PathBuf;
 
 fn main() {
     generate_wifi_credentials();
     generate_build_epoch();
+    generate_firmware_id();
     linker_be_nice();
     println!("cargo:rustc-link-arg=-Tdefmt.x");
     // make sure linkall.x is the last linker script (otherwise might cause problems with flip-link)
@@ -142,4 +147,75 @@ fn generate_build_epoch() {
 
     let out = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("build_epoch.rs");
     std::fs::write(out, format!("pub const BUILD_EPOCH_SECS: u64 = {secs};\n")).unwrap();
+
+    let stamp = jiff::Timestamp::from_second(secs as i64).expect("build epoch out of range");
+    println!(
+        "cargo:rustc-env=NIXIE_BUILD_DATE={}",
+        stamp.strftime("%Y-%m-%d")
+    );
+    println!(
+        "cargo:rustc-env=NIXIE_BUILD_TIME={}",
+        stamp.strftime("%H:%M:%S")
+    );
+    println!("cargo:rustc-env=NIXIE_BUILD_TIMESTAMP={stamp}");
+}
+
+fn generate_firmware_id() {
+    fn collect_files(path: &Path, files: &mut Vec<PathBuf>) {
+        if path.is_dir() {
+            for entry in std::fs::read_dir(path).unwrap() {
+                collect_files(&entry.unwrap().path(), files);
+            }
+        } else {
+            files.push(path.to_path_buf());
+        }
+    }
+
+    let root = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    let inputs = [
+        root.join("src"),
+        root.join("../wire/src"),
+        root.join("../wire/Cargo.toml"),
+        root.join("Cargo.toml"),
+        root.join("Cargo.lock"),
+        root.join("build.rs"),
+        root.join(".cargo/config.toml"),
+        root.join("rust-toolchain.toml"),
+    ];
+
+    let mut files = Vec::new();
+    for input in &inputs {
+        assert!(input.exists(), "{} missing", input.display());
+        println!("cargo:rerun-if-changed={}", input.display());
+        collect_files(input, &mut files);
+    }
+    files.sort();
+
+    let repo = root.parent().unwrap();
+    let mut hasher = DefaultHasher::new();
+    for path in &files {
+        let rel_path = path
+            .strip_prefix(repo)
+            .unwrap()
+            .to_string_lossy()
+            .replace("\\", "/");
+        rel_path.hash(&mut hasher);
+        std::fs::read(path).unwrap().hash(&mut hasher);
+    }
+    println!("cargo:rerun-if-env-changed=DEFMT_LOG");
+    std::env::var("DEFMT_LOG")
+        .unwrap_or_default()
+        .hash(&mut hasher);
+    std::env::var("PROFILE").unwrap().hash(&mut hasher);
+
+    let id = format!(
+        "{}+{:016x}",
+        std::env::var("CARGO_PKG_VERSION").unwrap(),
+        hasher.finish()
+    );
+    assert!(
+        id.len() <= 31,
+        "firmware id `{id}` does not fit the 32-byte descriptor field"
+    );
+    println!("cargo:rustc-env=NIXIE_FIRMWARE_ID={id}");
 }

@@ -4,6 +4,7 @@ use embassy_time::Duration;
 use embassy_time::with_timeout;
 use embedded_io_async::Read;
 use embedded_io_async::Write;
+use nixie_wire::FRAME_HEADER_SIZE;
 use nixie_wire::MAX_MESSAGE_SIZE;
 use nixie_wire::TCTM_PORT;
 use nixie_wire::ToDevice;
@@ -17,6 +18,8 @@ pub enum Error {
     Protocol,
     /// An outgoing message exceeded MAX_MESSAGE_SIZE.
     TooLarge,
+    /// An incoming packet did not have a valid length
+    InvalidHeaderLen,
 }
 
 impl From<embedded_io::ReadExactError<embassy_net::tcp::Error>> for Error {
@@ -85,9 +88,12 @@ impl<'a> Connection<'a> {
 
     pub async fn read(&mut self) -> Result<ToDevice, Error> {
         // TODO: Use read_with to do fewer copies
-        let mut len_buffer = [0u8; 2];
+
+        let mut len_buffer = [0u8; FRAME_HEADER_SIZE];
         self.socket.read_exact(&mut len_buffer).await?;
-        let len = u16::from_le_bytes(len_buffer) as usize;
+        let Some(len) = nixie_wire::payload_len(len_buffer) else {
+            return Err(Error::InvalidHeaderLen);
+        };
         if len == 0 || len > MAX_MESSAGE_SIZE {
             return Err(Error::Protocol);
         }
@@ -98,7 +104,7 @@ impl<'a> Connection<'a> {
 
     pub async fn write(&mut self, msg: &ToHost<'_>) -> Result<(), Error> {
         let sent = self
-            .write_framed(|buffer| postcard::to_slice(&msg, buffer).map(|s| s.len()).ok())
+            .write_framed(|buffer| nixie_wire::encode(msg, buffer).map(|s| s.len()).ok())
             .await?;
         if sent { Ok(()) } else { Err(Error::TooLarge) }
     }
@@ -116,6 +122,7 @@ impl<'a> Connection<'a> {
                     return (0, None);
                 }
 
+                // TODO: Re-write to use nixie_wire::encode
                 // safety: All branches below this take must return Some to indicate that fill has
                 // been taken.
                 let fill = fill.take().unwrap();

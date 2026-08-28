@@ -26,9 +26,17 @@ use nixie_clock::tctm;
 
 extern crate alloc;
 
-// This creates a default app-descriptor required by the esp-idf bootloader.
-// For more information see: <https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/app_image_format.html#application-description>
-esp_bootloader_esp_idf::esp_app_desc!();
+esp_bootloader_esp_idf::esp_app_desc!(
+    env!("NIXIE_FIRMWARE_ID"),
+    env!("CARGO_PKG_NAME"),
+    env!("NIXIE_BUILD_TIME"),
+    env!("NIXIE_BUILD_DATE"),
+    esp_bootloader_esp_idf::ESP_IDF_COMPATIBLE_VERSION,
+    esp_bootloader_esp_idf::MMU_PAGE_SIZE,
+    0,
+    u16::MAX,
+    esp_bootloader_esp_idf::SECURE_VERSION
+);
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -58,6 +66,11 @@ async fn main(spawner: Spawner) -> ! {
     info!(
         "Reset reason: {}",
         defmt::Debug2Format(&esp_hal::system::reset_reason())
+    );
+    info!(
+        "Firmware {=str} ({})",
+        env!("NIXIE_FIRMWARE_ID"),
+        env!("NIXIE_BUILD_TIMESTAMP")
     );
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());

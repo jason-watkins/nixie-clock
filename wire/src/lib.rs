@@ -9,6 +9,8 @@ pub const PROTOCOL_VERSION: u16 = 1;
 /// Upper bound on the size of one encoded defmt frame
 pub const MAX_LOG_FRAME_SIZE: u16 = 256;
 
+pub const FRAME_HEADER_SIZE: usize = 2;
+
 /// Device TCTM listens on this port
 pub const TCTM_PORT: u16 = 2718;
 
@@ -55,6 +57,7 @@ impl ToDevice {
 pub enum Telemetry<'a> {
     InitAck {
         version: u16,
+        firmware_id: &'a str,
     },
     /// Sent in reply to commands that generate no other telemetry. The wrapping packet carries the
     /// updated sequence number.
@@ -92,6 +95,26 @@ impl<'a> ToHost<'a> {
 
     pub fn payload(&self) -> Telemetry<'a> {
         self.payload
+    }
+}
+
+/// Copies a packet to the given buffer, prepending its length.
+pub fn encode<'a, T: Serialize>(
+    msg: &T,
+    buffer: &'a mut [u8],
+) -> Result<&'a mut [u8], postcard::Error> {
+    let len = postcard::to_slice(msg, &mut buffer[2..])?.len();
+    buffer[..2].copy_from_slice(&u16::to_le_bytes(len as u16));
+    Ok(&mut buffer[..(len + 2)])
+}
+
+/// Gets the length of a packet
+pub fn payload_len(header: [u8; FRAME_HEADER_SIZE]) -> Option<usize> {
+    let len = usize::from(u16::from_le_bytes(header));
+    if len == 0 || len > MAX_MESSAGE_SIZE {
+        None
+    } else {
+        Some(len)
     }
 }
 
