@@ -7941,6 +7941,17 @@
 				)
 			)
 		)
+		(property "Note" "Individual 0327-0-15-15-34-27-10-0 sockets for pins"
+			(at 175.26 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "4"
 			(uuid "4542b6f3-b851-447f-ba70-ceef1a9ce50b")
 		)
@@ -8065,6 +8076,17 @@
 			)
 		)
 		(property "LCSC" ""
+			(at 86.36 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Note" "Individual 0327-0-15-15-34-27-10-0 sockets for pins"
 			(at 86.36 44.45 0)
 			(hide yes)
 			(show_name no)
@@ -8770,6 +8792,17 @@
 				)
 			)
 		)
+		(property "Note" "Individual 0327-0-15-15-34-27-10-0 sockets for pins"
+			(at 175.26 43.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "4"
 			(uuid "05137704-0c15-4b07-9593-25963af94230")
 		)
@@ -8894,6 +8927,17 @@
 			)
 		)
 		(property "LCSC" ""
+			(at 86.36 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Note" "Individual 0327-0-15-15-34-27-10-0 sockets for pins"
 			(at 86.36 93.98 0)
 			(hide yes)
 			(show_name no)

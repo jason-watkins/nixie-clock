@@ -735,8 +735,8 @@
   ],
   "text_variables": {
     "AUTHOR": "Jason Watkins",
-    "REV": "C",
-    "STEP": "4",
+    "REV": "D",
+    "STEP": "1",
     "TITLE": "4 Digit Nixie Clock (IN-12)"
   },
   "tuning_profiles": {

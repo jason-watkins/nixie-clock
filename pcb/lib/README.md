@@ -24,7 +24,8 @@ Local changes: pin electrical types set to passive, courtyard added. DIP16 carri
 
 ## Drawn for this project
 
-- IN-12B symbol and IN-12-DSUB footprint, the tube socketed on D-SUB machined pins.
+- IN-12B symbol and IN-12-DSUB footprint. The name is historical: the footprint now takes twelve Mill-Max
+  0327-0-15-15-34-27-10-0 pin receptacles (2.0 mm plated holes, 2.8 mm pads).
 - `IN12B.wrl`, built in `cad/in12/` and written by `cad/in12/export_kicad.py`. Dimensions come from
   the dimensioned drawing in `docs/datasheets/IN-12A_IN-12B.pdf`, from the footprint's own hole
   pattern, and from tubes in hand; the electrode stack and the glass markings are off photographs
