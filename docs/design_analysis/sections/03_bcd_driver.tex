@@ -1,30 +1,22 @@
 \section{BCD decoder/driver characteristics}
 \label{sec:bcd-driver}
 
-Each IN-12B digit tube (NX1--NX4, \cref{sec:tubes}) is
-paired one-to-one with a K155ID1 BCD decoder/driver, designated
-U1--U4 throughout this document, a Soviet-made
-functional clone of the Texas Instruments SN74141. Each of the driver's
-ten outputs is an
-open-collector transistor wired directly to one cathode of its tube;
-the selected (lit) output sinks current, pulling that cathode low,
-while the other nine sit in a high-impedance off state. There is no
-interposing high-voltage buffer transistor between driver and tube in
-this design: the driver's own output stage must tolerate whatever
-voltage an unselected cathode presents.
+One K155ID1 BCD decoder/driver controls each IN-12B tube
+(\cref{sec:tubes}). U1 to U4 are Soviet functional equivalents of the Texas
+Instruments SN74141. Each driver has ten open-collector outputs. Each output
+connects directly to one tube cathode. The selected output sinks current and
+pulls its cathode low. The other nine outputs are high impedance. The circuit
+has no high-voltage buffer between the driver and the tube. Thus, the driver
+output must tolerate the voltage on an unselected cathode.
 
-\paragraph{Substitution.} No K155ID1 datasheet is on file in
-\texttt{docs/datasheets/}. The K155ID1 is treated as electrically
-equivalent to the TI SN74141 it clones, and the figures below are
-transcribed from that part's datasheet (\texttt{SN74141\_TI.pdf}, Texas Instruments,
-originally published 1972, revised 1983) instead. The datasheet itself
-splits these figures across two tables, Absolute Maximum Ratings and
-Recommended Operating Conditions/Electrical Characteristics; the
-following two tables preserve that split, since
-\cref{sec:bcd-voltage-risk} depends on which table a given off-state
-voltage figure comes from. Rows drawn from the second source table are
-tagged \textbf{[ROC]} (Recommended Operating Conditions) or
-\textbf{[EC]} (Electrical Characteristics).
+\paragraph{Substitution.} No K155ID1 datasheet is in
+\texttt{docs/datasheets/}. This analysis assumes that the K155ID1 is
+electrically equivalent to the SN74141 (inferred). The values come from
+\texttt{SN74141\_TI.pdf}, published in 1972 and revised in 1983. The source has
+separate absolute-maximum and operating-characteristic tables. The following
+tables keep this separation. \Cref{sec:bcd-voltage-risk} depends on the source
+of each off-state voltage. Tags \textbf{[ROC]} and \textbf{[EC]} identify the
+two operating tables.
 
 {\footnotesize
 \begin{longtable}{|L{4.6cm}|c|c|c|L{4.2cm}|c|}
@@ -38,7 +30,7 @@ tagged \textbf{[ROC]} (Recommended Operating Conditions) or
 \textbf{Parameter} & \textbf{Min} & \textbf{Max} & \textbf{Units} & \textbf{Conditions} & \textbf{Page} \\
 \hline
 \endhead
-Supply voltage \(V_{CC}\) & & \num{7} & \si{\volt} & w.r.t.\ network ground & 2 \\
+Supply voltage \(V_{CC}\) & & \num{7} & \si{\volt} & relative to network ground & 2 \\
 \hline
 Input voltage & & \num{5.5} & \si{\volt} & & 2 \\
 \hline
@@ -75,11 +67,11 @@ Supply voltage \(V_{CC}\) & \num{4.75} & \num{5} & \num{5.25} & \si{\volt} & & [
 \hline
 \(V_{O(on)}\), on-state output voltage & & & \num{2.5} & \si{\volt} & \(V_{CC}=\)min, \(I_O=7\)~mA & [EC] p.2 \\
 \hline
-\textbf{\(V_{O(off)}\), off-state output voltage, counts 0--9} & \textbf{\num{60}} & & & \si{\volt} & \(V_{CC}=\)max, \(I_O=0.5\)~mA & \textbf{[EC] p.2} \\
+\textbf{\(V_{O(off)}\), off-state output voltage, counts 0 to 9} & \textbf{\num{60}} & & & \si{\volt} & \(V_{CC}=\)max, \(I_O=0.5\)~mA & \textbf{[EC] p.2} \\
 \hline
 \(I_{O(off)}\), off-state reverse current & & & \num{50} & \si{\micro\ampere} & \(V_{CC}=\)max, \(V_O=55\)~V, \(T_A=55\)\si{\celsius} & [EC] p.2 \\
 \hline
-\(I_{O(off)}\), off-state reverse current, counts 10--15 & & \num{5} & \num{15} & \si{\micro\ampere} & \(V_O=30\)~V, \(T_A=70\)\si{\celsius} & [EC] p.2 \\
+\(I_{O(off)}\), off-state reverse current, counts 10 to 15 & & \num{5} & \num{15} & \si{\micro\ampere} & \(V_O=30\)~V, \(T_A=70\)\si{\celsius} & [EC] p.2 \\
 \hline
 \(I_I\), input current at max input voltage & & & \num{1} & \si{\milli\ampere} & \(V_{CC}=\)max, \(V_I=5.5\)~V & [EC] p.2 \\
 \hline
@@ -96,48 +88,36 @@ Supply voltage \(V_{CC}\) & \num{4.75} & \num{5} & \num{5.25} & \si{\volt} & & [
 \end{longtable}
 }
 
-Pin mapping (16-pin DIP): BCD inputs A, B, C, D on pins 3, 6, 7, 4;
-\(V_{CC}\) on pin 5, ground on pin 12; decimal outputs 0--9 on pins
-16, 15, 8, 9, 13, 14, 11, 10, 1, 2 respectively. Not specified in this
-datasheet: package thermal resistance, maximum junction temperature,
-ESD rating, and propagation delay.
+Pin mapping for the 16-pin DIP: BCD inputs A, B, C, and D are on pins 3, 6, 7,
+and 4. \(V_{CC}\) is on pin 5. Ground is on pin 12. Outputs 0 to 9 are on pins
+16, 15, 8, 9, 13, 14, 11, 10, 1, and 2. The datasheet does not specify package
+thermal resistance, maximum junction temperature, ESD rating, or propagation
+delay.
 
-\subsection{The off-state voltage question}
+\subsection{Off-state output voltage}
 \label{sec:bcd-voltage-risk}
 
-The datasheet's Absolute Maximum Ratings table gives no distinct
-off-state output voltage limit; it bounds only off-state output
-\emph{current} (\SI{2}{\milli\ampere}). The only off-state voltage
-figure anywhere in the datasheet is \SI{60}{\volt}, and it is a
-\emph{guaranteed operating} point (Recommended Operating Conditions,
-and corroborated by the \(V_{O(off)}\) electrical-characteristics row,
-which promises no breakdown up to \SI{60}{\volt} under a
-\SI{0.5}{\milli\ampere} test load) rather than a stated destructive
-limit; the datasheet does not say what happens above it, only that
-correct operation is guaranteed up to it. Two separate leakage-current
-test points exist below that ceiling (\SI{50}{\micro\ampere} max at
-\(V_O=\SI{55}{\volt}\), and \SI{5}{}/\SI{15}{\micro\ampere}
-typ/max at \(V_O=\SI{30}{\volt}\) with all ten outputs off) and should
-not be mistaken for the guaranteed standoff voltage itself.
+The absolute-maximum table gives no off-state output-voltage limit. It gives
+only a \SI{2}{\milli\ampere} off-state output-current limit. The only off-state
+voltage is \SI{60}{\volt}. This value is a guaranteed operating condition. The
+electrical-characteristics table also guarantees no breakdown at
+\SI{60}{\volt} with a \SI{0.5}{\milli\ampere} test load. The datasheet does not
+specify operation above \SI{60}{\volt}.
 
-This board's anode rail spans \SIrange{164.8}{191.5}{\volt}
-(\cref{sec:hv-converter}), and with no buffer transistor between
-driver and tube, an unselected cathode is exposed to something on the
-order of the tube's maintaining voltage up to the full rail voltage
-(\SIrange{145}{191.5}{\volt} by the figures in \cref{sec:tubes}),
-2.4--3.2$\times$ the datasheet's guaranteed \SI{60}{\volt} standoff.
+Two leakage-current tests use lower voltages. The maximum leakage is
+\SI{50}{\micro\ampere} at \SI{55}{\volt}. The typical and maximum leakage is
+\SI{5}{\micro\ampere} and \SI{15}{\micro\ampere} at \SI{30}{\volt}. These test
+values are not standoff-voltage limits.
 
-Direct cathode drive from a 7441/74141/K155ID1-class open-collector
-decoder, run well above its guaranteed off-state rating, is the
-standard topology in amateur IN-12/IN-14-class Nixie clocks, with a
-long track record of field reliability at rail voltages in this same
-range. Two effects plausibly
-explain the margin, neither confirmed from a cited source: guaranteed
-datasheet minimums are worst-case production-lot figures, and the
-actual breakdown point of a given part typically exceeds the guarantee
-by a wide margin; and an unselected cathode inside a lit tube floats
-within the tube's own glow-discharge field, with no external
-low-impedance source driving it, so a simple resistive off-state model
-overstates the potential it actually sees. The question stays open
-pending a K155ID1-specific datasheet, which might state a higher
-verified rating.
+The anode rail spans \SIrange{164.8}{191.5}{\volt}
+(\cref{sec:hv-converter}). An unselected cathode can see approximately
+\SIrange{145}{191.5}{\volt}. This range is 2.4 to 3.2 times the guaranteed
+\SI{60}{\volt} standoff.
+
+Amateur Nixie clocks commonly use direct cathode drive at similar rail voltages
+(inferred). This use does not prove compliance with the SN74141 rating. The
+actual breakdown voltage can exceed the guaranteed value (inferred). Also, an
+unselected cathode floats in the tube discharge field (inferred). A resistive
+model can therefore overestimate its voltage. These explanations have no cited
+source. The item remains open until a K155ID1 datasheet or a measurement gives
+a higher verified rating.

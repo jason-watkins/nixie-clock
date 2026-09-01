@@ -91,31 +91,23 @@
 % the KiCad project's REV text variable -- do not hand-edit revision.tex.
 \input{revision}
 
-\title{Nixie Clock --- Design Basis}
+\title{Nixie Clock: Design Basis}
 \author{}
-\date{Rev \DesignRev{} --- compiled \today}
+\date{Rev \DesignRev{}, compiled \today}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 \noindent
-This document derives the key electrical characteristics of the Nixie
-Clock board from the datasheets of its major components and from
-first-principles circuit analysis. The analysis stays at the
-schematic level: values follow from component ratings and circuit
-topology rather than from a specific PCB footprint, except where a
-part is inseparable from one particular package. Every numeric claim
-about a named, design-driving component traces to a page in a
-datasheet under \texttt{docs/datasheets/}; anything not covered by a
-datasheet there is sized to standard engineering practice instead. The
-document proceeds subsystem by subsystem, working backward from the
-load: the Nixie tubes and their binary-coded-decimal (BCD)
-decoder/drivers set the
-requirements for the 170~V anode supply and for the 5~V rail that
-powers those same drivers, the ESP32 MCU sets the requirements for the
-3.3~V rail, and all three converters together set the requirements
-for the USB-PD front end that supplies them.
+This document derives the main electrical characteristics of the Nixie Clock
+board. It uses component datasheets and circuit analysis. The analysis applies
+at the schematic level. Package data applies only when a part is available in
+one package. Each numerical value for a critical component has a datasheet
+reference in \texttt{docs/datasheets/}. Other component values use standard
+engineering practice. The analysis starts at the Nixie-tube load. It then
+derives the 170~V, 5~V, and 3.3~V supplies. The final section derives the
+USB-PD input stage.
 \end{abstract}
 
 \tableofcontents

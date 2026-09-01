@@ -1,12 +1,9 @@
 \section{5~V converter derivation}\label{sec:5v-converter}
 
-This section derives the required characteristics of the 5~V rail and specifies
-component values that satisfy them, built around the TPS629203
-(\cref{sec:tps629203}). The converter is the only device of its kind on the
-rail, so it is referred to by part number throughout.
-\Cref{sec:bcd-driver} already designates the four K155ID1 packages U1--U4; this
-document assigns the remaining designators used throughout this section as
-follows:
+The 5~V supply uses a TPS629203 converter (\cref{sec:tps629203}). This section
+specifies its circuit requirements and external components.
+\Cref{sec:bcd-driver} defines U1 to U4. \Cref{tab:5v-designators} defines the
+remaining designators.
 
 \begin{table}[htbp]
 \centering
@@ -25,7 +22,7 @@ follows:
 \hline
 \des{R}{5VSET} & Output-voltage selection resistor (VSET) \\
 \hline
-C1--C4 & U1--U4 per-package bypass capacitors \\
+C1 to C4 & U1 to U4 per-package bypass capacitors \\
 \hline
 \end{tabular}
 \end{table}
@@ -39,22 +36,18 @@ C1--C4 & U1--U4 per-package bypass capacitors \\
 \Cref{fig:5v} shows the connections; the four driver packages and their bypass
 capacitors are not drawn.
 
-The rail's topology comprises: the converter with its filter components
-(\des{L}{5V}, \des{C}{5VIN}, \des{C}{5VO1}, \des{C}{5VO2}), the two
-configuration resistors that program it, and the four
-K155ID1 $V_{CC}$ pins (U1--U4, pin 5) with their bypass
-capacitors C1--C4. The rail has no connection to the MCU or any other subsystem.
-No bootstrap capacitor appears in that list because the part requires none
-(\cref{sec:tps629203}).
+The supply includes the converter, its input and output filters, and two
+configuration resistors. It supplies the four K155ID1 $V_{CC}$ pins. C1 to C4
+bypass these pins. The rail has no other load. The converter needs no bootstrap
+capacitor (\cref{sec:tps629203}).
 
 \subsection{Load budget}\label{sec:5v-load}
 
-Each K155ID1 draws $I_{CC} = 16$~mA typical, \SI{25}{\milli\ampere} maximum
-(\cref{sec:bcd-driver}; specified at $V_{CC}=$ max, inputs grounded, outputs open). The
-cathode current sunk by the selected output does \emph{not} add to this: the driver output
-is an open-collector TTL stage sinking current that arrives from the 170~V rail through
-the tube, into the output pin, and out the ground pin; it never passes through
-$V_{CC}$. The rail load is therefore the four packages' logic supply current only:
+Each K155ID1 draws \SI{16}{\milli\ampere} typical and
+\SI{25}{\milli\ampere} maximum (\cref{sec:bcd-driver}). Cathode current comes
+from the 170~V rail. It returns through the selected open-collector output and
+does not pass through $V_{CC}$. Thus, the 5~V load is only the driver logic
+current:
 \begin{align*}
   I_{\mathrm{load,typ}} &= 4 \times \SI{16}{\milli\ampere} = \SI{64}{\milli\ampere}, &
   I_{\mathrm{load,max}} &= 4 \times \SI{25}{\milli\ampere} = \SI{100}{\milli\ampere},
@@ -63,85 +56,58 @@ $V_{CC}$. The rail load is therefore the four packages' logic supply current onl
   P_{\mathrm{out,typ}} &= 5 \times 0.064 = \SI{0.32}{\watt}, &
   P_{\mathrm{out,max}} &= 5 \times 0.100 = \SI{0.50}{\watt}.
 \end{align*}
-Bipolar TTL supply current is set by the internal bias networks, not by output state, so
-this load is static: it does not change with which digit is lit, and the only
-input transitions are the once-per-minute (and slower) BCD updates. There is no transient
-load profile to size against. The \SI{100}{\nano\farad} per-package bypass capacitors
-C1--C4 are standard one-per-TTL-package practice and contribute no DC load.
+Bipolar TTL bias networks set the supply current. Output state has little effect
+on it (inferred). Thus, the load is static for this analysis. C1 to C4 are
+\SI{100}{\nano\farad} bypass capacitors. They add no DC load.
 
 \subsection{Operating point}\label{sec:5v-input}
 
-The input is $V_{\mathrm{BUS}}$, the USB-PD-negotiated rail (9 or \SI{12}{\volt} nominal
-contracts; analysis window \SIrange{8.5}{13}{\volt}), tied directly to both VIN and EN with
-no series element. The front end also admits a \SI{5}{\volt} contract
-(\cref{sec:pd-window}), which puts this converter outside the window everything
-below is derived at; \cref{sec:5v-limited} treats that case separately and
-nothing else in this section depends on it. The window lies inside the part's recommended
-\SIrange{3}{17}{\volt} operating range (\cref{sec:tps629203}). Against the
-\SI{18}{\volt} absolute maximum shared by VIN, EN, PG, and MODE/S-CONF, the
-\SI{13}{\volt} maximum uses \SI{72}{\percent} of the rating, inside the
-\SI{80}{\percent} derating this document applies to voltage ratings throughout.
-That is the tightest input-side margin in the low-voltage design and the one
-figure that would need revisiting if the bus were ever specified higher.
+$V_{\mathrm{BUS}}$ connects directly to VIN and EN. The regulated input range is
+\SIrange{8.55}{12.6}{\volt}, from nominal \SI{9}{\volt} and
+\SI{12}{\volt} contracts. \Cref{sec:5v-limited} analyzes the
+\SI{5}{\volt} contract separately. The regulated range is inside the
+\SIrange{3}{17}{\volt} recommended range. The \SI{12.6}{\volt} maximum is
+$70\,\%$ of the \SI{18}{\volt} absolute maximum. It meets the $80\,\%$ stress
+limit used in this document.
 
 The ideal buck duty cycle $D = V_{OUT}/V_{IN}$ spans
 \begin{align*}
-  D_{\min} &= \frac{5}{13} = 0.385 \quad (V_{IN}=\SI{13}{\volt}), &
-  D_{\max} &= \frac{5}{8.5} = 0.588 \quad (V_{IN}=\SI{8.5}{\volt}).
+  D_{\min} &= \frac{5}{12.6} = 0.397 \quad (V_{IN}=\SI{12.6}{\volt}), &
+  D_{\max} &= \frac{5}{8.55} = 0.585 \quad (V_{IN}=\SI{8.55}{\volt}).
 \end{align*}
 Conduction-loss corrections to $D$ are of order $I_{\mathrm{load}} R_{DS(\mathrm{on})}
 \approx \SI{25}{\milli\volt}$ against a 5~V output (below 0.5\,\%) and are ignored
-throughout. The \SI{100}{\percent}-duty mode the part enters as $V_{IN}$ approaches
-$V_{OUT}$ is never reached: it requires
-$V_{IN} \leq V_{OUT} + I_{OUT}(R_{DS(\mathrm{on})} + R_L)
-= 5 + 0.1\,(0.25+0.10) = \SI{5.04}{\volt}$ at the DCR bound of
-\cref{sec:5v-inductor}, against a \SI{8.5}{\volt} minimum input.
+throughout. The converter reaches \SI{100}{\percent} duty only when
+$V_{IN}\leq V_{OUT}+I_{OUT}(R_{DS(\mathrm{on})}+R_L)=\SI{5.04}{\volt}$.
+The minimum regulated input is \SI{8.55}{\volt}.
 
 \subsection{Output voltage and device configuration}\label{sec:5v-vset}
 
-Two resistors program the converter, and both are read once during start-up
-rather than interpreted continuously (\cref{sec:tps629203}).
+Two resistors program the converter. The converter reads both only during
+start-up (\cref{sec:tps629203}).
 
-\paragraph{Output voltage.} The part offers an internal feedback divider selected
-by a resistor from the VSET pin to ground, with \SI{5.0}{\volt} among its
-eighteen preset options at $R = \SI{80.6}{\kilo\ohm}$. Specification:
-$\des{R}{5VSET} = \SI{80.6}{\kilo\ohm}$, E96 1\,\% with a temperature coefficient no worse
-than $\pm200$~ppm/\si{\celsius}, as the selection table requires. This is
-preferred over the external-divider configuration the same pin also supports,
-because it keeps the rail's accuracy at the part's own $\pm1\,\%$ specification.
-An external divider would put the feedback reference's tolerance and the divider
-ratio's tolerance in series, and the ratio error alone would consume a
-comparable share of the K155ID1's supply window (\cref{sec:5v-cout}). With VSET
-selected, the output is
-sensed through the VOS pin, which connects directly to the positive terminal of
-the output capacitance.
+\paragraph{Output voltage.} An \SI{80.6}{\kilo\ohm} resistor from VSET to ground
+selects the internal \SI{5.0}{\volt} divider. Thus,
+$\des{R}{5VSET} = \SI{80.6}{\kilo\ohm}$. Use an E96 $1\,\%$ resistor with a
+temperature coefficient no more than $\pm200$~ppm/\si{\celsius}. The internal
+divider keeps output tolerance at $\pm1\,\%$. An external divider would add
+ratio tolerance. Connect VOS directly to the output-capacitor positive terminal.
 
-\paragraph{Mode, frequency, and discharge.} A resistor from MODE/S-CONF to ground
-selects, in one value, whether the feedback is internal or external, the
-switching-frequency mode, whether output discharge is enabled, and whether the
-converter runs forced PWM or automatic power save. The combination this rail
-requires is internal feedback with automatic power save, since the load is far
-below the power-save entry threshold at every corner (\cref{sec:5v-op}) and there
-is no reason to force continuous conduction into a static load. Automatic
-efficiency enhancement is taken with it, which adjusts the switching frequency
-with the conversion ratio. Output discharge is enabled so the rail ramps down in
-a defined way when the bus falls away; without it the rail decays through
-whatever leakage the drivers present. Specification:
-$\des{R}{5VMODE} = \SI{27.4}{\kilo\ohm}$, to the same E96 1\,\% and $\pm200$~ppm/\si{\celsius}
-requirement.
+\paragraph{Mode, frequency, and discharge.} MODE/S-CONF selects internal
+feedback, automatic power save, efficiency enhancement, and output discharge.
+The load is below the power-save threshold under all conditions
+(\cref{sec:5v-op}). Output discharge gives a controlled ramp-down. Use
+$\des{R}{5VMODE} = \SI{27.4}{\kilo\ohm}$. It has the same tolerance and
+temperature-coefficient requirements as \des{R}{5VSET}.
 
 \subsection{Inductor}\label{sec:5v-inductor}
 
-The part is designed around a nominal \SI{2.2}{\micro\henry} inductor, with a
-recommended range of \SIrange{1.0}{4.7}{\micro\henry}
-(\cref{sec:tps629203}). Values below \SI{2.2}{\micro\henry} are explicitly not
-recommended where the voltage across the inductor is large, which is this rail's
-condition at the top of the bus range, because they raise both the peak current
-at full load and the negative inductor current in forced PWM. Values above it
-lower ripple at the cost of efficiency and transient response. The recommended
-filter table pairs \SI{2.2}{\micro\henry} with the output capacitance specified
-in \cref{sec:5v-cout} and marks that pairing as the standard combination.
-Specification: $\des{L}{5V} = \SI{2.2}{\micro\henry}$.
+The recommended inductance range is \SIrange{1.0}{4.7}{\micro\henry}. The
+nominal value is \SI{2.2}{\micro\henry}. The datasheet does not recommend a
+lower value when the inductor voltage is high. A lower value increases peak and
+negative current. A higher value decreases ripple but can decrease efficiency
+and transient response. The recommended filter table uses
+\SI{2.2}{\micro\henry}. Thus, $\des{L}{5V} = \SI{2.2}{\micro\henry}$.
 
 \paragraph{Ripple current.} In automatic power save with efficiency enhancement,
 the on-time is set by the conversion ratio,
@@ -149,118 +115,99 @@ $t_{ON} = \SI{100}{\nano\second}\times V_{IN}/(V_{IN}-V_{OUT})$, and the ripple
 follows from it:
 \begin{align*}
   \Delta I_L &= \frac{V_{IN}-V_{OUT}}{L}\,t_{ON}
-  &&\SI{8.5}{\volt}: \frac{3.5}{\SI{2.2}{\micro\henry}}\times\SI{243}{\nano\second}
+  &&\SI{8.55}{\volt}: \frac{3.55}{\SI{2.2}{\micro\henry}}\times\SI{241}{\nano\second}
      = \SI{0.39}{\ampere}, \\
-  &&&\SI{13}{\volt}: \frac{8}{\SI{2.2}{\micro\henry}}\times\SI{162}{\nano\second}
-     = \SI{0.59}{\ampere},
+  &&&\SI{12.6}{\volt}: \frac{7.6}{\SI{2.2}{\micro\henry}}\times\SI{166}{\nano\second}
+     = \SI{0.57}{\ampere},
 \end{align*}
-reproducing the datasheet's own ripple-versus-input curve at this inductance. The
-part carries an explicit caution that ripple must not exceed \SI{1.6}{\ampere},
-above which the negative current limit can run continuously at no load; the worst
-case here is \SI{0.59}{\ampere}, a factor of \num{2.7} inside that bound.
+These values agree with the datasheet curve. The ripple must not exceed
+\SI{1.6}{\ampere}. The calculated maximum is \SI{0.57}{\ampere}, which has a
+factor of 2.8 margin.
 
 \paragraph{Saturation current.} The largest current the converter can drive into
 the inductor is set by its own current limit, extended by the propagation delay
 before the high-side switch actually opens:
 \begin{align*}
   I_{\mathrm{peak}} &= I_{LIMH} + \frac{V_{IN}-V_{OUT}}{L}\times\SI{50}{\nano\second}
-    = 1.4 + \frac{8}{\SI{1.76}{\micro\henry}}\times\SI{50}{\nano\second}
-    = \SI{1.63}{\ampere},
+    = 1.4 + \frac{7.6}{\SI{1.76}{\micro\henry}}\times\SI{50}{\nano\second}
+    = \SI{1.62}{\ampere},
 \end{align*}
-evaluated at the high-side limit's \SI{1.4}{\ampere} maximum and the inductance
-at its $-20\,\%$ tolerance extreme, both of which push the figure up.
-Specification: $I_{\mathrm{sat}} \geq \SI{1.7}{\ampere}$, DCR
-$\leq\SI{100}{\milli\ohm}$. Normal operation never approaches this: the largest
-current the control loop commands is the \SI{0.59}{\ampere} power-save peak
-above, so the requirement is set by fault capability rather than by the load. At
-\SI{100}{\milli\ampere} the DCR bound costs under \SI{1}{\milli\watt}, so it
-constrains nothing and exists only to exclude parts whose resistance would be
-pathological.
+evaluated at the maximum high-side current limit and minimum inductance. Require
+$I_{\mathrm{sat}}\geq\SI{1.7}{\ampere}$ and
+${\rm DCR}\leq\SI{100}{\milli\ohm}$. The maximum operating peak is
+\SI{0.57}{\ampere}. The current limit sets the saturation-current requirement.
+At \SI{100}{\milli\ampere}, the DCR limit dissipates less than
+\SI{1}{\milli\watt}.
 
 \subsection{Conduction mode and switching frequency}\label{sec:5v-op}
 
-With efficiency enhancement selected, the switching frequency follows the
-conversion ratio:
+With efficiency enhancement, switching frequency follows the conversion ratio:
 \begin{align*}
   f_{SW} &= 10\,V_{OUT}\frac{V_{IN}-V_{OUT}}{V_{IN}^2}
-  &&\SI{8.5}{\volt}: \SI{2.42}{\mega\hertz}; \quad
+  &&\SI{8.55}{\volt}: \SI{2.43}{\mega\hertz}; \quad
     \SI{10}{\volt}: \SI{2.50}{\mega\hertz}; \quad
-    \SI{13}{\volt}: \SI{2.37}{\mega\hertz},
+    \SI{12.6}{\volt}: \SI{2.39}{\mega\hertz},
 \end{align*}
-in megahertz with the voltages in volts. For a 5~V output the expression is
-nearly flat across this rail's entire input window and sits at or just below the
-\SI{2.5}{\mega\hertz} ceiling throughout, so the rail behaves as a fixed
-\SI{2.4}{\mega\hertz} converter for every purpose in this section.
+The result spans \SIrange{2.39}{2.50}{\mega\hertz}. This analysis uses an
+approximately \SI{2.4}{\mega\hertz} switching frequency.
 
 The converter runs in power save mode whenever the load falls below half the
 ripple current (\cref{sec:5v-inductor}):
 \begin{align*}
   I_{\mathrm{load(PSM)}} &= \tfrac{1}{2}\Delta I_L
-  &&\SI{8.5}{\volt}: \SI{193}{\milli\ampere}; \quad
-    \SI{13}{\volt}: \SI{296}{\milli\ampere}.
+  &&\SI{8.55}{\volt}: \SI{194}{\milli\ampere}; \quad
+    \SI{12.6}{\volt}: \SI{286}{\milli\ampere}.
 \end{align*}
-The actual load, \SIrange{64}{100}{\milli\ampere}, sits below that boundary at
-every corner, so the rail is in power save at all times. Power save is also
-available at every corner: the part suspends it when the input falls within
-about \SI{15}{\percent} of the output, which for a 5~V rail is
-\SI{5.75}{\volt}, well below the \SI{8.5}{\volt} minimum input. Crossing that
-boundary is glitchless in either direction, and no component choice depends on
-where it lies.
+The \SIrange{64}{100}{\milli\ampere} load is below the power-save threshold at
+all conditions. The device disables power save when input voltage is within
+approximately $15\,\%$ of output. This threshold is \SI{5.75}{\volt}, below the
+\SI{8.55}{\volt} minimum input. Therefore, the converter always uses power-save
+operation in the regulated input range.
 
 \subsection{Minimum on-time}\label{sec:5v-ontime}
 
 The on-time in power save is the $t_{ON}$ of \cref{sec:5v-inductor},
-\SI{243}{\nano\second} at the minimum input falling to \SI{162}{\nano\second} at
+\SI{241}{\nano\second} at the minimum input falling to \SI{166}{\nano\second} at
 the maximum, against a \SI{40}{\nano\second} floor: a margin of \num{4.1} at the
 binding corner. In forced pulse-width modulation the on-time would be
-$(V_{OUT}/V_{IN})/f_{SW} = \SI{163}{\nano\second}$ at the same corner, the same
+$(V_{OUT}/V_{IN})/f_{SW} = \SI{166}{\nano\second}$ at the same corner, the same
 figure to within the frequency's own variation. The complementary
 constraint, a minimum off-time of about \SI{80}{\nano\second}, binds at the
-opposite end: at \SI{8.5}{\volt} input and \SI{2.42}{\mega\hertz} the off-time is
-$1/f_{SW} - t_{ON} = \SI{170}{\nano\second}$, a margin of \num{2.1}. Neither
+opposite end: at \SI{8.55}{\volt} input and \SI{2.43}{\mega\hertz} the off-time is
+$1/f_{SW} - t_{ON} = \SI{171}{\nano\second}$, a margin of \num{2.1}. Neither
 constrains the design, and the off-time is the tighter of the two only because
 the duty cycle is highest at minimum input.
 
 \subsection{Current-limit margin}\label{sec:5v-ilim}
 
-The high-side current limit is \SI{0.8}{\ampere} minimum
-(\cref{sec:tps629203}). The largest peak the control loop commands is the
-power-save peak of \cref{sec:5v-inductor}:
+The minimum high-side current limit is \SI{0.8}{\ampere}. The maximum commanded
+power-save peak is \SI{0.57}{\ampere}:
 \begin{align*}
-  \frac{I_{LIM}^{\min}}{I_{\mathrm{peak}}} &= \frac{0.8}{0.59} = 1.4.
+  \frac{I_{LIM}^{\min}}{I_{\mathrm{peak}}} &= \frac{0.8}{0.57} = 1.4.
 \end{align*}
-Accounting for the propagation delay that extends the actual trip point, the
-effective minimum is $0.8 + (8/\SI{2.2}{\micro\henry})\times\SI{50}{\nano\second}
-= \SI{0.98}{\ampere}$, giving \num{1.7}. This is a smaller margin than an
-oversized converter would show, a direct consequence of matching the part to the
-load. The limit is a fault threshold, set to sit near but above the largest
-current normal operation produces. Were it reached, the high-side switch would
-turn off and the low-side switch would ramp the inductor down until the current
-fell below the low-side threshold --- cycle-by-cycle behavior, with no fault
-latch.
+Propagation delay increases the effective minimum trip current to
+\SI{0.97}{\ampere}. This gives a factor of 1.7 margin. If the current reaches
+the limit, the high-side switch turns off. The low-side switch then decreases
+the inductor current. This protection operates in each cycle and does not latch.
 
 \subsection{Output capacitance and rail accuracy}\label{sec:5v-cout}
 
 The part requires effective output capacitance between \SIrange{10}{100}{\micro\farad}
 (\cref{sec:tps629203}), and the recommended filter table pairs the
 \SI{2.2}{\micro\henry} inductance with nominal values from \SIrange{10}{100}{\micro\farad}.
-\emph{Assumption:} X5R or X7R ceramics rated $\geq\SI{10}{\volt}$ lose no more
-than \SI{50}{\percent} of nominal capacitance to bias and tolerance at
-\SI{5}{\volt}, the derating the datasheet itself applies when tabulating those
-combinations. Specification: \des{C}{5VO1}, \des{C}{5VO2} $= 2\times\SI{22}{\micro\farad}$,
-\SI{44}{\micro\farad} nominal and \SI{22}{\micro\farad} effective, sitting in the
-middle of the permitted range. A single \SI{22}{\micro\farad} part is the
-datasheet's standard combination and would also satisfy the table, but under the
-same derating it lands at \SI{11}{\micro\farad} effective, \SI{10}{\percent}
-above the floor, with no margin for a part whose bias characteristic is worse
-than assumed.
+The analysis assumes that X5R or X7R capacitors retain at least $50\,\%$ of
+nominal capacitance at \SI{5}{\volt} (inferred). Use
+$\des{C}{5VO1} = \des{C}{5VO2} = \SI{22}{\micro\farad}$. The pair gives
+\SI{44}{\micro\farad} nominal and \SI{22}{\micro\farad} effective. One
+\SI{22}{\micro\farad} part would give only \SI{11}{\micro\farad} effective.
+This value has little margin above the \SI{10}{\micro\farad} minimum.
 
 \paragraph{Ripple.} Output ripple in power save mode is
 \begin{align*}
   \Delta V &= \frac{L\,V_{IN}^2}{200\,C}
     \left(\frac{1}{V_{IN}-V_{OUT}}+\frac{1}{V_{OUT}}\right)
-  &&\SI{8.5}{\volt}: \SI{17.5}{\milli\volt}; \quad
-    \SI{13}{\volt}: \SI{27.5}{\milli\volt},
+  &&\SI{8.55}{\volt}: \SI{17.6}{\milli\volt}; \quad
+    \SI{12.6}{\volt}: \SI{26.3}{\milli\volt},
 \end{align*}
 with the inductance in \si{\micro\henry} and the effective capacitance in
 \si{\micro\farad}. Ripple grows with input voltage, so the maximum bus voltage is
@@ -271,7 +218,7 @@ the output to $\pm1\,\%$ over the full junction-temperature range, so regulation
 alone spans \SIrange{4.95}{5.05}{\volt}. Adding the worst-case ripple to both
 ends:
 \begin{align*}
-  V_{\mathrm{rail}} &\in [\,4.95-0.028,\; 5.05+0.028\,]
+  V_{\mathrm{rail}} &\in [\,4.95-0.027,\; 5.05+0.027\,]
     = [\,\SI{4.92}{\volt},\ \SI{5.08}{\volt}\,]
 \end{align*}
 against the K155ID1's recommended \SIrange{4.75}{5.25}{\volt} supply window
@@ -283,32 +230,26 @@ benefit, since \SI{5.0}{\volt} is already one of the preset options.
 
 \subsection{Input capacitance}\label{sec:5v-cin}
 
-The part requires at least \SI{3}{\micro\farad} of effective input capacitance
-with \SI{4.7}{\micro\farad} nominal recommended (\cref{sec:tps629203}). At the
-\SI{13}{\volt} top of the bus window a \SI{25}{\volt}-rated ceramic loses roughly
-half its nominal capacitance to bias, so a \SI{4.7}{\micro\farad} nominal part
-would land at the requirement with no margin above it. Specification:
-\des{C}{5VIN} $= \SI{10}{\micro\farad}$, giving about \SI{5}{\micro\farad} effective at the
-worst bias, \num{1.7} times the floor. The buck's input RMS ripple current at
-the worst point ($D$ nearest 0.5, i.e.\ $V_{IN}=\SI{8.5}{\volt}$):
+The device requires at least \SI{3}{\micro\farad} effective input capacitance.
+At \SI{12.6}{\volt}, a \SI{25}{\volt} ceramic can lose approximately half its
+capacitance (inferred). Therefore, use
+$\des{C}{5VIN} = \SI{10}{\micro\farad}$. It gives approximately
+\SI{5}{\micro\farad} effective. The maximum input RMS ripple current occurs
+near a duty cycle of 0.5:
 \begin{align*}
   I_{\mathrm{RMS}} &\approx I_{\mathrm{out}}\sqrt{D(1-D)}
-    = 0.100\sqrt{0.588 \times 0.412} = \SI{49}{\milli\ampere},
+    \approx 0.100\sqrt{0.5 \times 0.5} = \SI{50}{\milli\ampere},
 \end{align*}
-trivially inside any ceramic \SI{10}{\micro\farad}'s ampere-class rating. The
-capacitor's voltage rating must be specified separately: on a \SI{13}{\volt} rail
-it must be $\geq\SI{16}{\volt}$, and \SI{25}{\volt} is preferred for
-bias-derating headroom.
+The calculated ripple is \SI{50}{\milli\ampere}. A ceramic
+\SI{10}{\micro\farad} capacitor can typically carry this current (inferred).
+Use a \SI{25}{\volt} rating to reduce DC-bias derating.
 
 \subsection{Enable, soft start, and dissipation}\label{sec:5v-ss}
 
-EN ties directly to $V_{\mathrm{BUS}}$. The pin must be terminated, and its
-\SI{18}{\volt} rating matches VIN's, so no divider or
-level shift is required; the part's own undervoltage lockout, \SI{3}{\volt}
-maximum rising, releases far below the \SI{8.5}{\volt} minimum input. The
-precise enable threshold would permit a programmed lockout at a higher voltage,
-but nothing in this rail's requirements asks for one. The power-good output is
-unused and left unconnected.
+EN connects directly to $V_{\mathrm{BUS}}$. Its \SI{18}{\volt} rating matches
+VIN. No divider is necessary. The maximum rising UVLO threshold is
+\SI{3}{\volt}, below the \SI{8.55}{\volt} minimum input. The power-good output is
+unused and unconnected.
 
 Start-up is internally timed: up to \SI{1.8}{\milli\second} of delay from enable
 to the first switching pulse in the internal-divider configuration, then a
@@ -321,10 +262,8 @@ current that ramp implies is
 \end{align*}
 which even summed with the full \SI{100}{\milli\ampere} load stays a factor of
 \num{2.8} below the minimum current limit: no inrush interaction with the limit.
-The drivers' 5~V therefore arrives about \SI{2.5}{\milli\second} after the bus
-does. No sequencing constraint exists among this rail, the 3.3~V rail, or the
-flyback at this level; cross-rail power-up ordering is a system-level property,
-not a property of this converter.
+The 5~V rail reaches regulation approximately \SI{2.5}{\milli\second} after
+$V_{\mathrm{BUS}}$. This converter adds no cross-rail sequence requirement.
 
 Dissipation, using the conservative $\eta = 0.85$ carried for the low-voltage
 rails:
@@ -342,12 +281,10 @@ No thermal management beyond the footprint's own copper is required.
 
 \subsection{Operation on a \SI{5}{\volt} contract}\label{sec:5v-limited}
 
-A \SI{5}{\volt} contract (\cref{sec:pd-classes}) puts $V_{\mathrm{BUS}}$ between
-\SI{4.75}{\volt} and \SI{5.5}{\volt}, below the input this rail is derived
-against and below its own output over most of that range. The converter does not
-fail there; it enters the \SI{100}{\percent} duty mode
-\cref{sec:5v-input} shows is unreachable above \SI{5.04}{\volt} of input,
-holding the high-side switch on so the output follows the input less
+A \SI{5}{\volt} contract gives $V_{\mathrm{BUS}}$ from
+\SIrange{4.75}{5.5}{\volt}. This range is below the regulated input range. The
+converter enters 100-percent-duty operation. The high-side switch stays on, and
+the output follows the input minus
 \begin{align*}
   \Delta V &= I_{\mathrm{load}}\left(R_{DS(\mathrm{on})}+R_L\right)
     = 0.1\,(0.25+0.10) = \SI{35}{\milli\volt}
@@ -356,32 +293,22 @@ at the \SI{100}{\milli\ampere} bound. The rail therefore lands between
 \SI{4.72}{\volt} and \SI{5.47}{\volt} and is unregulated, tracking whatever the
 bus does.
 
-The K155ID1 packages ride that rail across the excursion, and whether they are
-switching depends on the operating class of \cref{sec:pd-classes}, not on the
-voltage. In limited operation they idle: the \SI{170}{\volt} rail is inhibited,
-so every output is an open collector with no anode supply behind it and no
-cathode current to switch. In full operation on a \SI{5}{\volt} contract they
-switch their rated cathode currents from the tracking rail, and the supply
-window bounds what that costs. At the contract's floor the supply sits
-\SI{30}{\milli\volt} below the recommended \SI{4.75}{\volt}; an undervolted
-bipolar TTL supply shifts input thresholds and output levels without stressing
-anything, and the on-state drop the ballast sizing of \cref{sec:hv-load-digit}
-carries is a saturation figure that moves weakly with supply. At the contract's
-\SI{5.5}{\volt} ceiling the supply reaches \SI{5.47}{\volt}, above the
-recommended \SI{5.25}{\volt} and at \SI{78}{\percent} of the \SI{7}{\volt}
-absolute maximum (\cref{sec:bcd-driver}), inside the \SI{80}{\percent} derating
-this document applies to voltage ratings throughout. The rail's accuracy result
-of \cref{sec:5v-cout} is therefore conditional on a \SI{9}{\volt} or
-\SI{12}{\volt} contract, and no other result in this section is.
+In limited operation, the high-voltage supply stays off. The drivers then have
+no cathode current. In full operation, the drivers switch cathode current from
+the tracking 5~V rail. At minimum input, the rail is approximately
+\SI{30}{\milli\volt} below the recommended \SI{4.75}{\volt} limit. This small
+undervoltage changes TTL levels but does not cause electrical stress (inferred).
+At maximum input, the rail reaches \SI{5.47}{\volt}. This is $78\,\%$ of the
+\SI{7}{\volt} absolute maximum. Thus, only the rail-accuracy result in
+\cref{sec:5v-cout} requires a \SI{9}{\volt} or \SI{12}{\volt} contract.
 
 \subsection{Summary}\label{sec:5v-summary}
 
-Assumptions carried through this section: inductor $I_{\mathrm{sat}} \geq
-\SI{1.7}{\ampere}$ and DCR $\leq\SI{100}{\milli\ohm}$ (commodity
-\SI{2.2}{\micro\henry} part; a specific part remains to be selected); ceramics
-retain at least \SI{50}{\percent} of nominal capacitance at their working bias,
-the derating the datasheet applies to its own filter tables; converter efficiency
-0.85. Each appears at its point of use above.
+The analysis uses two inferred values. Ceramic capacitors retain at least
+\SI{50}{\percent} of nominal capacitance at their operating bias. Converter
+efficiency is 0.85. The selected inductor must have
+$I_{\mathrm{sat}}\geq\SI{1.7}{\ampere}$ and
+${\rm DCR}\leq\SI{100}{\milli\ohm}$.
 
 {\footnotesize
 \begin{longtable}{|p{0.23\textwidth}|p{0.335\textwidth}|p{0.335\textwidth}|}
@@ -397,16 +324,16 @@ the derating the datasheet applies to its own filter tables; converter efficienc
 \endhead
 \hline
 \endlastfoot
-Load current & --- & $4\times I_{CC}$: \SI{64}{\milli\ampere} typ /
+Load current & Not applicable & $4\times I_{CC}$: \SI{64}{\milli\ampere} typ /
   \SI{100}{\milli\ampere} max, static \\
 \hline
 Input window & inside \SIrange{3}{17}{\volt} recommended; \SI{80}{\percent} of
   the \SI{18}{\volt} absolute maximum & regulation across
-  \SIrange{8.5}{13}{\volt}; tracking in dropout across
-  \SIrange{4.75}{5.5}{\volt} (\cref{sec:5v-limited}); \SI{72}{\percent} of
-  rating at \SI{13}{\volt} \\
+  \SIrange{8.55}{12.6}{\volt}; tracking in dropout across
+  \SIrange{4.75}{5.5}{\volt} (\cref{sec:5v-limited}); \SI{70}{\percent} of
+  rating at \SI{12.6}{\volt} \\
 \hline
-Duty cycle & --- & 0.385--0.588; \SI{100}{\percent} mode unreachable above
+Duty cycle & Not applicable & 0.397 to 0.585; \SI{100}{\percent} mode unreachable above
   \SI{5.04}{\volt} input \\
 \hline
 Output voltage \des{R}{5VSET} & \SI{5.0}{\volt} preset; E96 1\,\%,
@@ -417,69 +344,63 @@ Configuration \des{R}{5VMODE} & internal divider, auto power save with efficienc
 \hline
 Inductance \des{L}{5V} & \SIrange{1.0}{4.7}{\micro\henry} recommended; not below
   \SI{2.2}{\micro\henry} at high input & \SI{2.2}{\micro\henry}; ripple
-  \SIrange{0.39}{0.59}{\ampere}, inside the \SI{1.6}{\ampere} caution \\
+  \SIrange{0.39}{0.57}{\ampere}, inside the \SI{1.6}{\ampere} caution \\
 \hline
-Inductor $I_{\mathrm{sat}}$, DCR & $\geq\SI{1.63}{\ampere}$ from the
+Inductor $I_{\mathrm{sat}}$, DCR & $\geq\SI{1.62}{\ampere}$ from the
   delay-extended current limit; DCR $\leq\SI{100}{\milli\ohm}$ &
   $\geq\SI{1.7}{\ampere}$; part to be selected \\
 \hline
-Switching frequency & --- & \SIrange{2.37}{2.50}{\mega\hertz} across the input
+Switching frequency & Not applicable & \SIrange{2.39}{2.50}{\mega\hertz} across the input
   window \\
 \hline
-Conduction mode & --- & load below the \SIrange{193}{296}{\milli\ampere}
+Conduction mode & Not applicable & load below the \SIrange{194}{286}{\milli\ampere}
   power-save boundary at every corner \\
 \hline
 Minimum on-time & $\geq\SI{40}{\nano\second}$ on; $\geq\SI{80}{\nano\second}$
-  off & \SI{162}{\nano\second} on ($4.1\times$); \SI{170}{\nano\second} off
+  off & \SI{166}{\nano\second} on ($4.1\times$); \SI{171}{\nano\second} off
   ($2.1\times$) \\
 \hline
-Current-limit margin & --- & \SI{0.59}{\ampere} peak vs \SI{0.8}{\ampere}
+Current-limit margin & Not applicable & \SI{0.57}{\ampere} peak vs \SI{0.8}{\ampere}
   minimum limit; \num{1.7} including propagation delay \\
 \hline
 Output capacitance \des{C}{5VO1}, \des{C}{5VO2} & \SIrange{10}{100}{\micro\farad} effective &
   $2\times\SI{22}{\micro\farad}$: \SI{22}{\micro\farad} effective \\
 \hline
-Output ripple & --- & \SI{27.5}{\milli\volt} at the maximum input \\
+Output ripple & Not applicable & \SI{26.3}{\milli\volt} at the maximum input \\
 \hline
 Rail accuracy at load & \SIrange{4.75}{5.25}{\volt} (K155ID1) &
-  \SIrange{4.92}{5.08}{\volt} incl.\ ripple, on a \SI{9}{\volt} or
+  \SIrange{4.92}{5.08}{\volt} including ripple, on a \SI{9}{\volt} or
   \SI{12}{\volt} contract; \cref{sec:5v-limited} otherwise \\
 \hline
 Input capacitance \des{C}{5VIN} & $\geq\SI{3}{\micro\farad}$ effective;
   $\geq\SI{16}{\volt}$; RMS $\geq\SI{49}{\milli\ampere}$ &
   \SI{10}{\micro\farad}; \SI{25}{\volt} preferred \\
 \hline
-Soft start & --- & internal; $\leq\SI{2.5}{\milli\second}$ delay plus ramp;
+Soft start & Not applicable & internal; $\leq\SI{2.5}{\milli\second}$ delay plus ramp;
   inrush \SI{183}{\milli\ampere} \\
 \hline
 EN configuration & terminated, $\leq\SI{18}{\volt}$ & tied to
   $V_{\mathrm{BUS}}$ \\
 \hline
-Converter dissipation & --- & \SI{88}{\milli\watt}, $\Delta T \approx
+Converter dissipation & Not applicable & \SI{88}{\milli\watt}, $\Delta T \approx
   \SI{11}{\kelvin}$ (SOT-5X3, $\theta_{JA}=120$~\si{\celsius\per\watt}) \\
 \hline
-Bypass C1--C4 & \SI{100}{\nano\farad} per TTL package & \SI{100}{\nano\farad}
+Bypass C1 to C4 & \SI{100}{\nano\farad} per TTL package & \SI{100}{\nano\farad}
   $\times 4$ \\
 \hline
 \end{longtable}
 }
 
-The rail's one open assumption is \des{L}{5V}'s saturation rating, inferred from
-commodity-part norms for its value class instead of from a specific
-manufacturer datasheet; a part meeting it remains to be selected. Everything
-else resolves to a specified value with margin. The section's substantive result
-is that matching the converter's rating to the load removes the two consequences
-oversizing carried: the inductor's saturation requirement now follows from a
-\SI{1.4}{\ampere} current limit, well below what a multi-ampere part would
-demand, and the manufacturer's own filter-selection table applies as written
-without calling for an inductance outside the part's recommended range.
+The inductor saturation rating remains open because no part is selected. Select
+a part that meets the stated value. The converter current limit sets the
+inductor requirement. The specified inductor and capacitors also comply with
+the manufacturer filter table.
 
 \subsection{Component selection}\label{sec:5v-parts}
 
-The requirements derived above, collected as selection criteria. Values are
-those specified in this section and ratings are the derived minima. Body size is
-a requirement only at the converter, whose package is fixed; elsewhere it is the
-smallest that commonly satisfies the electrical requirement.
+\Cref{tab:5v-parts} gives the component-selection criteria. Body size is a
+requirement only for the fixed converter package. Other body sizes are typical
+values that meet the electrical requirements.
 
 {\footnotesize
 \begin{longtable}{|L{0.10\textwidth}|L{0.14\textwidth}|L{0.11\textwidth}|L{0.33\textwidth}|L{0.12\textwidth}|}
@@ -495,11 +416,11 @@ smallest that commonly satisfies the electrical requirement.
 \endhead
 \hline
 \endlastfoot
---- & Synchronous buck converter & TPS629203 & VSET configuration selected, giving $\pm1\,\%$ output regulation over the junction range without an external divider & SOT-5X3 (SOT-583), $1.6\times2.1$~\si{\milli\meter} \\
+Not applicable & Synchronous buck converter & TPS629203 & VSET configuration selected, giving $\pm1\,\%$ output regulation over the junction range without an external divider & SOT-5X3 (SOT-583), $1.6\times2.1$~\si{\milli\meter} \\
 \hline
 \des{L}{5V} & Power inductor & \SI{2.2}{\micro\henry} & $I_{\mathrm{sat}}\geq\SI{1.7}{\ampere}$; DCR $\leq\SI{100}{\milli\ohm}$; $\pm20\,\%$ tolerance acceptable, the extremes staying inside the part's \SIrange{1.0}{4.7}{\micro\henry} recommended range; core rated for \SI{2.5}{\mega\hertz} & $\leq5\times5$~\si{\milli\meter}, $\leq\SI{4.5}{\milli\meter}$ high \\
 \hline
-\des{C}{5VIN} & Ceramic, input & \SI{10}{\micro\farad} & $\geq\SI{16}{\volt}$, \SI{25}{\volt} preferred; X5R or X7R; $\geq50\,\%$ capacitance retention at \SI{13}{\volt} bias; ripple current $\geq\SI{49}{\milli\ampere}$ RMS & 0805 \\
+\des{C}{5VIN} & Ceramic, input & \SI{10}{\micro\farad} & $\geq\SI{16}{\volt}$, \SI{25}{\volt} preferred; X5R or X7R; $\geq50\,\%$ capacitance retention at \SI{12.6}{\volt} bias; ripple current $\geq\SI{50}{\milli\ampere}$ RMS & 0805 \\
 \hline
 \des{C}{5VO1} & Ceramic, output & \SI{22}{\micro\farad} & $\geq\SI{10}{\volt}$; X5R or X7R; $\geq50\,\%$ capacitance retention at \SI{5}{\volt} bias & 1206 \\
 \hline
@@ -509,7 +430,7 @@ smallest that commonly satisfies the electrical requirement.
 \hline
 \des{R}{5VSET} & Film resistor & \SI{80.6}{\kilo\ohm} & E96 1\,\%; temperature coefficient no worse than $\pm200$~ppm/\si{\celsius}; selects the \SI{5.0}{\volt} preset & 0402 \\
 \hline
-C1--C4 & Ceramic, TTL bypass & \SI{100}{\nano\farad} & $\geq\SI{6.3}{\volt}$ under the \SI{80}{\percent} derating rule; X7R; one per K155ID1 package & 0402 \\
+C1 to C4 & Ceramic, TTL bypass & \SI{100}{\nano\farad} & $\geq\SI{10}{\volt}$ under the \SI{80}{\percent} derating rule; X7R; one per K155ID1 package & 0402 \\
 \hline
 \end{longtable}
 }

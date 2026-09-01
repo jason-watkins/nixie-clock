@@ -1,26 +1,22 @@
 \section{5~V and 3.3~V converters: driving component characteristics}
 \label{sec:lv-components}
 
-The two low-voltage rails are produced by different converter
-topologies. The 5~V rail (for the four K155ID1 BCD decoder/drivers) is
-a synchronous buck, the TPS629203, because its input is always
-well above its output. The 3.3~V rail (for the MCU module of
-\cref{sec:esp32}) must regulate from inputs both above and below
-\SI{3.3}{\volt}, so it is a four-switch buck-boost, the TPS63070;
-\cref{sec:3v3-diodeor} derives that input range. This section
-records the datasheet characteristics both converter derivations draw
-on.
+The two low-voltage supplies use different converter types. A TPS629203
+synchronous buck converter supplies 5~V to the four K155ID1 drivers. Its input
+is always higher than its output. A TPS63070 four-switch buck-boost converter
+supplies 3.3~V to the MCU. Its input can be above or below 3.3~V
+(\cref{sec:3v3-diodeor}). The following characteristics support both converter
+designs.
 
 \subsection{TPS629203 synchronous buck converter}
 \label{sec:tps629203}
 
-Source: \texttt{tps629203.pdf} (Texas Instruments, SLVSGE2, Mar.\ 2022). A
-synchronous buck with internal compensation, a DCS-Control architecture that
-passes between pulse-width modulation and power save without a discrete mode
-change, and no external bootstrap capacitor. Two pins are resistor-programmed: FB/VSET either
-takes an external divider or, with a resistor to ground, selects one of eighteen
-preset output voltages; MODE/S-CONF selects the feedback configuration, the
-switching-frequency mode, output discharge, and the modulation mode together.
+Source: \texttt{tps629203.pdf}, Texas Instruments SLVSGE2, 2022-03. The device
+is a synchronous buck converter with internal compensation. DCS-Control changes
+between pulse-width modulation and power-save operation. The device needs no
+external bootstrap capacitor. A resistor at FB/VSET selects an external divider
+or one of 18 preset output voltages. A resistor at MODE/S-CONF selects feedback,
+frequency, output-discharge, and modulation options.
 
 {\footnotesize
 \begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.6cm}|c|}
@@ -139,43 +135,35 @@ ESD rating, CDM & & & \num{500} & \si{\volt} & $\pm$, either polarity & 4 \\
 \end{longtable}
 }
 
-\paragraph{The output-voltage tolerance depends on which feedback configuration
-is selected.} With the internal divider the output itself is specified to
-$\pm1\,\%$ over the full junction-temperature range. With an external divider
-only the feedback pin is specified, and the divider's own ratio tolerance adds to
-it at the output. \Cref{sec:5v-vset} takes the internal divider for that reason.
+\paragraph{Output-voltage tolerance.} The internal divider gives a
+$\pm1\,\%$ output tolerance across the junction-temperature range. With an
+external divider, the feedback-reference tolerance and divider-ratio tolerance
+both affect the output. Therefore, \cref{sec:5v-vset} uses the internal divider.
 
-\paragraph{Both configuration resistors are read once, at start-up.} The device
-interprets MODE/S-CONF after its internal trim readout and before it begins
-switching, and interprets VSET immediately after. Neither can be changed while
-the converter runs, and selecting a configuration by resistor rather than by
-logic level disables dynamic mode changes entirely. Both resistors must be E96
-1\,\% parts with a temperature coefficient at or better than
-$\pm200$~ppm/\si{\celsius}, since the device distinguishes sixteen and eighteen
-values respectively across the same decade span.
+\paragraph{Configuration sampling.} The device reads MODE/S-CONF and VSET once
+during start-up. It does not read them during operation. Resistor configuration
+also disables dynamic mode changes. Both resistors must be E96 $1\,\%$ parts.
+Their temperature coefficient must be no more than
+$\pm200$~ppm/\si{\celsius}.
 
-\paragraph{Efficiency enhancement makes the switching frequency a function of the
-conversion ratio.} The device scales the switching frequency so the inductor
-ripple amplitude stays roughly constant across the input range, which recovers
-the efficiency a fixed-frequency converter loses at small duty cycles. For
-design purposes the frequency is therefore an output of the operating point, and
-\cref{sec:5v-op} evaluates it across the input window.
+\paragraph{Efficiency-enhancement frequency.} The device changes switching
+frequency with conversion ratio. This action keeps inductor ripple approximately
+constant. Therefore, \cref{sec:5v-op} calculates frequency across the input
+range.
 
-\paragraph{A stability requirement bounds ripple current from above.} The
-datasheet cautions that inductor ripple must not exceed
-\SI{1.6}{\ampere}, above which the low-side negative current limit can operate
-continuously at no load. This bounds how small an inductance may be chosen at a
-given input voltage, independently of the usual ripple-fraction reasoning.
+\paragraph{Ripple-current limit.} Inductor ripple must not exceed
+\SI{1.6}{\ampere}. Above this value, the low-side negative current limit can
+operate continuously at no load. This value sets the minimum inductance for a
+given input voltage.
 
 \subsection{TPS63070 buck-boost converter}
 \label{sec:tps63070}
 
-Source: \texttt{tps63070.pdf} (Texas Instruments, SLVSC58B, Rev.\ B,
-Mar.\ 2019). A four-switch buck-boost with synchronous rectification and
-internal loop compensation, regulating from inputs above or below the output
-and transitioning between modes automatically. The adjustable variant is used,
-its output set by an external divider against an \SI{800}{\milli\volt}
-feedback reference.
+Source: \texttt{tps63070.pdf}, Texas Instruments SLVSC58B Rev. B, 2019-03. The
+device is a four-switch buck-boost converter. It has synchronous rectification
+and internal loop compensation. It changes automatically between buck and boost
+operation. This design uses the adjustable variant. An external divider sets
+the output from an \SI{800}{\milli\volt} reference.
 
 {\footnotesize
 \begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.6cm}|c|}
@@ -281,7 +269,7 @@ Right-half-plane zero & \multicolumn{4}{L{5.0cm}|}{\(f_{RHPZ} = \dfrac{(1-D)^2 V
 \hline
 PFM output voltage offset & & \num{1} & & \% & above nominal & 14 \\
 \hline
-PFM output ripple & & \num{50} & & \si{\milli\volt} & pk-pk, \SI{22}{\micro\farad} effective capacitance & 14 \\
+PFM output ripple & & \num{50} & & \si{\milli\volt} & peak-to-peak, \SI{22}{\micro\farad} effective capacitance & 14 \\
 \hline
 \(V_{IN}\), PS/SYNC, EN, VSEL absolute maximum & \num{-0.3} & & \num{20} & \si{\volt} & & 4 \\
 \hline
@@ -298,35 +286,28 @@ ESD rating, CDM & & & \num{500} & \si{\volt} & $\pm$, either polarity & 4 \\
 \end{longtable}
 }
 
-\paragraph{The input range is split, and the start-up row is the binding
-one.} The part is internally supplied from whichever of its input and output
-terminals is higher, and that supply needs \SI{3.0}{\volt} to bring the device
-up. Once running and holding an output at or above \SI{3.0}{\volt}, it
-sustains operation down to \SI{2.0}{\volt} of input. Any source that must
-cold-start the converter is therefore held to the \SI{3.0}{\volt} figure,
-which \cref{sec:3v3-diodeor} carries as a requirement on the input path.
+\paragraph{Input range.} The device takes its internal supply from the higher
+of VIN and VOUT. It needs \SI{3.0}{\volt} to start. After start-up, it operates
+to \SI{2.0}{\volt} input when VOUT is at least \SI{3.0}{\volt}. Therefore, an
+input source must supply at least \SI{3.0}{\volt} at start-up.
+\Cref{sec:3v3-diodeor} applies this requirement.
 
-\paragraph{The \SI{2}{\ampere} output-current figure is conditioned.} It
-applies only when either terminal is at or above \SI{4.5}{\volt} \emph{and}
-the converter is bucking. Outside those conditions the guaranteed load current
-is lower, and the datasheet gives it only in application curves.
+\paragraph{Output-current condition.} The \SI{2}{\ampere} value applies only in
+buck operation when VIN or VOUT is at least \SI{4.5}{\volt}. The datasheet does
+not give a guaranteed value outside these conditions. It gives only application
+curves.
 
-\paragraph{Power Save Mode trades accuracy and ripple for light-load
-efficiency.} Below roughly \SI{650}{\milli\ampere} of inductor current the
-converter skips cycles, regulating against a comparator rather than the PWM
-loop. The output then sits about \SI{1}{\percent} above nominal, which
-reserves headroom for the drop at a load step, and the feedback tolerance
-widens from $\pm1\,\%$ to $+3/-1\,\%$. The mode is selected by the PS/SYNC pin
-and can be disabled by tying that pin low.
+\paragraph{Power Save Mode.} Below approximately
+\SI{650}{\milli\ampere} of inductor current, the converter skips cycles. The
+output is then approximately \SI{1}{\percent} above nominal. Feedback tolerance
+changes from $\pm1\,\%$ to $+3/-1\,\%$. PS/SYNC selects this mode. A low level
+at PS/SYNC disables it.
 
-\paragraph{On the adjustable variant the regulation tolerance is specified at
-the feedback pin.} The datasheet gives output-referred accuracy only for the
-fixed-voltage TPS630701. For the adjustable part the specified quantity is
-$V_{FB}$, so the external divider's ratio tolerance and the feedback pin's
-\SI{100}{\nano\ampere} leakage add to it at the output.
-\Cref{sec:3v3-fb,sec:3v3-cout} carry both terms.
+\paragraph{Adjustable-variant tolerance.} For the adjustable part, the
+datasheet specifies $V_{FB}$ tolerance. Divider-ratio tolerance and
+\SI{100}{\nano\ampere} feedback leakage also affect the output.
+\Cref{sec:3v3-fb,sec:3v3-cout} include both effects.
 
-\paragraph{Package.} The part is offered only in a 13-pin VQFN on a
-$2.5\times3$~\si{\milli\meter} body. This is one of the cases where a
-design-driving part exists in a single package, so the footprint enters the
-design here.
+\paragraph{Package.} The part is available only in a 13-pin VQFN with a
+$2.5\times3$~\si{\milli\meter} body. Therefore, this package is a design
+requirement.

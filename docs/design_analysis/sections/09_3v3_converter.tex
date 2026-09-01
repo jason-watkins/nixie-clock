@@ -1,10 +1,9 @@
 \section{3.3~V converter derivation}\label{sec:3v3-converter}
 
-This section derives the required characteristics of the 3.3~V rail and
-specifies component values that satisfy them, built around the TPS63070
-(\cref{sec:tps63070}). \Cref{sec:hv-converter,sec:esp32-mcu} already designate
-\des{R}{HVPG} and the MCU-side components; the remaining designators are
-assigned as follows:
+The 3.3~V supply uses a TPS63070 converter (\cref{sec:tps63070}). This section
+specifies its circuit requirements and external components.
+\Cref{sec:hv-converter,sec:esp32-mcu} define \des{R}{HVPG} and the MCU
+components. \Cref{tab:3v3-designators} defines the remaining designators.
 
 \begin{table}[htbp]
 \centering
@@ -50,24 +49,19 @@ assigned as follows:
 \caption{3.3~V converter: reference schematic}\label{fig:3v3}
 \end{figure}
 
-The rail supplies the ESP32 module, \des{R}{HVPG} (the flyback's power-good
-pull-up, \cref{sec:hv-house-pgood}), and \des{R}{3V3PG}, which terminates this
-converter's own power-good output and doubles as the MCU's reset pull-up
-(\cref{sec:esp32-reset}). Two features set it apart from the 5~V rail of
-\cref{sec:5v-converter}: a large, transient-heavy load dominated by Wi-Fi
-transmit bursts, and an input that is the OR of $V_{\mathrm{BUS}}$ with an
-externally supplied header voltage of either \SI{3.3}{\volt} or \SI{5}{\volt}
-nominal. That input can sit below the output, so the topology is buck-boost; a
-\SI{3.3}{\volt} adapter would otherwise leave the rail under the ESP32's
-\SI{3.0}{\volt} minimum.
+The supply powers the ESP32 module and two power-good pull-ups.
+\des{R}{3V3PG} also pulls up the MCU reset input (\cref{sec:esp32-reset}). Wi-Fi
+transmit bursts cause the main load transients. The input is the OR of
+$V_{\mathrm{BUS}}$ and the serial-header supply. The header can supply nominal
+\SI{3.3}{\volt} or \SI{5}{\volt}. Because the input can be below the output,
+the supply uses a buck-boost converter.
 
 \subsection{Load budget}\label{sec:3v3-load}
 
-The dominant load is the MCU module. From \cref{sec:esp32}: the worst published
-sustained condition is Wi-Fi transmit at \SI{355}{\milli\ampere} (802.11b,
-\SI{20.5}{dBm}, rated at 100\,\% duty cycle), and Espressif's own
-regulator-sizing requirement is an external supply capable of
-$\geq\SI{0.5}{\ampere}$. Typical operation draws far less.
+The MCU module is the main load. Its maximum specified sustained current is
+\SI{355}{\milli\ampere} during Wi-Fi transmission. Espressif requires an
+external supply capacity of at least \SI{0.5}{\ampere}
+(\cref{sec:esp32}).
 
 \begin{itemize}
 \item \emph{BCD drive lines.} Sixteen GPIOs drive the four K155ID1s' BCD inputs. A TTL
@@ -86,27 +80,30 @@ converter's, \cref{sec:3v3-house}) each contribute at most
 \item \emph{Serial buffers.} The two logic buffers of \cref{sec:esp32-uart} draw
 \SI{4}{\micro\ampere} each at most, plus their idle-state pull-ups at
 \SI{330}{\micro\ampere} each while a line is held low.
+\item \emph{Port-controller interfaces.} The three \SI{10}{\kilo\ohm} HPI
+pull-ups draw at most \SI{0.99}{\milli\ampere}. The USB-switch
+\SI{10}{\kilo\ohm} pull-up draws \SI{0.33}{\milli\ampere} when the MCU holds
+the switch enabled.
 \end{itemize}
 
 The design totals are therefore
 \begin{align*}
-  I_{\mathrm{load,max}} &= 355 + 1.12 + 0.07 + 0.7
-    \approx \SI{357}{\milli\ampere} \approx \SI{0.36}{\ampere},\\
-  P_{\mathrm{out,max}} &= 3.3 \times 0.357 = \SI{1.18}{\watt}.
+  I_{\mathrm{load,max}} &= 355 + 1.12 + 0.07 + 0.70 + 0.99 + 0.33
+    \approx \SI{358}{\milli\ampere} \approx \SI{0.36}{\ampere},\\
+  P_{\mathrm{out,max}} &= 3.3 \times 0.358 = \SI{1.18}{\watt}.
 \end{align*}
 
-Housekeeping contributes under \SI{2}{\milli\ampere} of that, negligible against
-the MCU, so Espressif's $\geq\SI{0.5}{\ampere}$ figure is adopted as the design
-load without modification.
+Housekeeping current is less than \SI{3.3}{\milli\ampere}. Therefore, the design
+uses the Espressif \SI{0.5}{\ampere} supply-capacity requirement.
 
 \subsection{Operating point}\label{sec:3v3-input}
 
-The converter's input is the OR node of \cref{sec:3v3-diodeor}, which spans
-disjoint bands depending on which source is present:
+The converter input is the OR node in \cref{sec:3v3-diodeor}. Its voltage
+depends on the available source:
 \begin{description}
   \item[Bus-powered, high-voltage contract] \SI{9}{\volt} or \SI{12}{\volt},
-    $V_{\mathrm{BUS}}$ \SIrange{8.5}{13}{\volt} through \des{Q}{3V3BUS}, giving
-    \SIrange{8.48}{13.0}{\volt} at the node.
+    $V_{\mathrm{BUS}}$ \SIrange{8.55}{12.6}{\volt} through \des{Q}{3V3BUS}, giving
+    \SIrange{8.53}{12.6}{\volt} at the node.
   \item[Bus-powered, \SI{5}{\volt} result] either operating class of
     \cref{sec:pd-classes}, $V_{\mathrm{BUS}}$ \SIrange{4.75}{5.5}{\volt}, giving
     \SIrange{4.71}{5.47}{\volt} at the node.
@@ -114,47 +111,40 @@ disjoint bands depending on which source is present:
     through \des{Q}{3V3HDR}, giving \SI{3.15}{\volt} at worst (\cref{sec:3v3-diodeor} derives
     both figures).
 \end{description}
-All three bands lie inside the part's \SIrange{2.0}{16}{\volt} running range,
-and the node's \SI{13.0}{\volt} maximum leaves $1.54\times$ margin to the
-\SI{20}{\volt} absolute maximum on VIN. Both branches of
-\cref{sec:3v3-diodeor} are series switches, so the bus-powered bands track the
-bus rail to within \SI{25}{\milli\volt}. The header-powered band must
-additionally clear the \SI{3.0}{\volt} start-up requirement, which that section
-treats.
+All bands are inside the \SIrange{2.0}{16}{\volt} operating range. The
+\SI{12.6}{\volt} maximum has a factor of 1.59 margin below the
+\SI{20}{\volt} absolute maximum. The bus-powered input tracks
+$V_{\mathrm{BUS}}$ within \SI{25}{\milli\volt}. The header-powered input must
+also exceed the \SI{3.0}{\volt} start-up requirement.
 
 Duty cycle at the extremes of each band:
 \begin{align*}
   \text{buck: } D &= \frac{V_{OUT}}{V_{IN}}
-    &&\SI{13.0}{\volt}: 0.254; \quad \SI{8.48}{\volt}: 0.389; \quad
+    &&\SI{12.6}{\volt}: 0.262; \quad \SI{8.53}{\volt}: 0.387; \quad
       \SI{4.71}{\volt}: 0.701, \\
   \text{boost: } D &= \frac{V_{OUT}-V_{IN}}{V_{OUT}}
     &&\SI{3.15}{\volt}: 0.045.
 \end{align*}
 
-\paragraph{Minimum duty cycle in buck mode.} The part specifies a
-\SI{30}{\percent} minimum duty in buck mode, relaxed to \SI{20}{\percent} when
-the effective output capacitance is at least \SI{40}{\micro\farad} and the
-effective inductance falls between \SIrange{0.7}{1.8}{\micro\henry}
-(\cref{sec:tps63070}). At the maximum bus input the duty is
-\SI{25.4}{\percent}, below the general figure and above the relaxed one, so the
-conditions attached to the relaxed figure become requirements on \des{L}{3V3}
-and on the output capacitance. This is the binding constraint at the top of the
-bus range.
+\paragraph{Minimum buck duty cycle.} The general minimum duty cycle is
+\SI{30}{\percent}. It decreases to \SI{20}{\percent} with at least
+\SI{40}{\micro\farad} effective output capacitance and
+\SIrange{0.7}{1.8}{\micro\henry} effective inductance. At maximum input, the
+duty cycle is \SI{26.2}{\percent}. Therefore, the design must meet the
+capacitance and inductance conditions for the lower limit.
 
 \subsection{Inductor}\label{sec:3v3-inductor}
 
-The recommended effective inductance is \SIrange{0.7}{2.8}{\micro\henry} with a
-nominal of \SI{1.5}{\micro\henry} (\cref{sec:tps63070}), and the minimum-duty
-relaxation of \cref{sec:3v3-input} narrows the effective value to
-\SIrange{0.7}{1.8}{\micro\henry}. Against the datasheet's anticipated effective
-tolerance of $+20/-30\,\%$, a \SI{1.5}{\micro\henry} nominal part spans
-\SIrange{1.05}{1.8}{\micro\henry} effective, meeting the narrowed range with no
-margin at its upper end. \SI{1.5}{\micro\henry} nominal is adopted.
+The general effective-inductance range is
+\SIrange{0.7}{2.8}{\micro\henry}. The duty-cycle condition narrows it to
+\SIrange{0.7}{1.8}{\micro\henry}. With the specified $+20/-30\,\%$ effective
+tolerance, a nominal \SI{1.5}{\micro\henry} part spans
+\SIrange{1.05}{1.8}{\micro\henry}. Therefore,
+$\des{L}{3V3} = \SI{1.5}{\micro\henry}$.
 
 \paragraph{Peak current.} Boost and buck operation peak under different
-conditions, and both are checked. In boost mode the datasheet's peak-current
-expression applies, evaluated at the minimum input that mode sees,
-\SI{3.15}{\volt}, and at the full \SI{0.5}{\ampere} capability point:
+conditions. In boost mode, use the datasheet peak-current expression. The
+calculation uses a \SI{3.15}{\volt} input and a \SI{0.5}{\ampere} output:
 \begin{align*}
   I_{PEAK} &= \frac{I_{OUT}}{\eta(1-D)} + \frac{V_{IN} D}{2 f L}
     = \frac{0.5}{0.9\times0.955} + \frac{3.15\times0.045}
@@ -166,32 +156,27 @@ input and at the tolerance extremes that maximize ripple (effective inductance
 \SI{1.05}{\micro\henry}, oscillator at its \SI{2.1}{\mega\hertz} minimum):
 \begin{align*}
   \Delta I_L &= \frac{V_{OUT}(V_{IN}-V_{OUT})}{V_{IN} L f}
-    = \frac{3.3\,(13.0-3.3)}{13.0\times\SI{1.05}{\micro\henry}\times\SI{2.1}{\mega\hertz}}
-    = \SI{1.12}{\ampere},
+    = \frac{3.3\,(12.6-3.3)}{12.6\times\SI{1.05}{\micro\henry}\times\SI{2.1}{\mega\hertz}}
+    = \SI{1.10}{\ampere},
   &
-  I_{PEAK} &= 0.5 + \frac{1.12}{2} = \SI{1.06}{\ampere}.
+  I_{PEAK} &= 0.5 + \frac{1.10}{2} = \SI{1.05}{\ampere}.
 \end{align*}
-The buck corner is the larger of the two. Applying the datasheet's recommended
-\SI{20}{\percent} saturation margin gives $I_{\mathrm{sat}} \geq
-\SI{1.27}{\ampere}$ for normal operation. Under fault, the converter's own
-average input current limit caps the draw at \SI{4.15}{\ampere}, so a part
-rated at or above that figure cannot be saturated by anything the converter can
-produce. Specification: $I_{\mathrm{sat}} \geq \SI{4.2}{\ampere}$, DCR
-$\leq\SI{50}{\milli\ohm}$.
+The buck condition gives the larger current. The recommended $20\,\%$ margin
+requires $I_{\mathrm{sat}} \geq \SI{1.26}{\ampere}$ in normal operation. The
+maximum converter current limit is \SI{4.15}{\ampere}. Therefore, specify
+$I_{\mathrm{sat}} \geq \SI{4.2}{\ampere}$ and DCR no more than
+\SI{50}{\milli\ohm}.
 
-\paragraph{Right-half-plane zero.} Boost operation introduces a right-half-plane
-zero, which the datasheet asks to keep above \SI{400}{\kilo\hertz} so it does not
-degrade phase margin at crossover. It falls lowest at the minimum input and
-maximum load:
+\paragraph{Right-half-plane zero.} The datasheet requires the boost
+right-half-plane zero to exceed \SI{400}{\kilo\hertz}. Minimum input and maximum
+load give the lowest frequency:
 \begin{align*}
   f_{RHPZ} &= \frac{(1-D)^2 V_{OUT}}{2\pi I_{OUT} L}
     = \frac{0.955^2 \times 3.3}
       {2\pi \times 0.5 \times \SI{1.5}{\micro\henry}} = \SI{638}{\kilo\hertz},
 \end{align*}
-clearing the recommendation by $1.6\times$ at the worst corner and by
-$2.2\times$ at the \SI{0.357}{\ampere} sustained load. The margin comes from the
-small boost duty cycle: the header-powered case lifts \SI{3.15}{\volt} to
-\SI{3.3}{\volt}.
+The result has a factor of 1.6 margin. At the
+\SI{0.358}{\ampere} sustained load, the margin factor is 2.2.
 
 \subsection{Output voltage programming}\label{sec:3v3-fb}
 
@@ -201,38 +186,29 @@ the divider ratio sets the output:
   \des{R}{3V3D1} &= \des{R}{3V3D2}\left(\frac{V_{OUT}}{\SI{0.8}{\volt}}-1\right)
     = \des{R}{3V3D2}\times 3.125.
 \end{align*}
-The divider impedance is bounded from both directions. The feedback pin draws up
-to \SI{100}{\nano\ampere} of leakage (\cref{sec:tps63070}); that current flows in
-\des{R}{3V3D1} and offsets the output by $I_{lkg}\des{R}{3V3D1}$ irrespective of
-the ratio, which favors small resistors. Against that, the divider's own current
-is quiescent draw that never reaches the load. The datasheet bounds the lower leg
-at \SI{400}{\kilo\ohm} to keep at least \SI{2}{\micro\ampere} flowing, and
-recommends lower values than that for accuracy.
+Feedback leakage and quiescent current set the divider impedance. The maximum
+feedback leakage is \SI{100}{\nano\ampere}. It causes an output error of
+$I_{lkg}\des{R}{3V3D1}$. Smaller resistors decrease this error but increase
+quiescent current. The lower resistor must not exceed \SI{400}{\kilo\ohm}.
 
-Taking $\des{R}{3V3D2} = \SI{39}{\kilo\ohm}$ puts \SI{20.5}{\micro\ampere} through the
-divider, an order of magnitude above the floor and small against the
-converter's own \SIrange{54}{103}{\micro\ampere} quiescent current, while
-holding the leakage offset to
-$\SI{100}{\nano\ampere}\times \des{R}{3V3D1} = \SI{12}{\milli\volt}$. The exact upper
-leg is then \SI{121.9}{\kilo\ohm}; the two standard values bracketing it give
+$\des{R}{3V3D2} = \SI{39}{\kilo\ohm}$ gives a
+\SI{20.5}{\micro\ampere} divider current. The maximum leakage error is
+\SI{12}{\milli\volt}. The exact upper resistance is
+\SI{121.9}{\kilo\ohm}. The two adjacent standard values give
 \begin{align*}
   \des{R}{3V3D1} = \SI{120}{\kilo\ohm} &\rightarrow V_{OUT} = \SI{3.262}{\volt}, &
   \des{R}{3V3D1} = \SI{130}{\kilo\ohm} &\rightarrow V_{OUT} = \SI{3.467}{\volt}.
 \end{align*}
-Only the lower value is viable: at \SI{3.467}{\volt} the Power Save Mode offset
-alone carries the rail to \SI{3.57}{\volt}, against an MCU recommended maximum
-of \SI{3.6}{\volt} with no absolute-maximum headroom above it
-(\cref{sec:esp32}). Programming below \SI{3.3}{\volt} is the favorable direction
-regardless, that mode's tolerance being asymmetric at $+3/-1\,\%$
-(\cref{sec:tps63070}). Specification:
+Use the lower value. With \SI{130}{\kilo\ohm}, the Power Save Mode offset can
+raise the output to \SI{3.57}{\volt}. This value is too close to the
+\SI{3.6}{\volt} MCU absolute maximum. Therefore, specify
 $\des{R}{3V3D1} = \SI{120}{\kilo\ohm}$, $\des{R}{3V3D2} = \SI{39}{\kilo\ohm}$, both 1\,\% and from
 one resistor series so their temperature coefficients track and the ratio does
 not drift; $V_{OUT} = \SI{3.262}{\volt}$ programmed.
 
 \subsection{Output capacitance, transient response, and rail accuracy}\label{sec:3v3-cout}
 
-Three requirements bound the output capacitance, all stated in effective terms
-because ceramic capacitance falls with DC bias:
+Three requirements set the effective output capacitance:
 \begin{itemize}[nosep]
   \item \emph{Filter ratio.} The adjustable variant requires effective
     capacitance in \si{\micro\farad} at least ten times the effective inductance
@@ -243,12 +219,10 @@ because ceramic capacitance falls with DC bias:
   \item \emph{Recommended range.} \SIrange{15}{470}{\micro\farad} total at the
     output pin, which bounds the specification from above.
 \end{itemize}
-\emph{Assumption:} the output ceramics retain $\geq70\,\%$ of nominal
-capacitance at \SI{3.3}{\volt} bias. The nominal values do not establish this;
-it is a separate selection requirement on the parts. Capacitance density and
-bias derating trade against each other, and a single part carrying the whole
-bulk value can fail the retention figure where two smaller ones meet it. Meeting
-\SI{40}{\micro\farad} effective then requires \SI{57}{\micro\farad} nominal.
+The analysis assumes that output capacitors retain at least $70\,\%$ of nominal
+capacitance at \SI{3.3}{\volt} (inferred). Verify this value for the selected
+parts. At this retention, \SI{57}{\micro\farad} nominal gives
+\SI{40}{\micro\farad} effective.
 
 The datasheet's own filter table pairs a \SI{1.5}{\micro\henry} inductor with
 \SI{47}{\micro\farad}, \SI{68}{\micro\farad}, or \SI{100}{\micro\farad} of
@@ -263,20 +237,17 @@ clearing the binding requirement by $1.4\times$. Adding the module-local
 \SI{101}{\micro\farad} nominal, still inside the \SI{470}{\micro\farad}
 ceiling.
 
-\paragraph{Load-step droop (Wi-Fi transmit burst onset).} The bounding step is
-idle-to-transmit, $\Delta I = \SI{0.355}{\ampere}$. The inductor's slew limit
-does not bind here as it did on the 5~V rail at \SI{1.1}{\mega\hertz}
-(\cref{sec:5v-converter}): at the minimum bus-powered input,
+\paragraph{Wi-Fi load-step droop.} The maximum load step is
+$\Delta I = \SI{0.355}{\ampere}$. At minimum bus-powered input, the inductor
+slew rate is
 \begin{align*}
   \frac{dI_L}{dt} &= \frac{V_N - V_{OUT}}{L}
-    = \frac{8.48-3.3}{\SI{1.5}{\micro\henry}} = \SI{3.45}{\ampere\per\micro\second},
+    = \frac{8.53-3.3}{\SI{1.5}{\micro\henry}} = \SI{3.49}{\ampere\per\micro\second},
 \end{align*}
-so the current reaches the new load in \SI{103}{\nano\second}, costing
-\SI{18}{\nano\coulomb} and under \SI{1}{\milli\volt}. The dominant term is
-control-loop response, for which the datasheet publishes no bandwidth.
-\emph{Assumption:} the loop commands full inductor current within
-\SI{5}{\micro\second}, carried over from \cref{sec:5v-converter}'s treatment and
-conservative for a converter switching more than twice as fast. Then
+The inductor reaches the new current in \SI{102}{\nano\second}. This interval
+causes less than \SI{1}{\milli\volt} droop. The datasheet does not specify loop
+bandwidth. The analysis assumes a \SI{5}{\micro\second} response time
+(inferred). Then
 \begin{align*}
   \Delta V_{\mathrm{droop}} &\approx
     \frac{\Delta I \cdot t_{\mathrm{resp}}}{C_{\mathrm{out}}} + \Delta I \cdot \mathrm{ESR}
@@ -292,11 +263,11 @@ the nominal value (\cref{sec:tps63070}).
 the part specifies its regulation tolerance at the feedback pin
 (\cref{sec:tps63070}), so the divider's ratio tolerance and the feedback leakage
 of \cref{sec:3v3-fb} add to it at the output. The rail spends
-most of its life in Power Save Mode, whose $+3/-1\,\%$ feedback tolerance is the
-wider of the two modes and therefore the one to check. The $\pm1\,\%$ divider
+most of its life in Power Save Mode. This mode has the wider $+3/-1\,\%$
+feedback tolerance. The $\pm1\,\%$ divider
 resistors carry a $\pm1.5\,\%$ ratio error to the output. Leakage contributes
 $\pm\SI{12}{\milli\volt}$. Output ripple in Power Save Mode is
-\SI{50}{\milli\volt} pk-pk at \SI{22}{\micro\farad} effective
+\SI{50}{\milli\volt} peak-to-peak at \SI{22}{\micro\farad} effective
 (\cref{sec:tps63070}), scaling inversely with capacitance to
 $\approx\SI{20}{\milli\volt}$ at the specified \SI{55}{\micro\farad}. Stacking
 these with the transient droop above:
@@ -307,10 +278,9 @@ these with the transient droop above:
     - 0.012 - 0.020 - 0.033 = \SI{3.12}{\volt},
 \end{align*}
 against the MCU's \SIrange{3.0}{3.6}{\volt} window (\cref{sec:esp32}):
-\SI{116}{\milli\volt} of margin below and \SI{157}{\milli\volt} above. The upper
-margin is the one to watch, the MCU's absolute maximum being equal to its
-recommended maximum. It is met with the full Power Save Mode offset, worst-case
-divider ratio, leakage in the adverse direction, and ripple all stacked.
+\SI{116}{\milli\volt} of margin below and \SI{157}{\milli\volt} above. The MCU
+absolute maximum equals its recommended maximum. The upper limit includes the
+Power Save Mode offset, divider ratio error, leakage, and ripple.
 
 \subsection{Input capacitance}\label{sec:3v3-cin}
 
@@ -318,13 +288,13 @@ The part requires at least \SI{4.7}{\micro\farad} effective at its input pin,
 with \SI{10}{\micro\farad} nominal recommended (\cref{sec:tps63070}), and the
 input capacitor must be large enough that supply dips shorter than the
 undervoltage-lockout circuit's response time do not reach the pin. At the
-\SI{13.0}{\volt} node maximum a \SI{25}{\volt}-rated ceramic loses roughly half
+\SI{12.6}{\volt} node maximum a \SI{25}{\volt}-rated ceramic loses roughly half
 its nominal capacitance to bias, so meeting \SI{4.7}{\micro\farad} effective at
 that corner requires about \SI{10}{\micro\farad} nominal. Specification: \des{C}{3V3I1},
 \des{C}{3V3I2} $= 2\times\SI{10}{\micro\farad}$, \SI{25}{\volt} X7R or X5R, giving
 \SI{20}{\micro\farad} nominal and roughly \SI{10}{\micro\farad} effective at the
 worst bias, \des{C}{3V3I2} being the pin-local part and \des{C}{3V3I1} the bulk. The
-\SI{13.0}{\volt} node maximum sets a floor of \SI{16.3}{\volt} on the rating
+\SI{12.6}{\volt} node maximum sets a floor of \SI{15.8}{\volt} on the rating
 under the \SI{20}{\percent} derating used throughout; \SI{25}{\volt} is taken
 instead so the bias derating assumed above is achievable.
 
@@ -339,91 +309,68 @@ buck mode, and the bus-powered case is always the latter. Average input current
 at the minimum bus-powered node voltage is
 \begin{align*}
   I_{IN} &= \frac{P_{\mathrm{out,max}}}{\eta\,V_N^{\min}}
-    = \frac{1.18}{0.85 \times 8.48} = \SI{0.164}{\ampere}
-  \quad (\SI{0.229}{\ampere}\ \text{at the \SI{0.5}{\ampere} capability point}),
+    = \frac{1.18}{0.85 \times 8.53} = \SI{0.163}{\ampere}
+  \quad (\SI{0.228}{\ampere}\ \text{at the \SI{0.5}{\ampere} capability point}),
 \end{align*}
 drawn from $V_{\mathrm{BUS}}$ through \des{Q}{3V3BUS}, the largest of the
-logic-rail loads on the bus budget. \des{Q}{3V3BUS} adds $I_{IN}^2 R_{DSon}
-\approx \SI{5.6}{\milli\watt}$ of series loss at that point;
+logic-rail loads on the bus budget. \des{Q}{3V3BUS} dissipates
+\SI{2.8}{\milli\watt} at the sustained-load point and \SI{5.6}{\milli\watt} at
+the \SI{0.5}{\ampere} output capability point;
 \cref{sec:3v3-diodeor} takes up the choice of switch over diode.
 
 \subsection{Input path and header-powered operation}\label{sec:3v3-diodeor}
 
-The converter's input node is fed from two sources: $V_{\mathrm{BUS}}$ through
-\des{Q}{3V3BUS}, and the serial header's supply pin (\cref{sec:esp32-uart}) through \des{Q}{3V3HDR}.
-Each source must be isolated from the other. Without isolation on the header
-branch, a bus-powered board would present up to \SI{13.0}{\volt} to the supply
-pin of an attached adapter, destroying it; without isolation on the bus branch,
-a header-powered board would drive the entire bus rail and its bulk capacitance.
-The node follows whichever source is higher, with the other branch blocking.
+Two sources supply the converter input. $V_{\mathrm{BUS}}$ supplies it through
+\des{Q}{3V3BUS}. The serial-header supply pin (\cref{sec:esp32-uart}) supplies
+it through \des{Q}{3V3HDR}. Each branch must block reverse current. Otherwise,
+bus power can apply \SI{12.6}{\volt} to the adapter supply pin. Header power
+can also energize the bus rail and its bulk capacitance. The higher source
+supplies the node.
 
-Both branches use MOSFETs, for different reasons. The header branch cannot
-tolerate a diode drop at all, as derived below. The bus branch could tolerate
-one but not afford it: at the \SI{0.24}{\ampere} it carries on a high-voltage
-contract a Schottky dissipates \SI{92}{\milli\watt}, and on a \SI{5}{\volt}
-bus \SI{0.44}{\ampere} at \SI{0.35}{\volt} is \SI{154}{\milli\watt}
-together with \SI{29}{\milli\ampere} of port current spent on the drop instead
-of delivered to the load (\cref{sec:pd-classes} budgets that current against a
-\SI{500}{\milli\ampere} port). That is the largest avoidable loss in the
-low-voltage design, and it is what puts a transistor in the bus branch.
+Each branch uses a MOSFET. The header branch cannot accept a diode drop. A
+Schottky diode in the bus branch dissipates \SI{92}{\milli\watt} at
+\SI{0.24}{\ampere}. At \SI{0.44}{\ampere} and \SI{0.35}{\volt}, it dissipates
+\SI{154}{\milli\watt}. The drop also consumes \SI{29}{\milli\ampere} of the
+\SI{500}{\milli\ampere} port budget (\cref{sec:pd-classes}).
 
 \paragraph{Permissible drop in the header branch.} The converter needs
-\SI{3.0}{\volt} at its input to start
-(\cref{sec:tps63070}). \emph{Assumption:} a \SI{3.3}{\volt} adapter presents at
-least \SI{3.2}{\volt} at the header under the download-mode load. This is a
-requirement on external equipment, and \cref{sec:3v3-adapter} restates it as
-such. The budget between that figure and the converter's
-start-up minimum is \SI{200}{\milli\volt}, and the header branch's series
-element consumes part of it:
+\SI{3.0}{\volt} at its input to start (\cref{sec:tps63070}). The adapter must
+supply at least \SI{3.2}{\volt} at the header during download mode. This value
+provides a \SI{200}{\milli\volt} drop budget:
 \begin{align*}
   V_N^{\mathrm{hdr}} &= \SI{3.2}{\volt} - I_{IN}R_{DSon}, &
   I_{IN} &= \frac{V_{OUT}I_{OUT}}{\eta V_N}
     = \frac{3.3\times0.1}{0.9\times3.15} = \SI{0.12}{\ampere}
 \end{align*}
-at the bounding \SI{100}{\milli\ampere} download-mode load. Reserving
-\SI{150}{\milli\volt} of margin above the start-up threshold caps the drop at
-\SI{50}{\milli\volt}, so $R_{DSon} \leq \SI{0.42}{\ohm}$.
+for a \SI{100}{\milli\ampere} download-mode load. A
+\SI{150}{\milli\volt} start margin limits the branch drop to
+\SI{50}{\milli\volt}. Thus, $R_{DSon} \leq \SI{0.42}{\ohm}$.
 
-That requirement excludes a diode. A Schottky drops \SIrange{0.25}{0.35}{\volt}
-at this current, exceeding the entire \SI{200}{\milli\volt} budget on its own
-and leaving the node near \SI{2.9}{\volt}, so the converter would not start from
-a \SI{3.3}{\volt} adapter. \des{Q}{3V3HDR} is therefore a P-channel MOSFET,
-source on the converter's input node and drain on the header supply pin, so that
-its body diode conducts from header to node and blocks the reverse direction
-that would back-power an adapter.
+A Schottky diode drops \SIrange{0.25}{0.35}{\volt} at this current (inferred).
+This drop can reduce the node to \SI{2.9}{\volt} and prevent start-up.
+\des{Q}{3V3HDR} is a P-channel MOSFET. Its source connects to the converter
+input. Its drain connects to the header supply pin. Its body diode conducts
+from the header to the input and blocks current into the adapter.
 
-The \SI{0.42}{\ohm} figure is a target, not a hard limit; it reserves
-\SI{150}{\milli\volt} of the budget. Start-up fails only when the drop consumes
-all \SI{200}{\milli\volt} of it, at $\SI{0.2}{\volt}/\SI{0.12}{\ampere} =
-\SI{1.67}{\ohm}$. The distinction matters because the on-resistance has to be
-met at roughly \SI{3}{\volt} of gate drive, which is all this node affords;
-parts of this class are usually characterized at \SI{4.5}{\volt}.
+The \SI{0.42}{\ohm} target reserves \SI{150}{\milli\volt}. The start-up limit
+is $\SI{0.2}{\volt}/\SI{0.12}{\ampere}=\SI{1.67}{\ohm}$. The device must meet
+the resistance target at approximately \SI{3}{\volt} of gate drive.
 
-\paragraph{Cross-referenced gates.} Each switch must be off when its own source
-is the lower of the two and on when it is the higher. That is a comparison
-between the two sources, and referencing each gate to the \emph{other} branch's
-supply performs it with no control circuit: \des{Q}{3V3HDR}'s gate ties to
-$V_{\mathrm{BUS}}$ through \des{R}{3V3HDR} and \des{Q}{3V3BUS}'s gate ties to the
-header supply pin through \des{R}{3V3BUS}. Each transistor's source is the shared
-node, so each sees
+\paragraph{Cross-referenced gates.} Each MOSFET must conduct when its source is
+higher and block when its source is lower. Each gate references the opposite
+supply. \des{Q}{3V3HDR}'s gate connects to $V_{\mathrm{BUS}}$ through
+\des{R}{3V3HDR}. \des{Q}{3V3BUS}'s gate connects to the header supply through
+\des{R}{3V3BUS}. Each source connects to the shared node. Thus, each MOSFET has
 \begin{align*}
   V_{GS} &= V_{\mathrm{other}} - V_N, & V_N &\approx \max(V_{\mathrm{BUS}},
     V_{\mathrm{HDR}}),
 \end{align*}
-which is negative, and the transistor on, exactly when its own branch is the one
-carrying the node. The arrangement is symmetric; the two branches differ only in
-the part each one takes.
+The voltage is negative when that branch supplies the node.
 
-\Cref{tab:3v3-oring} evaluates the arrangement over the operating
-configurations. In every one but the last,
-a switch is enhanced by at least the difference between the two sources and the
-other sits at $V_{GS} \approx 0$, positive by the millivolts its partner drops.
-Positive is off on a P-channel, and $V_{GS} = 0$ is the condition at which
-off-state drain leakage is specified, so the blocking branch's leakage comes
-from a datasheet figure. The off-state margin is smaller than a diode-fed node
-would give, where the blocking gate would sit a forward drop above its source.
-Offsetting that, the threshold is at least \SI{0.65}{\volt} away in the same
-direction, and recedes further as either source rises.
+\Cref{tab:3v3-oring} gives the gate-source voltages. Except for the last row,
+one MOSFET has negative gate drive. The other has $V_{GS}\approx0$. The
+datasheet specifies drain leakage at $V_{GS}=0$. The minimum threshold is
+\SI{0.65}{\volt} from this condition.
 
 \begin{table}[htbp]
 \centering
@@ -434,8 +381,8 @@ direction, and recedes further as either source rises.
 \textbf{Configuration} & $V_{\mathrm{BUS}}$ & $V_{\mathrm{HDR}}$ & $V_N$ &
   $V_{GS}$ \des{Q}{3V3BUS} & $V_{GS}$ \des{Q}{3V3HDR} \\
 \hline
-Bus only, high-voltage contract & \SIrange{8.5}{13}{\volt} & \SI{0.14}{\volt} &
-  \SIrange{8.48}{13.0}{\volt} & \SIrange{-8.3}{-12.9}{\volt} &
+Bus only, high-voltage contract & \SIrange{8.55}{12.6}{\volt} & \SI{0.14}{\volt} &
+  \SIrange{8.53}{12.6}{\volt} & \SIrange{-8.4}{-12.5}{\volt} &
   $+\SI{0.02}{\volt}$ \\
 \hline
 Bus only, \SI{5}{\volt} bus & \SIrange{4.75}{5.5}{\volt} & \SI{0.14}{\volt} &
@@ -448,8 +395,8 @@ Header only, \SI{3.3}{\volt} & \SI{0.23}{\volt} & \SI{3.2}{\volt} &
 Header only, \SI{5}{\volt} & \SI{0.23}{\volt} & \SI{5.0}{\volt} &
   \SI{4.99}{\volt} & $+\SI{0.01}{\volt}$ & $-\SI{4.76}{\volt}$ \\
 \hline
-Both, high-voltage contract & \SIrange{8.5}{13}{\volt} & \SIrange{3.3}{5}{\volt} &
-  \SIrange{8.48}{13.0}{\volt} & \SIrange{-3.5}{-9.7}{\volt} &
+Both, high-voltage contract & \SIrange{8.55}{12.6}{\volt} & \SIrange{3.3}{5}{\volt} &
+  \SIrange{8.53}{12.6}{\volt} & \SIrange{-3.5}{-9.3}{\volt} &
   $+\SI{0.02}{\volt}$ \\
 \hline
 Both, \SI{5}{\volt} bus & \SIrange{4.75}{5.5}{\volt} & \SIrange{3.3}{5}{\volt} &
@@ -458,314 +405,208 @@ Both, \SI{5}{\volt} bus & \SIrange{4.75}{5.5}{\volt} & \SIrange{3.3}{5}{\volt} &
 \end{tabular}
 \end{table}
 
-\paragraph{Required separation between the sources.} The last row is the
-exception, and it follows from passive cross-referenced ORing generally rather
-than from the parts chosen. \des{Q}{3V3HDR} conducts
-only while $V_{\mathrm{BUS}} < V_N - |V_{GS(\mathrm{th})}|$, and when the header
-is the higher source $V_N$ is the header voltage itself, so the condition
-becomes a requirement that the bus rail sit a full threshold below the adapter.
-A \SI{5}{\volt} contract and a \SI{5}{\volt} adapter do not satisfy it, and
-neither does a \SI{5}{\volt} contract against a \SI{3.3}{\volt} adapter in the
-other direction, \des{Q}{3V3BUS} needing $V_N > V_{\mathrm{HDR}} +
-\SI{2.1}{\volt}$ at the worst-case threshold while the node offers
-\SIrange{4.71}{5.47}{\volt}. Both switches then sit in subthreshold and the node
-is fed through the body diode of whichever branch is higher, at $V_N \approx
-\max(V_{\mathrm{BUS}}, V_{\mathrm{HDR}}) - V_{SD}$. The converter regulates from
-there without difficulty, its running minimum being \SI{2.0}{\volt}; the rail
-itself is unaffected.
+\paragraph{Required separation between the sources.} Passive cross-referenced
+ORing requires source separation. \des{Q}{3V3HDR} conducts when
+$V_{\mathrm{BUS}}<V_N-|V_{GS(\mathrm{th})}|$. Thus, a higher header supply must
+exceed the bus supply by one threshold. In the opposite case,
+\des{Q}{3V3BUS} requires $V_N>V_{\mathrm{HDR}}+\SI{2.1}{\volt}$ at the maximum
+threshold. A \SI{5}{\volt} contract does not meet these conditions with a
+\SI{3.3}{\volt} or \SI{5}{\volt} adapter. Both MOSFETs then operate below
+threshold. The higher source supplies the node through a body diode:
+$V_N\approx\max(V_{\mathrm{BUS}},V_{\mathrm{HDR}})-V_{SD}$. The converter can
+regulate because its running minimum is \SI{2.0}{\volt}.
 
-The configuration instead puts the whole input current through a body diode, and
-which one depends on the adapter's setting. The two branches are not equally
-able to carry it:
+The complete input current flows through one body diode. The adapter setting
+selects the diode:
 \begin{description}
-  \item[\SI{3.3}{\volt} adapter.] The bus is the higher source and
-    \des{Q}{3V3BUS} conducts, through its channel if its threshold is at the
-    favorable end of the specified band and through its body diode if not. At
-    the unfavorable end, and at the diode's specified maximum drop, the node
-    sits at \SI{3.49}{\volt} and the part carries \SI{0.40}{\ampere} for
-    \SI{0.50}{\watt} against a \SI{1.08}{\watt} allowance, giving
-    $T_j = \SI{98}{\celsius}$ at a \SI{40}{\celsius} ambient. The configuration
-    is inefficient but within rating.
-  \item[\SI{5}{\volt} adapter.] The header is the higher source and the current
-    passes through \des{Q}{3V3HDR}'s body diode, on the branch sized only for
-    the \SI{0.12}{\ampere} download-mode load. At
-    the specified maximum $V_{SD}$ the node falls to \SI{3.80}{\volt} and the
-    part carries
+  \item[\SI{3.3}{\volt} adapter.] The bus is the higher source.
+    \des{Q}{3V3BUS} can conduct through its channel or body diode. At the
+    maximum threshold and diode drop, the node is \SI{3.49}{\volt}. The device
+    carries \SI{0.40}{\ampere} and dissipates \SI{0.50}{\watt}. This produces
+    $T_j=\SI{98}{\celsius}$ at a \SI{40}{\celsius} ambient. The allowance is
+    \SI{1.08}{\watt}.
+  \item[\SI{5}{\volt} adapter.] The header is the higher source. Current flows
+    through \des{Q}{3V3HDR}'s body diode. At the maximum $V_{SD}$, the node is
+    \SI{3.80}{\volt}. The device carries
     \begin{align*}
       I_{IN} &= \frac{1.39}{3.80} = \SI{0.366}{\ampere}, &
       P &= I_{IN}V_{SD} = \SI{0.44}{\watt}.
     \end{align*}
 \end{description}
 
-The second case is what sizes \des{Q}{3V3HDR}. Its source-drain diode must carry
-\SI{0.37}{\ampere} continuously and the package must dissipate
-\SI{0.44}{\watt} at a \SI{40}{\celsius} ambient, which against a
-\SI{125}{\celsius} junction limit bounds the thermal resistance at
-$(125-40)/0.44 = \SI{193}{\kelvin\per\watt}$. A SOT-23 clears that; an SC-70
-does not. The degraded configuration therefore sizes this transistor, and
-\cref{sec:3v3-parts} carries the requirement in that form. Every other
-configuration in \cref{tab:3v3-oring} clears by more than \SI{3}{\volt} of
-source separation and is unaffected. \Cref{sec:3v3-adapter} states the
-combination as a restriction on use in addition to the rating.
+The \SI{5}{\volt} adapter case sets the \des{Q}{3V3HDR} package requirement.
+Its body diode must carry \SI{0.37}{\ampere} continuously. The package must
+dissipate \SI{0.44}{\watt} at a \SI{40}{\celsius} ambient. For a
+\SI{125}{\celsius} junction limit, $R_{\mathrm{th}(j-a)}$ must not exceed
+\SI{193}{\kelvin\per\watt}. A SOT-23 package meets this requirement. An SC-70
+package does not. All other table configurations have more than
+\SI{3}{\volt} of source separation.
 
-\paragraph{Rating consequences of the cross reference.} A gate referenced to the
-opposite branch stands off that branch's full voltage when its own branch is the
-live one, so the two requirements are asymmetric. \des{Q}{3V3BUS}'s gate rests
-near ground while the node runs to \SI{13.0}{\volt}, so it needs
-$|V_{GS}| \geq \SI{16.3}{\volt}$ under the \SI{20}{\percent} derating used
-throughout. That figure governs its selection: small P-channel parts cluster at
-$\pm\SI{12}{\volt}$ and $\pm\SI{20}{\volt}$ is uncommon among them, the thin
-gate oxide that lowers the threshold being the same oxide that limits the
-rating. \des{Q}{3V3HDR} faces only what an adapter can present,
-\SI{4.99}{\volt}, for $|V_{GS}| \geq \SI{6.2}{\volt}$, which nearly any part
-satisfies. Referencing either gate to ground would leave its transistor on while
-its own branch was the lower source, the failure the cross reference prevents.
+\paragraph{Gate-voltage ratings.} \des{Q}{3V3BUS}'s gate is near ground when
+the node is at \SI{12.6}{\volt}. With \SI{20}{\percent} derating, it requires
+$|V_{GS}|\geq\SI{15.8}{\volt}$. \des{Q}{3V3HDR} sees a maximum adapter voltage
+of \SI{4.99}{\volt}. It requires $|V_{GS}|\geq\SI{6.2}{\volt}$. A ground
+reference would keep a MOSFET on when its branch is the lower source.
 
-\des{R}{3V3HDR} and \des{R}{3V3BUS} $= \SI{100}{\kilo\ohm}$ are series gate
-resistors, not pull-ups. Each forms a low pass with its transistor's input
-capacitance, so a fast transient on the reference rail reaches the gate slowly
-while the node stays where its own input capacitance holds it. With
-\des{Q}{3V3BUS}'s \SI{563}{\pico\farad} input capacitance the time constant is
-\SI{56}{\micro\second} --- slow against a hot-plug event, but in the harmless
-direction, since it delays turn-\emph{off} of a branch whose body diode blocks
-the same direction the channel would. Gate leakage across either resistor
-offsets the gate by \SI{10}{\milli\volt} at \SI{100}{\nano\ampere}, negligible
-against volts of drive. No gate-to-source resistor is used: in parallel with the
-series resistor it would divide the node voltage onto the gate and leave the
-transistor only partly enhanced.
+\des{R}{3V3HDR} and \des{R}{3V3BUS} are \SI{100}{\kilo\ohm} series gate
+resistors. With \des{Q}{3V3BUS}'s \SI{563}{\pico\farad} input capacitance, the
+time constant is \SI{56}{\micro\second}. The delay affects turn-off during
+hot-plug events. The body diode continues to block reverse current. A
+\SI{100}{\nano\ampere} gate leakage current produces a
+\SI{10}{\milli\volt} offset. A gate-to-source resistor would form a divider
+and reduce gate drive.
 
-\paragraph{Discharge requirement on both reference rails.} Each reference node
-goes undriven whenever the other source is the one running, and each has a
-leakage path charging it from the live side, so neither rests at ground unaided.
-Both need a discharge path, and the bound on each follows from what a rise on
-that node would cause.
+\paragraph{Reference-rail discharge.} A reference node is undriven when the
+opposite source supplies the input. Leakage current can charge the node. Each
+reference node requires a continuous discharge path.
 
-On the bus rail the consequence is loss of gate drive. \des{Q}{3V3HDR} is
-enhanced by $V_{\mathrm{BUS}} - V_N$; holding that at or beyond the
-$-\SI{2.5}{\volt}$ at which its on-resistance is specified caps
-$V_{\mathrm{BUS}}$ at \SI{0.66}{\volt}. The charging current is
+On the bus rail, excess voltage reduces \des{Q}{3V3HDR} gate drive. The
+$-\SI{2.5}{\volt}$ resistance specification limits $V_{\mathrm{BUS}}$ to
+\SI{0.66}{\volt}. The charging current is
 \des{Q}{3V3BUS}'s off-state drain leakage, specified as
 $I_{DSS}\leq\SI{800}{\nano\ampere}$ at $V_{GS}=0$ and the full
 $-\SI{30}{\volt}$ of drain-source voltage (\ds{DMP3099L.pdf}{2}), against the
-\SI{3.16}{\volt} it actually stands off. Junction leakage roughly doubles per
-\SI{10}{\kelvin}, giving \SI{2.3}{\micro\ampere} at a \SI{40}{\celsius}
-ambient, so
+\SI{3.16}{\volt} operating stress. The junction leakage doubles for each
+\SI{10}{\kelvin} increase (inferred). This gives \SI{2.3}{\micro\ampere} at a
+\SI{40}{\celsius} ambient:
 \begin{align*}
   \des{R}{BUSBLEED} &\leq \frac{\SI{0.66}{\volt}}{\SI{2.3}{\micro\ampere}}
     = \SI{287}{\kilo\ohm}.
 \end{align*}
-Specification: \des{R}{BUSBLEED} $= \SI{100}{\kilo\ohm}$, holding the rail at
-\SI{0.23}{\volt} with a $2.9\times$ margin on the bound and far inside the
-\SI{2.0}{\volt} at which \des{Q}{3V3HDR} would actually lose enhancement, its
-threshold maximum being \SI{1.15}{\volt}. Its cost is
-$V_{\mathrm{BUS}}/R = \SI{130}{\micro\ampere}$ and \SI{1.69}{\milli\watt} at
-the \SI{13.0}{\volt} top of the window. Any other continuous load on the bus
-rail parallels this one and only helps; the bound is written for the bleeder
-alone so that it does not depend on another subsystem keeping its own divider.
+Set \des{R}{BUSBLEED} to \SI{100}{\kilo\ohm}. It holds the rail at
+\SI{0.23}{\volt} and gives a $2.9\times$ resistance margin. At
+\SI{12.6}{\volt}, it draws \SI{126}{\micro\ampere} and dissipates
+\SI{1.59}{\milli\watt}. The calculation does not include other bus loads.
 
-The bus branch being a transistor is what allows \SI{100}{\kilo\ohm} here. A
-Schottky in that position leaks tens of microamps at temperature --- and is
-poorly characterized at \SI{3}{\volt} by parts specified at their full reverse
-rating --- which would have forced a resistor small enough to dissipate
-\SI{16.4}{\milli\watt} standing. The MOSFET's $I_{DSS}$ is some thirty times
-smaller and is a specified figure.
+A Schottky diode can leak tens of microamperes at high temperature (inferred).
+This leakage can require a bleeder that dissipates \SI{16.4}{\milli\watt}.
+The specified MOSFET leakage is approximately 30 times lower.
 
-On the header branch the consequence is exposure. \des{Q}{3V3BUS} references the
-header's supply pin itself, which
-\des{Q}{3V3HDR}'s off-state drain leakage charges. Bus-powered with nothing
-attached, that pin is otherwise undriven, and a microamp into the few picofarads
-of pin and trace takes it to the node voltage in microseconds. The stored energy
-is under a nanojoule at \SI{13.0}{\volt} and an adapter's own decoupling absorbs
-it on contact, so plugging in does no damage. What remains is that a connector
-pin marked as a \SI{3.3}{\volt} supply sits at the top of the bus window.
-Requirement: hold it below one silicon forward drop, \SI{0.5}{\volt}, so it
-cannot inject current into an attached supply rail through any protection
-structure it meets.
+On the header branch, \des{Q}{3V3HDR} drain leakage charges the undriven supply
+pin. The pin must remain below \SI{0.5}{\volt}. This limit prevents current
+injection through adapter protection structures.
 
 \des{Q}{3V3HDR}'s off-state drain leakage is required to be
 \SI{1}{\micro\ampere} at $T_j = \SI{25}{\celsius}$ and \SI{10}{\micro\ampere} at
-\SI{150}{\celsius}, figures parts of this class carry routinely
-(\ds{PMF170XP.pdf}{4}). The switch dissipates nothing while off, so $T_j$ is the
-ambient, and log-linear interpolation gives \SI{1.3}{\micro\ampere} at
-\SI{40}{\celsius}. Adding \des{Q}{3V3BUS}'s \SI{100}{\nano\ampere} of gate
-leakage through \des{R}{3V3BUS},
+\SI{150}{\celsius} (\ds{PMF170XP.pdf}{4}). The off device remains near ambient
+temperature. Log-linear interpolation gives \SI{1.3}{\micro\ampere} at
+\SI{40}{\celsius} (inferred). Include \des{Q}{3V3BUS}'s
+\SI{100}{\nano\ampere} gate leakage through \des{R}{3V3BUS}:
 \begin{align*}
   \des{R}{3V3BLEED} &\leq \frac{\SI{0.5}{\volt}}{\SI{1.4}{\micro\ampere}}
     = \SI{357}{\kilo\ohm}.
 \end{align*}
-Specification: \des{R}{3V3BLEED} $= \SI{100}{\kilo\ohm}$, holding the pin at
-\SI{140}{\milli\volt} with a $3.6\times$ margin on the bound. The
-\SI{150}{\celsius} leakage figure would put the pin near \SI{1}{\volt}, but a
-device dissipating nothing in a \SI{40}{\celsius} ambient does not reach that
-junction temperature. Attached, the resistor costs \SI{50}{\micro\ampere} from a
-\SI{5}{\volt} adapter and \SI{32}{\micro\ampere} from a \SI{3.3}{\volt} one,
-three parts in ten thousand of the \SI{0.12}{\ampere} the branch carries.
+Set \des{R}{3V3BLEED} to \SI{100}{\kilo\ohm}. It holds the pin at
+\SI{140}{\milli\volt} and gives a $3.6\times$ resistance margin. It draws
+\SI{50}{\micro\ampere} from a \SI{5}{\volt} adapter and
+\SI{32}{\micro\ampere} from a \SI{3.3}{\volt} adapter.
 
-Each bleeder also establishes a condition the other switch's rating assumes.
-\des{Q}{3V3HDR}'s $V_{DS}$ requirement is written against the node's full
-\SI{13.0}{\volt}, which is the drain-to-source difference only if the drain is
-held at ground, and \des{R}{3V3BLEED} is what holds it there. The corresponding
-obligation on the bus rail falls outside this converter, and it bounds an
-impedance without naming a component.
-\Cref{sec:pd-bleed} settles whether the front end meets it as a by-product of
-its own detach behavior: the port controller's integrated discharge is
-event-driven against a detach-timing requirement, not a continuous impedance,
-while the requirement raised here is continuous. \des{R}{BUSBLEED} is therefore
-populated.
+\des{R}{3V3BLEED} also holds \des{Q}{3V3HDR}'s drain near ground for the
+$V_{DS}$ rating calculation. The port controller discharges the bus only after
+detach (\cref{sec:pd-bleed}). It does not provide a continuous impedance.
+Therefore, populate \des{R}{BUSBLEED}.
 
-\paragraph{Parts meeting these bounds.} \des{Q}{3V3HDR} is selected against two
-requirements. Conduction is undemanding: \SI{0.42}{\ohm} guaranteed at
-\SI{2.5}{\volt} of gate drive while carrying \SI{0.12}{\ampere}, which small
-SC-70 and SOT-323 parts meet comfortably. The PMF170XP (\ds{PMF170XP.pdf}{6})
+\paragraph{Device selection.} \des{Q}{3V3HDR} must meet conduction and body
+diode requirements. It must provide no more than \SI{0.42}{\ohm} at
+\SI{2.5}{\volt} gate drive and \SI{0.12}{\ampere}. The PMF170XP
+(\ds{PMF170XP.pdf}{6})
 specifies $R_{DSon} \leq \SI{300}{\milli\ohm}$ at $V_{GS} = -\SI{2.5}{\volt}$
 and $T_j = \SI{25}{\celsius}$, which its normalized temperature curve carries to
 \SI{321}{\milli\ohm} at the \SI{43}{\celsius} junction that \SI{6}{\milli\watt}
-produces in a \SI{40}{\celsius} ambient, for a \SI{38}{\milli\volt} drop and a
-header-powered node at \SI{3.16}{\volt}, \SI{161}{\milli\volt} above the
-start-up threshold. The body diode governs instead: \SI{0.37}{\ampere}
-continuous and \SI{0.44}{\watt} dissipated require a package of SOT-23 class or
-larger, which that part is not, its source-current rating being
-\SI{0.4}{\ampere} and its dissipation allowance \SI{290}{\milli\watt} before
-derating. Specification: a P-channel MOSFET meeting both requirements, in SOT-23
-or larger, where the conduction figure and the \SI{6.2}{\volt} gate rating are
-both readily met.
+produces in a \SI{40}{\celsius} ambient. It causes a
+\SI{38}{\milli\volt} drop. However, its package cannot dissipate the required
+\SI{0.44}{\watt}. Select a P-channel MOSFET in SOT-23 or a larger package. It
+must also have a \SI{0.37}{\ampere} continuous body-diode rating and a
+\SI{6.2}{\volt} gate rating.
 
-\des{Q}{3V3BUS} is selected on on-resistance at the gate drive a \SI{5}{\volt}
-bus affords, \SI{4.75}{\volt}, and on the \SI{16.3}{\volt} gate rating derived
-above. Holding the node drop to \SI{50}{\milli\volt} at the
+\des{Q}{3V3BUS} must meet its resistance specification at
+\SI{4.75}{\volt} gate drive. It also requires a \SI{15.8}{\volt} gate rating.
+Limiting the node drop to \SI{50}{\milli\volt} at the
 \SI{0.41}{\ampere} that band draws requires $R_{DSon}\leq\SI{120}{\milli\ohm}$
 hot, so $\leq\SI{110}{\milli\ohm}$ at \SI{25}{\celsius}. The DMP3099L
 (\ds{DMP3099L.pdf}{1}), a \SI{30}{\volt} P-channel MOSFET in SOT-23, specifies
 $\SI{99}{\milli\ohm}$ maximum at $V_{GS} = -\SI{4.5}{\volt}$ and
 $\SI{65}{\milli\ohm}$ at $-\SI{10}{\volt}$, and its normalized temperature curve
-gives 1.08 at the \SI{42}{\celsius} junction \SI{18}{\milli\watt} produces, so
-\SI{107}{\milli\ohm} guaranteed anywhere in the bus range and less where the
-drive exceeds \SI{4.5}{\volt}. The requirement is met with \SI{11}{\percent} to
-spare, the tightest figure in this subsection. The remaining ratings clear by
-wide margins: $V_{DS} = \SI{30}{\volt}$ against \SI{6.3}{\volt} of reverse
-blocking, $|V_{GS}| = \SI{20}{\volt}$ against \SI{16.3}{\volt},
-$I_D = \SI{2.9}{\ampere}$ at \SI{70}{\celsius} against \SI{0.41}{\ampere},
-\SI{18}{\milli\watt} dissipated against a \SI{1.08}{\watt} allowance, and a
-body diode that carries the degraded configuration's \SI{0.40}{\ampere} at
-$T_j = \SI{98}{\celsius}$.
+gives a factor of 1.08 at a \SI{42}{\celsius} junction. The maximum hot
+resistance is \SI{107}{\milli\ohm}. The resistance margin is
+\SI{11}{\percent}. Its $V_{DS}$ rating is \SI{30}{\volt}, and its $|V_{GS}|$
+rating is \SI{20}{\volt}. Its current rating is \SI{2.9}{\ampere} at
+\SI{70}{\celsius}. It dissipates \SI{18}{\milli\watt} against a
+\SI{1.08}{\watt} allowance. Its body diode can carry the degraded
+configuration's \SI{0.40}{\ampere} at $T_j=\SI{98}{\celsius}$.
 
 \paragraph{Bus-powered operation.} The node sits at
-\SIrange{8.48}{13.0}{\volt}, \des{Q}{3V3BUS} conducting with
-\SIrange{8.3}{12.9}{\volt} of gate drive and dropping \SI{25}{\milli\volt} at
-the \SI{0.5}{\ampere} capability point. \des{Q}{3V3HDR}'s gate sits at
-$V_{\mathrm{BUS}}$, which is that same \SI{25}{\milli\volt} above its source, so
-the transistor is off and its body diode is reverse-biased by the difference
-between the node and whatever an attached adapter presents. No forward path
-exists from the node onto an adapter's supply pin.
+\SIrange{8.53}{12.6}{\volt}. \des{Q}{3V3BUS} has
+\SIrange{8.4}{12.5}{\volt} of gate drive. At the \SI{0.5}{\ampere} output
+capability point, the input current is \SI{0.228}{\ampere}. The MOSFET drops
+\SI{25}{\milli\volt} and dissipates \SI{5.6}{\milli\watt}.
+\des{Q}{3V3HDR} is off, and its body diode blocks current
+into the adapter.
 
 \paragraph{Header-powered operation, adapter at \SI{3.3}{\volt}.} With
-$V_{\mathrm{BUS}}$ absent, \des{Q}{3V3BUS} blocks the node from feeding the bus
---- its gate is pulled to the adapter's own voltage, above its source, and its
-body diode is oriented to conduct only from bus to node --- and \des{Q}{3V3HDR}
-conducts. The node sits at $\geq\SI{3.15}{\volt}$, above the \SI{3.0}{\volt}
-start-up requirement, and the converter boosts to \SI{3.3}{\volt} with a duty
-cycle of \SI{4.5}{\percent}. The converter regulates the node it is given, so
-the rail holds its programmed value wherever in its tolerance band the adapter
-sits.
+$V_{\mathrm{BUS}}$ absent, \des{Q}{3V3BUS} blocks current into the bus.
+\des{Q}{3V3HDR} conducts. The node remains at or above
+\SI{3.15}{\volt}. The converter boosts to \SI{3.3}{\volt} with a
+\SI{4.5}{\percent} duty cycle.
 
-Input current exceeds output current in boost mode, so the adapter must supply
-more than the MCU draws: \SI{0.12}{\ampere} at the bounding
-\SI{100}{\milli\ampere} download-mode load. Adapters that derive their
-\SI{3.3}{\volt} from a bridge chip's internal regulator are commonly limited
-near \SI{50}{\milli\ampere} and will not support this; one with its own
-regulator generally will. Once started, the converter sustains operation down to
-\SI{2.0}{\volt} of input while its output holds above \SI{3.0}{\volt}, so a
-sagging adapter does not drop the board at the start-up threshold.
+The adapter must supply \SI{0.12}{\ampere} for the
+\SI{100}{\milli\ampere} download-mode load. Some adapters limit their
+\SI{3.3}{\volt} outputs to approximately \SI{50}{\milli\ampere} (inferred).
+These adapters do not meet the requirement. After start-up, the converter can
+operate with an input as low as \SI{2.0}{\volt}.
 
 \paragraph{Header-powered operation, adapter at \SI{5}{\volt}.} The node sits at
 \SI{4.99}{\volt}, the converter bucks at a duty cycle of \SI{66}{\percent}, and
-the rail regulates identically. The case is permitted but not required.
+the rail remains regulated.
 
 \paragraph{Resulting requirement on the adapter.}\label{sec:3v3-adapter} The
 supply pin must present at least \SI{3.2}{\volt} and supply at least
-\SI{0.12}{\ampere}; either the \SI{3.3}{\volt} or the \SI{5}{\volt} setting
-satisfies the voltage requirement, and \cref{sec:esp32-uart} leaves the
-signaling level unconstrained. Attaching or detaching the adapter while USB-C
-power is present is safe in either order, since the node follows the higher
-source and no forward path exists onto the adapter's supply pin in any
-configuration of \cref{tab:3v3-oring}.
+\SI{0.12}{\ampere}. A \SI{3.3}{\volt} or \SI{5}{\volt} setting satisfies the
+voltage requirement. \Cref{sec:esp32-uart} specifies the signaling levels.
+The ORing circuit permits adapter connection and removal while USB-C power is
+present.
 
-One combination is excluded, and the exclusion is a restriction on use: an
-adapter attached while the board holds a \SI{5}{\volt} contract instead of a
-\SI{9}{\volt} or \SI{12}{\volt} one. The two sources are then within a threshold
-of each other, neither switch enhances, and the input path reverts to body-diode
-conduction as derived above. The board runs, but the branch carrying the node
-dissipates a forward drop, and at a \SI{5}{\volt} adapter setting that branch is
-\des{Q}{3V3HDR}, the smaller of the two parts. Serial work should therefore be
-done either on a \SI{9}{\volt} or \SI{12}{\volt} contract, where the bus rail is
-separated from any adapter by more than \SI{3}{\volt}, or on the header alone
-with USB-C detached. Both are ordinary conditions; a \SI{5}{\volt} contract is
-the fallback when negotiation yields nothing better, and nothing selects it
-deliberately.
+Do not attach an adapter while the board uses a \SI{5}{\volt} USB-C contract.
+The input then uses body-diode conduction. With a \SI{5}{\volt} adapter,
+\des{Q}{3V3HDR} dissipates the diode loss. Use a \SI{9}{\volt} or
+\SI{12}{\volt} contract during serial work. Alternatively, disconnect USB-C
+power and use only the header supply.
 
 \subsection{Enable, soft start, and dissipation}\label{sec:3v3-house}
 
 EN and PS/SYNC tie to the converter's input node through
-$\des{R}{3V3EN} = \SI{10}{\kilo\ohm}$. The pin's threshold tolerance
-(\SIrange{0.77}{0.83}{\volt}, \cref{sec:tps63070}) spans a wider band than the
-gap between the converter's \SI{3.0}{\volt} start-up minimum and the
-\SI{3.15}{\volt} the input path guarantees, so a divider-programmed lockout
-cannot cleanly separate the two; the part's internal undervoltage lockout
-together with the source requirements of \cref{sec:3v3-diodeor} keeps operation
-inside the specified window. \des{R}{3V3EN} therefore programs nothing and
-carries only the pins' \SI{0.2}{\micro\ampere} input current, two microvolts of
-drop. Its purpose is to let either pin be pulled low externally without
-contending with the input node; that is the board's only means of disabling this
-converter to exercise the other rails alone. With both
-pins on one node the override is single-valued: pulling the node low takes EN
-with it, so the reachable states are enabled in Power Save Mode, and off.
-Forced-PWM is not reachable. PS/SYNC ties high, selecting Power Save Mode: the
-rail idles at modem-sleep currents for nearly all of its operating life, and the
-accuracy stack of \cref{sec:3v3-cout} absorbs that mode's wider tolerance with
-\SI{157}{\milli\volt} to spare. VSEL ties low, leaving the output at the value
-\des{R}{3V3D1}/\des{R}{3V3D2} program, and FB2, which VSEL would switch in to
-raise that value, ties to ground. The datasheet permits either treatment ---
-``leave the pin open or connect to GND if not used'' (\ds{tps63070.pdf}{4}) ---
-and ground is taken: a defined node is preferable to a floating one at a pin
-that reaches the feedback network, and it removes an unterminated input from the
-electrical rule check.
+$\des{R}{3V3EN}=\SI{10}{\kilo\ohm}$. The pin threshold is
+\SIrange{0.77}{0.83}{\volt} (\cref{sec:tps63070}). This tolerance does not
+permit a divider to separate the \SI{3.0}{\volt} start limit from the
+\SI{3.15}{\volt} input minimum. The internal undervoltage lockout controls
+start-up. \des{R}{3V3EN} permits an external circuit to pull both pins low.
+The available states are off and Power Save Mode. Forced-PWM operation is not
+available. Tie VSEL low to use the \des{R}{3V3D1}/\des{R}{3V3D2} divider. Tie
+the unused FB2 pin to ground as permitted by the datasheet
+(\ds{tps63070.pdf}{4}).
 
-PG is an open-drain output, terminated by $\des{R}{3V3PG} = \SI{100}{\kilo\ohm}$
-to the rail. The pull-up sits with the converter, so PG presents a defined logic
-level at this subsystem's boundary without depending on a resistor placed
-elsewhere in the design.
+PG is an open-drain output. \des{R}{3V3PG}=\SI{100}{\kilo\ohm} pulls it up to
+the rail.
 
-As a status bit the signal would be useless: the only device on the board that
-could read it draws its own supply from this rail, and so cannot be running to
-receive a fault indication about that rail. PG instead drives the MCU's enable
-node (\cref{sec:esp32-reset}), which uses it in the window where the MCU is off.
-PG releases above
+PG drives the MCU enable input (\cref{sec:esp32-reset}). PG releases above
 \SIrange{94.5}{98.5}{\percent} of the output and reasserts below
 \SIrange{90}{94.5}{\percent} (\cref{sec:tps63070}), which at the programmed
 \SI{3.262}{\volt} is \SIrange{3.08}{3.21}{\volt} rising and
 \SIrange{2.94}{3.08}{\volt} falling. The rising band sits above the MCU's
-\SI{3.0}{\volt} supply minimum (\cref{sec:esp32}), so the module is released
-only into a rail that is already in specification. \des{R}{3V3PG} is the only
-pull-up on that node (\cref{sec:esp32-reset}), so the current PG sinks while
-asserted is $\SI{3.262}{\volt}/\SI{100}{\kilo\ohm} = \SI{33}{\micro\ampere}$, a
-thirtieth of the pin's \SI{1}{\milli\ampere} rating, at a saturation voltage far
-below the module's $0.25\,V_{DD}$ reset threshold. That current is also the
-resistor's entire load on the rail, and it flows only while power is not good.
+\SI{3.0}{\volt} supply minimum (\cref{sec:esp32}). Thus, PG releases the MCU
+only after the rail enters its specified range. While asserted, PG sinks
+\SI{33}{\micro\ampere}. Its rating is \SI{1}{\milli\ampere}.
 
-Soft start is internal and load-dependent, \SI{400}{\micro\second} bucking and
-\SI{850}{\micro\second} boosting at the datasheet's characterization points,
-which are this rail's two operating cases almost exactly. The output-node
-capacitance is \SI{101}{\micro\farad} nominal including the module-local part,
-\SI{71}{\micro\farad} effective, so the charging current is
+Internal soft start is \SI{400}{\micro\second} in buck operation and
+\SI{850}{\micro\second} in boost operation. The output has
+\SI{71}{\micro\farad} of effective capacitance. The maximum charging current is
 \begin{align*}
   I_{\mathrm{chg}} &= C_{\mathrm{out}}\frac{dV}{dt}
     = \SI{71}{\micro\farad}\times\frac{\SI{3.27}{\volt}}{\SI{400}{\micro\second}}
     = \SI{0.58}{\ampere}
 \end{align*}
-in the faster bucking case, against the \SI{1}{\ampere} start-up current limit
-the part applies while power good is low. The MCU draws little until firmware
-runs, so the margin holds; if it were exceeded, the current limit would simply
-extend the ramp.
+in buck operation. The start-up current limit is \SI{1}{\ampere}. If the load
+exceeds the available current, the current limit extends the ramp.
 
 Converter dissipation at the conservative $\eta=0.85$:
 \begin{align*}
@@ -773,25 +614,20 @@ Converter dissipation at the conservative $\eta=0.85$:
     = 1.18 \times 0.176 = \SI{0.21}{\watt}, &
   \Delta T &= \theta_{JA}P_{\mathrm{diss}} = 63 \times 0.21 \approx \SI{13}{\kelvin},
 \end{align*}
-rising to \SI{0.29}{\watt} and $\Delta T \approx \SI{18}{\kelvin}$ at the
-\SI{0.5}{\ampere} capability point: $T_J \leq \SI{58}{\celsius}$ at a
-\SI{40}{\celsius} ambient, far below the \SI{125}{\celsius} junction limit.
-Wi-Fi transmit at 100\,\% duty is already the sustained rating, so no
-duty-cycle relief is needed to reach that conclusion. \des{Q}{3V3BUS}'s
-\SI{5.6}{\milli\watt} sits in a separate package and does not enter this figure.
+rising to \SI{0.29}{\watt} and $\Delta T\approx\SI{18}{\kelvin}$ at
+\SI{0.5}{\ampere}. At a \SI{40}{\celsius} ambient, $T_J$ is at most
+\SI{58}{\celsius}. The junction limit is \SI{125}{\celsius}.
 
 \subsection{Summary}\label{sec:3v3-summary}
 
-Assumptions carried through this section: the header branch's series element
-presents $\leq\SI{0.42}{\ohm}$ and an adapter presents $\geq\SI{3.2}{\volt}$ at
-the header; \des{Q}{3V3BUS}'s off-state drain leakage doubles per
-\SI{10}{\kelvin} above its \SI{25}{\celsius} specification, the datasheet giving
-only the one temperature; output ceramics retain $\geq70\,\%$ at
-\SI{3.3}{\volt} bias with effective ESR \SI{2.5}{\milli\ohm}, and input ceramics
-roughly $50\,\%$ at \SI{13.0}{\volt}; converter efficiency \SI{85}{\percent};
-control-loop response to a load step within \SI{5}{\micro\second}; download-mode
-MCU draw $\approx\SI{50}{\milli\ampere}$, bounded at \SI{100}{\milli\ampere}.
-Each appears at its point of use above.
+The analysis uses the following inferred values. MOSFET leakage doubles for
+each \SI{10}{\kelvin} temperature increase. Output ceramic capacitors retain
+at least \SI{70}{\percent} of nominal capacitance at \SI{3.3}{\volt}. Input
+ceramic capacitors retain \SI{50}{\percent} at \SI{12.6}{\volt}. Converter
+efficiency is \SI{85}{\percent}. The control loop responds within
+\SI{5}{\micro\second}. Download-mode MCU current is limited to
+\SI{100}{\milli\ampere}. The adapter must supply at least \SI{3.2}{\volt} at
+the header, and the header switch resistance must not exceed \SI{0.42}{\ohm}.
 
 {\footnotesize
 \begin{longtable}{|p{0.23\textwidth}|p{0.335\textwidth}|p{0.335\textwidth}|}
@@ -807,29 +643,29 @@ Each appears at its point of use above.
 \endhead
 \hline
 \endlastfoot
-Load current & --- & \SI{355}{\milli\ampere} MCU $+$
-  $\leq$\SI{2}{\milli\ampere} housekeeping $\approx$ \SI{0.36}{\ampere}
+Load current & Not applicable & \SI{355}{\milli\ampere} MCU $+$
+  $\leq$\SI{3.3}{\milli\ampere} housekeeping $\approx$ \SI{0.36}{\ampere}
   sustained; capability floor \SI{0.5}{\ampere} \\
 \hline
 Topology & regulate from inputs above and below \SI{3.3}{\volt} &
   four-switch buck-boost, automatic mode transition \\
 \hline
-Rail vs.\ MCU window & VDD33 \SIrange{3.0}{3.6}{\volt} &
-  \SIrange{3.12}{3.44}{\volt} incl.\ Power Save tolerance, divider tolerance,
+Rail and MCU window & VDD33 \SIrange{3.0}{3.6}{\volt} &
+  \SIrange{3.12}{3.44}{\volt} including Power Save tolerance, divider tolerance,
   feedback leakage, ripple, droop \\
 \hline
 Input window & \SIrange{2.0}{16}{\volt} running; $\geq\SI{3.0}{\volt}$
-  start-up & node \SIrange{8.48}{13.0}{\volt} bus,
+  start-up & node \SIrange{8.53}{12.6}{\volt} bus,
   \SIrange{4.71}{5.47}{\volt} limited / $\geq\SI{3.15}{\volt}$ header \\
 \hline
 Duty cycle & $\geq\SI{20}{\percent}$ buck (relaxed bound) &
-  \SI{25.4}{\percent} at maximum bus input \\
+  \SI{26.2}{\percent} at maximum bus input \\
 \hline
 Inductance \des{L}{3V3} & effective \SIrange{0.7}{1.8}{\micro\henry} for the relaxed
   duty bound & \SI{1.5}{\micro\henry} nominal
   ($\rightarrow$\SIrange{1.05}{1.8}{\micro\henry} effective) \\
 \hline
-Inductor $I_{\mathrm{sat}}$, DCR & $\geq\SI{1.27}{\ampere}$ normal;
+Inductor $I_{\mathrm{sat}}$, DCR & $\geq\SI{1.26}{\ampere}$ normal;
   $\geq\SI{4.2}{\ampere}$ covers the input current limit; DCR
   $\leq\SI{50}{\milli\ohm}$ & $\geq\SI{4.2}{\ampere}$, shielded;
   part to be selected \\
@@ -849,27 +685,28 @@ Output capacitance & $\geq\SI{40}{\micro\farad}$ effective;
 Transmit-burst droop & $\geq\SI{3.0}{\volt}$ at the MCU through the step &
   $\lesssim\SI{33}{\milli\volt}$ droop \\
 \hline
-Output ripple & --- & $\approx\SI{20}{\milli\volt}$ pk-pk in Power Save
+Output ripple & Not applicable & $\approx\SI{20}{\milli\volt}$ peak-to-peak in Power Save
   Mode \\
 \hline
 Input capacitance \des{C}{3V3I1}, \des{C}{3V3I2} & $\geq\SI{4.7}{\micro\farad}$ effective;
-  $\geq\SI{16.3}{\volt}$ & $2\times\SI{10}{\micro\farad}$, \SI{25}{\volt} \\
+  $\geq\SI{15.8}{\volt}$ & $2\times\SI{10}{\micro\farad}$, \SI{25}{\volt} \\
 \hline
 VAUX bypass \des{C}{3V3VAUX} & \SI{100}{\nano\farad}, no other loading;
   $\geq\SI{10}{\volt}$ & \SI{100}{\nano\farad}, \SI{16}{\volt} \\
 \hline
 Header ORing switch \des{Q}{3V3HDR} & $\leq\SI{0.42}{\ohm}$ at $\leq\SI{3}{\volt}$ gate
-  drive (\SI{1.67}{\ohm} is the hard limit); $V_{DS}\geq\SI{16.3}{\volt}$;
+  drive (\SI{1.67}{\ohm} is the hard limit); $V_{DS}\geq\SI{15.8}{\volt}$;
   $|V_{GS}|\geq\SI{6.2}{\volt}$; source-drain diode \SI{0.37}{\ampere} and
   \SI{0.44}{\watt}, $R_{th(j\text{-}a)}\leq\SI{193}{\kelvin\per\watt}$ &
   \SI{321}{\milli\ohm} at \SI{43}{\celsius} available in SC-70, but the
   diode rating sets SOT-23 or larger; part to be selected \\
 \hline
 Bus ORing switch \des{Q}{3V3BUS} & $\leq\SI{110}{\milli\ohm}$ specified at
-  $\leq\SI{4.5}{\volt}$ gate drive; $|V_{GS}|\geq\SI{16.3}{\volt}$;
+  $\leq\SI{4.5}{\volt}$ gate drive; $|V_{GS}|\geq\SI{15.8}{\volt}$;
   $V_{DS}\geq\SI{6.3}{\volt}$; $I_D\geq\SI{0.5}{\ampere}$ &
   DMP3099L: \SI{107}{\milli\ohm} at \SI{42}{\celsius}, \SI{25}{\milli\volt}
-  drop, \SI{5.6}{\milli\watt} full / \SI{18}{\milli\watt} limited \\
+  drop and \SI{5.6}{\milli\watt} at \SI{0.228}{\ampere};
+  \SI{18}{\milli\watt} limited \\
 \hline
 Gate references & each switch off when its own branch is the lower source &
   gates cross-referenced through \SI{100}{\kilo\ohm}: \des{R}{3V3HDR} to
@@ -882,8 +719,8 @@ Source separation & $>|V_{GS(\mathrm{th})}|$ between the two sources for a
 \hline
 Bus rail discharge path & $\leq\SI{287}{\kilo\ohm}$ against \des{Q}{3V3BUS}'s
   \SI{2.3}{\micro\ampere} so the gate reference holds at ground &
-  \SI{100}{\kilo\ohm}; \SI{0.23}{\volt}; \SI{130}{\micro\ampere} and
-  \SI{1.69}{\milli\watt} standing draw \\
+  \SI{100}{\kilo\ohm}; \SI{0.23}{\volt}; \SI{126}{\micro\ampere} and
+  \SI{1.59}{\milli\watt} standing draw \\
 \hline
 Header pin discharge path & $\leq\SI{357}{\kilo\ohm}$ for $\leq\SI{0.5}{\volt}$
   on an undriven supply pin & \SI{100}{\kilo\ohm}; \SI{140}{\milli\volt}
@@ -896,7 +733,7 @@ Adapter requirement & $\geq\SI{3.2}{\volt}$ at $\geq\SI{0.12}{\ampere}$ &
   \SI{3.3}{\volt} or \SI{5}{\volt} setting; signaling level unconstrained;
   not concurrent with a \SI{5}{\volt} contract \\
 \hline
-Pin disposition & --- & EN, PS/SYNC to input node via
+Pin disposition & Not applicable & EN, PS/SYNC to input node via
   $\des{R}{3V3EN}=\SI{10}{\kilo\ohm}$ (Power Save);
   VSEL low; FB2 to ground; PG to the MCU enable node \\
 \hline
@@ -908,35 +745,23 @@ PG as supply supervisor & release only above the MCU's \SI{3.0}{\volt}
 Soft start / inrush & $\leq\SI{1}{\ampere}$ start-up limit & internal
   \SIrange{400}{850}{\micro\second}; \SI{0.58}{\ampere} charging \\
 \hline
-Converter dissipation & --- & $\leq\SI{0.29}{\watt}$, $\Delta T \leq
+Converter dissipation & Not applicable & $\leq\SI{0.29}{\watt}$, $\Delta T \leq
   \SI{18}{\kelvin}$ (VQFN, $\theta_{JA}=63$~\si{\celsius\per\watt}) \\
 \hline
 \end{longtable}
 }
 
-This rail departs from the 5~V rail of \cref{sec:5v-converter} in two ways. Its
-input can sit on either side of its output, which selects the buck-boost
-topology and then propagates through the rest of the derivation: the
-minimum-duty bound at the top of the bus range constrains both the inductance
-and the output capacitance, and boost operation makes the right-half-plane zero
-a check that has to be run at all. The other difference is that both branches of
-its input OR carry transistors. On the header branch a diode is excluded
-outright, the \SI{200}{\milli\volt} between an adapter's guaranteed output and
-the converter's start-up threshold being smaller than any diode's forward drop.
-On the bus branch a diode would function but costs \SI{92}{\milli\watt} on a
-high-voltage contract and \SI{29}{\milli\ampere} of a \SI{500}{\milli\ampere}
-port budget on the weakest \SI{5}{\volt} source. That second choice carries a consequence: cross-referenced
-gates arbitrate between two sources only while those sources are separated by a
-threshold, so removing the loss adds an operating restriction
-(\cref{sec:3v3-adapter}).
+The input range requires a four-switch buck-boost converter. Both input ORing
+branches use MOSFETs. The header branch has only a
+\SI{200}{\milli\volt} drop budget. The bus-branch MOSFET saves
+\SI{92}{\milli\watt} on a high-voltage contract. Cross-referenced gates require
+source separation, so \cref{sec:3v3-adapter} restricts simultaneous operation.
 
 \subsection{Component selection}\label{sec:3v3-parts}
 
-The requirements derived above, collected as selection criteria. Values are
-those specified in this section and ratings are the derived minima. Body sizes
-are requirements only at the converter and at the parts the datasheet places
-directly on its pins; elsewhere they are the smallest that commonly satisfies
-the electrical requirement.
+\Cref{tab:3v3-parts} gives the component requirements. The ratings are minimum
+values. Use the smallest package that satisfies the electrical and thermal
+requirements.
 
 {\footnotesize
 \begin{longtable}{|L{0.10\textwidth}|L{0.14\textwidth}|L{0.11\textwidth}|L{0.33\textwidth}|L{0.12\textwidth}|}
@@ -952,15 +777,15 @@ the electrical requirement.
 \endhead
 \hline
 \endlastfoot
---- & Buck-boost converter & TPS63070 & adjustable variant; \SI{800}{\milli\volt} feedback reference & VQFN-13, $2.5\times3$~\si{\milli\meter} \\
+Not applicable & Buck-boost converter & TPS63070 & adjustable variant; \SI{800}{\milli\volt} feedback reference & VQFN-13, $2.5\times3$~\si{\milli\meter} \\
 \hline
 \des{L}{3V3} & Shielded power inductor & \SI{1.5}{\micro\henry} & $I_{\mathrm{sat}}\geq\SI{4.2}{\ampere}$; DCR $\leq\SI{50}{\milli\ohm}$; effective inductance \SIrange{0.7}{1.8}{\micro\henry} including tolerance and current derating; core rated for \SI{2.4}{\mega\hertz} & $\leq5\times5$~\si{\milli\meter}, $\leq\SI{4.5}{\milli\meter}$ high \\
 \hline
-\des{C}{3V3I1} & Ceramic, input bulk & \SI{10}{\micro\farad} & \SI{25}{\volt}; X5R or X7R; $\geq50\,\%$ capacitance retention at \SI{13.0}{\volt} bias & 0805 \\
+\des{C}{3V3I1} & Ceramic, input bulk & \SI{10}{\micro\farad} & \SI{25}{\volt}; X5R or X7R; $\geq50\,\%$ capacitance retention at \SI{12.6}{\volt} bias & 0805 \\
 \hline
 \des{C}{3V3I2} & Ceramic, at VIN pin & \SI{10}{\micro\farad} & as \des{C}{3V3I1} & 0603 \\
 \hline
-\des{C}{3V3VAUX} & Ceramic, VAUX bypass & \SI{100}{\nano\farad} & $\geq\SI{16}{\volt}$; X7R; nothing else on the pin & 0402 \\
+\des{C}{3V3VAUX} & Ceramic, VAUX bypass & \SI{100}{\nano\farad} & $\geq\SI{16}{\volt}$; X7R; no other connection on the pin & 0402 \\
 \hline
 \des{C}{3V3O3} & Ceramic, output bulk & \SI{47}{\micro\farad} & $\geq\SI{10}{\volt}$; X5R, X6S, or X7R; $\geq70\,\%$ capacitance retention at \SI{3.3}{\volt} bias; ESR $\leq\SI{10}{\milli\ohm}$ & 0805 or 1210 \\
 \hline
@@ -984,9 +809,9 @@ the electrical requirement.
 \hline
 \des{R}{3V3BLEED} & Film resistor & \SI{100}{\kilo\ohm} & $\pm5\,\%$ sufficient; header supply pin to ground; carries \si{\micro\ampere}-level leakage while unattached and \SI{50}{\micro\ampere} while attached & 0402 \\
 \hline
-\des{Q}{3V3BUS} & P-channel MOSFET & DMP3099L & $R_{DSon}\leq\SI{110}{\milli\ohm}$ \emph{specified at} $\leq\SI{4.5}{\volt}$ of gate drive, a \SI{5}{\volt} bus affording no more; $|V_{GS}|\geq\SI{16.3}{\volt}$, the criterion that excludes the $\pm\SI{12}{\volt}$ parts most of this class carries; $V_{DS}\geq\SI{6.3}{\volt}$; $I_D\geq\SI{0.5}{\ampere}$ continuous; source on the converter node, drain on $V_{\mathrm{BUS}}$ & SOT-23 \\
+\des{Q}{3V3BUS} & P-channel MOSFET & DMP3099L & $R_{DSon}\leq\SI{110}{\milli\ohm}$ \emph{specified at} $\leq\SI{4.5}{\volt}$ of gate drive, a \SI{5}{\volt} bus affording no more; $|V_{GS}|\geq\SI{15.8}{\volt}$, the criterion that excludes the $\pm\SI{12}{\volt}$ parts most of this class carries; $V_{DS}\geq\SI{6.3}{\volt}$; $I_D\geq\SI{0.5}{\ampere}$ continuous; source on the converter node, drain on $V_{\mathrm{BUS}}$ & SOT-23 \\
 \hline
-\des{Q}{3V3HDR} & P-channel MOSFET & --- & $R_{DSon}\leq\SI{0.42}{\ohm}$ \emph{specified at} $\leq\SI{3}{\volt}$ of gate drive; $V_{DS}\geq\SI{16.3}{\volt}$; $|V_{GS}|\geq\SI{6.2}{\volt}$; $I_D\geq\SI{0.2}{\ampere}$ continuous; source-drain diode $\geq\SI{0.37}{\ampere}$ continuous dissipating $\SI{0.44}{\watt}$ at a \SI{40}{\celsius} ambient, requiring $R_{th(j\text{-}a)}\leq\SI{193}{\kelvin\per\watt}$ (\cref{sec:3v3-adapter}); source on the converter node, drain on the header pin & SOT-23 or larger, the diode rating excluding SC-70 \\
+\des{Q}{3V3HDR} & P-channel MOSFET & To be selected & $R_{DSon}\leq\SI{0.42}{\ohm}$ specified at $\leq\SI{3}{\volt}$ of gate drive; $V_{DS}\geq\SI{15.8}{\volt}$; $|V_{GS}|\geq\SI{6.2}{\volt}$; $I_D\geq\SI{0.2}{\ampere}$ continuous; source-drain diode $\geq\SI{0.37}{\ampere}$ continuous dissipating $\SI{0.44}{\watt}$ at a \SI{40}{\celsius} ambient, requiring $R_{th(j\text{-}a)}\leq\SI{193}{\kelvin\per\watt}$ (\cref{sec:3v3-adapter}); source on the converter node, drain on the header pin & SOT-23 or larger, the diode rating excluding SC-70 \\
 \hline
 \end{longtable}
 }

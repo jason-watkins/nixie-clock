@@ -1,14 +1,11 @@
 \section{MCU and digital interfaces}
 \label{sec:esp32-mcu}
 
-The board's control logic is an ESP32-S3-WROOM-1 module. It drives the BCD
-inputs of the four decoder/drivers (\cref{sec:bcd-driver}), reads the flyback's
-power-good signal (\cref{sec:hv-house-pgood}), and exposes a serial port for
-firmware download and console access. This section records the module's
-characteristics and those of the logic buffer that isolates that port, then
-derives the three digital interfaces the MCU presents to the rest of the board.
-The module's supply current is the 3.3~V rail's dominant load and is carried
-forward to \cref{sec:3v3-converter}.
+An ESP32-S3-WROOM-1 module supplies the control logic. It drives the four BCD
+decoder/drivers (\cref{sec:bcd-driver}). It reads the flyback power-good signal
+(\cref{sec:hv-house-pgood}). It also supplies a serial port for firmware and
+console access. The module is the main 3.3~V load.
+\Cref{sec:3v3-converter} uses its supply current.
 
 \begin{table}[htbp]
 \centering
@@ -41,14 +38,11 @@ R503 & Outbound series resistor \\
 \subsection{ESP32-S3-WROOM-1 module}
 \label{sec:esp32}
 
-Source: \texttt{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}
-(Espressif). This is a generic module datasheet covering ten-plus SKUs
-under one part number, differing in flash size and in whether the
-module carries PSRAM. \textbf{A variant without PSRAM is required}: the
-octal-interface options place their data bus on GPIO35 through GPIO37,
-three pins this design needs as general-purpose outputs. Flash size is
-unconstrained. Every figure below is the published baseline for a
-module so specified.
+Source: \texttt{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}, Espressif. The
+datasheet covers variants with different flash and PSRAM configurations.
+\textbf{Use a variant without PSRAM.} Octal-interface variants use GPIO35 to
+GPIO37 for the data bus. This design needs these pins as general-purpose
+outputs. Flash capacity does not affect the design.
 
 {\footnotesize
 \begin{longtable}{|L{4.3cm}|c|c|c|c|L{3.0cm}|c|}
@@ -96,15 +90,15 @@ Power off & & \num{1} & & \si{\micro\ampere} & EN held low & 30 \\
 \hline
 EN recommended external network & \multicolumn{4}{L{5.0cm}|}{\(R=10\)~k\(\Omega\), \(C=1\)~\si{\micro\farad}} & & 41 \\
 \hline
-EN reset-release threshold & \(0.75\times V_{DD}\) & & & & & 27--28 \\
+EN reset-release threshold & \(0.75\times V_{DD}\) & & & & & 27 to 28 \\
 \hline
-EN reset threshold & & & \(0.25\times V_{DD}\) & & & 27--28 \\
+EN reset threshold & & & \(0.25\times V_{DD}\) & & & 27 to 28 \\
 \hline
 EN/strapping setup time & \num{0} & & & \si{\milli\second} & & 14 \\
 \hline
 EN/strapping hold time & \num{3} & & & \si{\milli\second} & & 14 \\
 \hline
-GPIO0 (boot strap) default state & \multicolumn{4}{L{5.0cm}|}{Weak pull-up; high = SPI boot (normal), low = download boot} & & 13--14, 27 \\
+GPIO0 (boot strap) default state & \multicolumn{4}{L{5.0cm}|}{Weak pull-up; high = SPI boot (normal), low = download boot} & & 13 to 14, 27 \\
 \hline
 ESD rating, HBM & & & \num{2000} & \si{\volt} & $\pm$, either polarity & 47 \\
 \hline
@@ -129,41 +123,32 @@ GPIO internal weak pull-up/down (each) & & \num{45} & & \si{\kilo\ohm} & & 27 \\
 \end{longtable}
 }
 
-\paragraph{Not specified in this module datasheet.} Brown-out/POR
-threshold for VDD33 undervoltage detection, any GPIO absolute
-maximum voltage beyond the recommended \(V_{IH}\) maximum
-(\(V_{DD}+0.3\)~V), any aggregate limit on total GPIO current summed
-across pins, and any characterization of \(V_{OL}\) or \(V_{OH}\) at
-a defined load current. The first two live in the ESP32-S3 chip-level
-datasheet, which this module document references but does not
-reproduce; the load-current behavior of the output stage is addressed
-by assumption in \cref{sec:esp32-bcd}.
+\paragraph{Data not specified.} The module datasheet does not give the VDD33
+brownout or power-on-reset threshold. It does not give a GPIO absolute-maximum
+voltage other than the recommended \(V_{DD}+0.3\)~V limit. It also gives no
+aggregate GPIO-current limit. It does not characterize \(V_{OL}\) or \(V_{OH}\)
+at a specified load current. The chip-level datasheet contains some of these
+values. \Cref{sec:esp32-bcd} states the inferred output-stage resistance.
 
-\paragraph{GPIO pins are not tolerant of voltages above the supply.} The
-recommended input maximum is \(V_{DD}+0.3\)~V, the same ceiling as VDD33's
-own absolute maximum, so a pin driven above roughly \SI{3.6}{\volt} forward-biases
-its clamp structure into the supply rail. This governs every external
-interface the module presents and is the requirement
-\cref{sec:esp32-uart} exists to satisfy.
+\paragraph{GPIO overvoltage.} The recommended input maximum is
+\(V_{DD}+0.3\)~V. A voltage above approximately \SI{3.6}{\volt} can forward-bias
+the input clamp (inferred). This limit applies to each external interface.
+\Cref{sec:esp32-uart} supplies the necessary isolation.
 
-\paragraph{The regulator must tolerate the full Wi-Fi TX transient,
-not just steady-state draw.} Espressif's stated minimum external
-supply-current capability (\(\geq\)0.5~A) follows from the 355~mA
-Wi-Fi TX peak plus margin; a converter sized only for the module's
-idle/modem-sleep current (tens of mA) would brown out during a
-transmit burst. \Cref{sec:3v3-converter} sizes the 3.3~V rail against
-this requirement.
+\paragraph{Supply-current requirement.} Espressif requires an external supply
+that can supply at least \SI{0.5}{\ampere}. The maximum specified Wi-Fi transmit
+current is \SI{355}{\milli\ampere}. A supply sized only for idle current can
+cause an undervoltage during transmission. \Cref{sec:3v3-converter} uses the
+\SI{0.5}{\ampere} requirement.
 
 \subsection{Logic buffer}
 \label{sec:lvc1g17}
 
-The serial interface of \cref{sec:esp32-uart} requires a single-gate
-non-inverting buffer with an overvoltage-tolerant Schmitt-trigger input, a
-push-pull output, and specified partial-power-down behavior. Source for the
-class figures below: \texttt{74LVC1G17.pdf} (Nexperia, Rev.\ 16.1,
-September 2024). Figures are quoted at the \(V_{CC}=3.0\)~V characterization
-point, the nearest tabulated point at or below this design's 3.3~V rail, over
-the \SIrange{-40}{85}{\celsius} range.
+The serial interface needs a single-gate noninverting buffer. It must have an
+overvoltage-tolerant Schmitt input and a push-pull output. It must also specify
+partial-power-down operation. Source: \texttt{74LVC1G17.pdf}, Nexperia Rev.
+16.1, 2024-09. The table uses the \(V_{CC}=3.0\)~V data across
+\SIrange{-40}{85}{\celsius}.
 
 {\footnotesize
 \begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.4cm}|c|}
@@ -230,30 +215,24 @@ ESD rating, CDM & \num{1000} & & & \si{\volt} & JS-002 class C3 & 1 \\
 \end{longtable}
 }
 
-Four of these figures are the ones the interface depends on, and a substitute
-part must hold all four: an input recommended to \SI{5.5}{\volt}
-independent of \(V_{CC}\); a power-down leakage specified with
-\SI{5.5}{\volt} applied to either terminal at \(V_{CC}=0\), which is what
-closes the back-drive path into an unpowered board; Schmitt-trigger
-thresholds with hysteresis; and a push-pull output.
+A substitute buffer must meet four requirements. Its input must accept
+\SI{5.5}{\volt} independently of \(V_{CC}\). It must specify power-off leakage
+with \SI{5.5}{\volt} on each terminal. It must have a Schmitt input. It must
+have a push-pull output.
 
-\paragraph{Input tolerance and output tolerance are not symmetric.} The input
-is recommended to \SI{5.5}{\volt} in all supply states. The output is
-recommended only to \(V_{CC}\) while the part is powered, and to
-\SI{5.5}{\volt} only when \(V_{CC}=0\). An output driven above its own supply
-while the part is running forward-biases into the supply rail, which is why
-the outbound line of \cref{sec:esp32-uart} carries a series resistor and the
-inbound line does not.
+\paragraph{Input and output tolerance.} The input accepts \SI{5.5}{\volt} in
+all supply states. During operation, the output accepts only voltages to
+\(V_{CC}\). It accepts \SI{5.5}{\volt} only when \(V_{CC}=0\). A driven output
+above \(V_{CC}\) can conduct into the supply (inferred). Therefore, the outbound
+line has a series resistor. The inbound line does not need one.
 
 \subsection{BCD drive interface}
 \label{sec:esp32-bcd}
 
-Sixteen GPIOs drive the four decoder/drivers' BCD inputs, four per package.
-The MCU runs at \SIrange{3.0}{3.6}{\volt} and the drivers are 5~V TTL parts
-(\cref{sec:bcd-driver}), so both logic levels must be checked in the
-driving direction. The checks below use the MCU's own recommended supply
-minimum, \SI{3.0}{\volt}, which sits below anything the 3.3~V rail reaches, so
-the result holds anywhere in the module's specified supply window.
+Sixteen GPIOs drive the BCD inputs, with four GPIOs for each driver. The MCU
+supply spans \SIrange{3.0}{3.6}{\volt}. The drivers use 5~V TTL input levels.
+Thus, both logic levels require verification. The checks use the
+\SI{3.0}{\volt} minimum MCU supply.
 
 \paragraph{High level.} The MCU must hold a driver input above the TTL
 \(V_{IH}\) of \SI{2.0}{\volt} while sourcing that input's high-level current,
@@ -262,13 +241,11 @@ at most \SI{80}{\micro\ampere} on the B, C, and D inputs:
   V_{OH} &\geq 0.8\,V_{DD} = 0.8\times\SI{3.0}{\volt} = \SI{2.40}{\volt}
   \quad\text{against}\quad V_{IH} = \SI{2.0}{\volt},
 \end{align*}
-a \SI{0.40}{\volt} margin at the supply floor, widening to
-\SI{0.64}{\volt} at \SI{3.3}{\volt}. The \(V_{OH}\) figure is specified into a
-high-impedance load; \SI{80}{\micro\ampere} is \(0.2\,\%\) of the pin's
-\SI{40}{\milli\ampere} source rating, so the specification applies without
-correction. This is the direction that fails in general when 3.3~V logic
-drives 5~V parts, and it passes here only because TTL thresholds are
-referenced to fixed voltages rather than to a fraction of the 5~V supply.
+The margin is \SI{0.40}{\volt} at minimum supply. It increases to
+\SI{0.64}{\volt} at \SI{3.3}{\volt}. The \(V_{OH}\) specification uses a
+high-impedance load. The driver draws at most \SI{80}{\micro\ampere}, which is
+$0.2\,\%$ of the GPIO source-current rating. Thus, the interface meets the
+fixed TTL high-level threshold.
 
 \paragraph{Low level.} The MCU must hold a driver input below the TTL
 \(V_{IL}\) of \SI{0.8}{\volt} while sinking that input's low-level current, at
@@ -280,13 +257,11 @@ on the pin's effective pull-down impedance:
   R_{\mathrm{pd}} &\leq \frac{\SI{0.8}{\volt}}{\SI{3.2}{\milli\ampere}}
     = \SI{250}{\ohm}.
 \end{align*}
-\emph{Assumption:} the pin's \SI{28}{\milli\ampere} sink rating implies a
-pull-down impedance far below that bound. Reading the rating pessimistically,
-as the pin only just meeting its \(0.1\,V_{DD}\) output specification at the
-full rated sink current, gives \(0.30/0.028 \approx \SI{11}{\ohm}\) and a
-low-level output of \SI{35}{\milli\volt} at \SI{3.2}{\milli\ampere}, an order
-of magnitude inside the requirement. The interface is not sensitive to this
-assumption: it survives any pull-down impedance up to \SI{250}{\ohm}.
+The \SI{28}{\milli\ampere} sink rating implies an effective pull-down
+resistance below this limit (inferred). If the pin gives \(0.1\,V_{DD}\) at the
+rated current, the resistance is approximately \SI{11}{\ohm}. It then gives
+approximately \SI{35}{\milli\volt} at \SI{3.2}{\milli\ampere}. The interface
+accepts any pull-down resistance to \SI{250}{\ohm}.
 
 \paragraph{Aggregate low-level current.} Worst case, all sixteen lines low:
 \begin{align*}
@@ -303,28 +278,23 @@ rating is unremarkable; the module datasheet publishes no aggregate GPIO
 current limit against which to check the \SI{44.8}{\milli\ampere} total, so
 none is claimed.
 
-\paragraph{Cathode order is a firmware table.} The decoder's ten outputs are
-not wired to the tube cathodes in numerical order. The K155ID1's outputs
-emerge around its package in an order unrelated to the IN-12B's cathode order
-around its pin circle, so a straight-through mapping would force crossings
-that the spacing required between cathodes at the anode rail voltage cannot
-absorb on two layers. Each cathode is wired instead to whichever output the
-layout reaches most directly, and firmware applies a per-tube permutation from
-displayed digit to BCD code. The permutation is read from the schematic, and the
-four digit positions do not necessarily share one table.
+\paragraph{Cathode mapping.} The decoder outputs do not connect to cathodes in
+numeric order. A numeric connection order would cause excessive trace crossings
+on a two-layer board. Therefore, each cathode connects to the most direct driver
+output. Firmware uses a mapping table for each tube. Read each mapping from the
+schematic. The four tubes can have different mappings.
 
-\paragraph{Interface state before firmware runs.} MCU GPIOs are
-high-impedance from reset until firmware configures them, leaving the driver
-inputs floating. A floating TTL input reads high, so all four BCD inputs read
-as binary 1111, which the decoder maps to an all-outputs-off state
-(\cref{sec:bcd-driver}), leaving the tubes blank. Floating inputs are
-noise-sensitive and the displayed state
-during this window is not guaranteed, but no state the decoder can reach
-exceeds a rating, and the window closes when firmware drives the lines.
+\paragraph{State before firmware operation.} MCU GPIOs are high impedance after
+reset. Thus, the driver inputs float until firmware configures them. A floating
+TTL input usually reads high (inferred). Binary 1111 turns all decoder outputs
+off. Noise can change this state. However, all reachable decoder states are
+electrically safe. Firmware then drives the inputs to defined levels.
 
-\paragraph{GPIO count.} Nineteen GPIOs are required: sixteen for the BCD
-inputs, two for the serial port (\cref{sec:esp32-uart}), and one input for
-power-good (\cref{sec:esp32-pgood}). Assignment must avoid holding any
+\paragraph{GPIO count.} Twenty-five GPIOs are required: sixteen BCD outputs,
+two serial signals, one power-good input, one display-inhibit output, one USB
+switch output, three HPI signals, and one port-controller fault input. The
+native USB D+ and D$-$ pins are additional dedicated peripheral pins.
+Assignment must avoid holding any
 boot-strapping pin at a level that selects an unintended boot mode through
 the \SI{3}{\milli\second} strapping hold time after reset release. The count is
 far below the module's available pins, so the constraint is on which pins are
@@ -339,149 +309,85 @@ adapter. The header's supply pin feeds the 3.3~V converter's input and is
 treated in \cref{sec:3v3-diodeor}; this subsection covers the two signal
 lines.
 
-\paragraph{The adapter population sets the signal requirement.}
-USB-to-serial adapters ship with signaling referenced either to
-3.3~V or to 5~V, and on the common bridge families that selection is not
-independent of the supply pin's setting. The MCU's pins are not tolerant above
-\(V_{DD}+0.3\)~V (\cref{sec:esp32}), so an adapter signaling at 5~V drives a
-GPIO roughly \SI{1.4}{\volt} past its recommended maximum. Neither a series
-resistor nor any choice of power topology addresses this: the adapter's
-transmit line reaches the MCU pin directly, and a resistor bounds the
-resulting clamp current without bringing the pin voltage back inside its
-rating. The requirement is therefore that no external signal reach an MCU pin
-directly.
+\paragraph{Adapter signal voltage.} USB-to-serial adapters can use 3.3~V or 5~V
+signals. A 5~V signal exceeds the MCU input limit by approximately
+\SI{1.4}{\volt}. A series resistor limits clamp current but does not limit pin
+voltage. Therefore, no external adapter signal can connect directly to an MCU
+pin.
 
 \paragraph{Buffers.} Both lines pass through 74LVC1G17-class buffers
 (\cref{sec:lvc1g17}): U502 inbound from the header to the MCU, U503 outbound
-from the MCU to the header. Both take their supply from the 3.3~V rail, a
-requirement the first item below derives. Together they satisfy the requirement
-in both directions:
+from the MCU to the header. Both use the 3.3~V supply.
 \begin{itemize}[nosep]
-  \item \textbf{Inbound.} The part specifies its input and output ranges
-    independently. The input is recommended to \SI{5.5}{\volt} whatever the
-    supply is, carrying no $V_{CC}$ term at all, while the output is recommended
-    only to $V_{CC}$ and has a clamp current specified above it
-    (\cref{tab:lvc1g17}). Overvoltage tolerance is therefore a property of the
-    input structure, present at any supply in range, and the supply's only
-    effect is to set the output level.
-    That asymmetry is what makes the part a translator, and it makes the supply
-    rail the whole of the design decision: at \SI{3.3}{\volt}, a 5~V-signaling
-    adapter is inside specification at the input, and the MCU pin cannot see
-    more than \SI{3.3}{\volt} whatever the adapter presents. Supplying the same
-    part from 5~V would add nothing at the input, which was already
-    \SI{5.5}{\volt} capable, and would put 5~V on a pin recommended to
-    $V_{DD}+\SI{0.3}{\volt}$, which is the failure this subsection exists to
-    prevent, and without even the current limiting a bare series resistor
-    would provide.
+  \item \textbf{Inbound.} The input accepts up to \SI{5.5}{\volt} for any
+    permitted supply voltage. The output is limited to $V_{CC}$
+    (\cref{tab:lvc1g17}). A \SI{3.3}{\volt} supply converts 5~V adapter signals
+    to MCU-compatible levels.
   \item \textbf{Outbound.} U503 isolates the MCU's transmit pin from the
-    connector entirely, so a miswired or reversed cable reaches a buffer
-    rather than the module.
+    connector. A wiring fault reaches the buffer output.
   \item \textbf{Unpowered board.} The buffers' power-off leakage is
     \SI{2}{\micro\ampere} with \SI{5.5}{\volt} on either terminal at
-    \(V_{CC}=0\), so signals driven into an unconnected board cannot
-    back-charge the 3.3~V rail through the interface. This is the failure a
-    bare series resistor leaves open, and it is why the partial-power-down
-    specification is a selection requirement.
+    \(V_{CC}=0\). This limits current into the unpowered 3.3~V rail.
   \item \textbf{Signal integrity.} The Schmitt-trigger input tolerates the
-    slow, noisy edges an arbitrary length of user-supplied cable presents;
-    hysteresis is at least \SI{0.31}{\volt} at \SI{3.0}{\volt} supply.
-    Propagation delay is at most \SI{5.5}{\nano\second}, two orders of
-    magnitude below a bit period at the 921600~baud rate flashing tools
-    commonly use.
+    cable edges. Hysteresis is at least \SI{0.31}{\volt} at a
+    \SI{3.0}{\volt} supply. Maximum propagation delay is
+    \SI{5.5}{\nano\second}.
 \end{itemize}
-The buffers also place their own \SI{2}{\kilo\volt} human-body-model rating
-between the connector and the module. Each buffer takes a local
-\SI{100}{\nano\farad} supply decoupling capacitor (C504, C505), standard
-practice for a logic package.
+Each buffer has a \SI{2}{\kilo\volt} human-body-model rating. Use a local
+\SI{100}{\nano\farad} supply capacitor for each buffer.
 
-\paragraph{Idle-state pull-ups.} A CMOS input left floating drifts across its
-threshold, drawing crossover current and producing indeterminate output.
-U502's input floats whenever no adapter is attached, and U503's input floats
-while the MCU is in reset, so both are pulled to the 3.3~V rail: R502 on the
-header side of U502, R504 on the MCU side of U503. The serial idle state is
-high, so this also presents a valid idle line to any receiver that is
-listening. The pull-up must hold its input above the
+\paragraph{Idle-state pull-ups.} Pull both buffer inputs up to the 3.3~V rail.
+R502 controls U502. R504 controls U503. This produces the high serial idle
+state. Each pull-up must hold its input above the
 \SI{1.71}{\volt} worst-case positive-going threshold against the input's
 \SI{1}{\micro\ampere} leakage, bounding it at
-\((3.0-1.71)/\SI{1}{\micro\ampere} \approx \SI{1.3}{\mega\ohm}\); it must also
-not burden whatever drives the line low. \SI{10}{\kilo\ohm} sits two orders of
-magnitude inside the upper bound and draws \SI{330}{\micro\ampere} when the
-line is pulled low. Specification: $R502 = R504 = \SI{10}{\kilo\ohm}$.
+\((3.0-1.71)/\SI{1}{\micro\ampere}\approx\SI{1.3}{\mega\ohm}\). Set
+$R502=R504=\SI{10}{\kilo\ohm}$. Each resistor draws
+\SI{330}{\micro\ampere} when its line is low.
 
-\paragraph{Outbound series resistor.} U503's output is exposed at the
-connector, and unlike its input it is recommended only to \(V_{CC}\) while
-powered (\cref{sec:lvc1g17}). Two fault cases bound it. Shorted to ground, the
-output current must stay inside the \SI{50}{\milli\ampere} rating; targeting
-half of that for margin gives
+\paragraph{Outbound series resistor.} U503's output connects to the header.
+Limit a ground-short current to \SI{25}{\milli\ampere}:
 \begin{align*}
   R_{503} &\geq \frac{\SI{3.3}{\volt}}{\SI{25}{\milli\ampere}}
     = \SI{132}{\ohm}.
 \end{align*}
-Driven externally to 5~V, the output clamps near \(V_{CC}+0.5 =
-\SI{3.8}{\volt}\) and the same resistor holds the clamp current to
-\((5-3.8)/\SI{150}{\ohm} = \SI{8}{\milli\ampere}\), a sixth of the
-\SI{50}{\milli\ampere} clamping rating. Against signal integrity,
-\SI{150}{\ohm} into a generous \SI{50}{\pico\farad} of connector and cable
-capacitance gives \SI{7.5}{\nano\second}, immaterial at any serial rate.
-Specification: $R503 = \SI{150}{\ohm}$.
+An external \SI{5}{\volt} drive produces \SI{8}{\milli\ampere} of clamp
+current through \SI{150}{\ohm}. The clamp-current rating is
+\SI{50}{\milli\ampere}. Set $R503=\SI{150}{\ohm}$.
 
-\paragraph{Level compatibility at the adapter.} U503 drives through R503 into
-the adapter's receive input. At the buffer's \SI{100}{\micro\ampere}
-light-load specification the output sits within \SI{0.1}{\volt} of the 3.3~V
-rail, and the series resistor drops nothing measurable into a logic input's
-leakage, so the adapter sees close to \SI{3.2}{\volt}. Adapters in this class
-present TTL-referenced inputs, whose \SI{2.0}{\volt} high-level threshold it
-clears with margin. An adapter presenting CMOS thresholds referenced to a 5~V
-supply would require \(0.7\times 5 = \SI{3.5}{\volt}\) and would not be
-driven reliably; this is a constraint on adapter selection, satisfied by the
-TTL-level adapters the interface targets.
+\paragraph{Adapter input level.} U503 supplies at least approximately
+\SI{3.2}{\volt} at light load. The adapter must have a TTL-compatible input
+threshold. A 5~V CMOS input can require \SI{3.5}{\volt} and is not compatible.
 
-\paragraph{Resulting requirement on the adapter.} Signaling level is
-unconstrained: 3.3~V and 5~V adapters are both in specification, in both
-directions. What remains is that the adapter present TTL-compatible input
-thresholds, as above, and the supply-pin requirements derived in
-\cref{sec:3v3-diodeor}.
+\paragraph{Adapter requirement.} The interface accepts 3.3~V and 5~V adapter
+signals. The adapter input must have TTL-compatible thresholds. Its supply pin
+must also meet \cref{sec:3v3-diodeor}.
 
 \subsection{Native USB}
 \label{sec:esp32-usb}
 
-The module brings out the ESP32-S3's own USB pins, which its USB Serial/JTAG
-peripheral drives without external silicon. Routed to the Type-C receptacle
-through the switch of \cref{sec:pd-data}, they carry firmware download, console
-and debug over the same connector that powers the board, and they do so at a
-point in the sequence where the serial header cannot: \cref{sec:pd-sequence}
-brings the MCU up on any source, including a host port that offers nothing but
-\SI{5}{\volt}.
+The ESP32-S3 USB Serial/JTAG peripheral connects to the USB-C receptacle through
+the switch in \cref{sec:pd-data}. It supports firmware download, console, and
+debug functions. The MCU can start from a \SI{5}{\volt} host port.
 
-The link is full speed. The Serial/JTAG controller is a ``USB Full-speed
-device'' (\ds{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}{22}), and the
-chip's other USB block is a full-speed OTG interface
-(\ds{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}{21}); there is no
-high-speed transceiver on the part. The pair therefore runs at
-\SI{12}{\mega\bit\per\second}, which is the fact \cref{sec:pd-data} rests on when
-it puts the controller and the MCU on one pair: at high speed the controller's
-pin capacitance alone would exceed the whole budget.
+The link uses USB full speed. Both USB blocks support full speed only
+(\ds{esp32-s3-wroom-1\_wroom-1u\_datasheet\_en.pdf}{21,22}). Thus, the data rate
+is \SI{12}{\mega\bit\per\second}. \Cref{sec:pd-data} uses this limit when it
+connects the controller and MCU to one pair. The circuit cannot support USB high
+speed because the controller pin capacitance exceeds that interface budget.
 
-This path does not displace the serial header of \cref{sec:esp32-uart}. The two
-answer different needs. The header works with the module out of any system
-context, needs nothing of the front end, and survives firmware that has
-reconfigured or disabled the USB peripheral; native USB needs a working
-front end and a running peripheral, and gives in exchange a single cable.
+The serial header remains available when native USB is disabled. Native USB
+requires an operating input stage and USB peripheral.
 
-\paragraph{The pins take no buffers.} \Cref{sec:esp32-uart} requires that no
-external signal reach an MCU pin directly, and derives buffers from it, because
-an arbitrary USB-to-serial adapter may signal at 5~V. That reasoning does not
-transfer. USB~2.0 is a bidirectional half-duplex pair driven to the MCU's own
-rail, so there is no level to translate and no direction a unidirectional buffer
-could take. What the pins need is protection against the connector, which
-\cref{sec:pd-esd} places at the receptacle.
+\paragraph{USB buffers.} Do not add logic buffers to D+ or D$-$. USB~2.0 uses
+a bidirectional pair at the MCU logic level. \Cref{sec:pd-esd} specifies the
+connector ESD protection.
 
-\paragraph{The pins glitch at power-up.} Both are driven high twice while the
-chip starts, for about \SI{60}{\micro\second} each, inside windows of
-\SI{3.2}{\milli\second} and \SI{2}{\milli\second}, per the schematic checklist
-of Espressif's hardware design guidelines. The switch of \cref{sec:pd-data} is
-open through that interval and holds the glitches on the MCU's side of itself,
-which is a second reason its unpowered state must be the open one.
+\paragraph{Power-up pulses.} During start-up, both pins have two high pulses.
+Each pulse is approximately \SI{60}{\micro\second}. They occur in
+\SI{3.2}{\milli\second} and \SI{2}{\milli\second} windows. The switch in
+\cref{sec:pd-data} stays open during this interval. It isolates the pulses from
+the receptacle.
 
 \paragraph{Switch control.} One GPIO drives the data switch's enable. Two
 requirements bound which pin it may be:
@@ -494,74 +400,50 @@ requirements bound which pin it may be:
     interval in which firmware is not driving it. The controller owns the pair
     at attach and must keep owning it until the MCU deliberately takes it.
 \end{itemize}
-The same reasoning governs the display inhibit of \cref{sec:hv-inhibit}, whose
-gate pull-down holds the tubes dark under exactly the same conditions. Both are
-outputs whose safe state is the one a high-impedance pin produces, and both are
-therefore assigned from the module's general-purpose pins.
+Assign the switch control and display inhibit to general-purpose pins. Their
+external resistors set safe states while the pins are high impedance.
 
 \subsection{Power-good input}
 \label{sec:esp32-pgood}
 
-The flyback controller's PGOOD pin is open-drain, pulled up by \des{R}{HVPG} to this
-rail and sized in \cref{sec:hv-house-pgood}; an MCU GPIO configured as an
-input reads the same node. The pin releases to high impedance when the
-flyback's output is good and its supply and undervoltage-lockout conditions
-are met, and pulls low otherwise (\ds{lm5156h.pdf}{25}), so the node reads high
-for power-good.
+The flyback PGOOD output is open-drain. \des{R}{HVPG} pulls it up to the 3.3~V
+rail (\cref{sec:hv-house-pgood}). An MCU GPIO reads the node. PGOOD releases
+when the flyback output, supply, and UVLO conditions are valid
+(\ds{lm5156h.pdf}{25}).
 
-Both levels clear the MCU's input thresholds. High: with the pin released, the
-node sits at the rail less the drop across \des{R}{HVPG} from the GPIO's input leakage,
-which is negligible against \SI{100}{\kilo\ohm}, so effectively \(V_{DD}\)
-against a \(V_{IH}\) of \(0.75\,V_{DD}\). Low: the controller sinks the
-pull-up current, \SI{33}{\micro\ampere}, at a saturation voltage far below the
-\(0.25\,V_{DD}\) input threshold. If the GPIO's internal
-\SI{45}{\kilo\ohm} pull-up is left enabled it parallels \des{R}{HVPG} to
-\SI{31}{\kilo\ohm} and raises the sink current to
-\SI{106}{\micro\ampere}, still two orders of magnitude inside the controller's
-\SI{1}{\milli\ampere} sink limit, so the interface is correct whether or not
-firmware disables it.
+The high level is approximately \(V_{DD}\). The input threshold is
+\(0.75\,V_{DD}\). The controller sinks \SI{33}{\micro\ampere} for a low level.
+If the MCU pull-up is enabled, the sink current rises to
+\SI{106}{\micro\ampere}. The controller sink limit is
+\SI{1}{\milli\ampere}.
 
-The signal's only consumer is powered by the same rail as its pull-up, so it
-is valid whenever anything is running to read it, and the load it places on
-the 3.3~V rail (\SI{33}{\micro\ampere}, and only during start-up and fault
-windows) is four decades under the rail's design load.
+The MCU and pull-up use the same supply. Thus, the signal cannot drive an
+unpowered MCU. The pull-up draws \SI{33}{\micro\ampere} during start-up and
+fault conditions.
 
 \subsection{Reset and boot configuration}
 \label{sec:esp32-reset}
 
-The module requires EN held below its \(0.25\,V_{DD}\) threshold while the
-supply ramps and released afterward (\cref{sec:esp32}). Espressif's reference
-network answers that with an RC delay, a pull-up to the rail against a
-capacitor to ground, which approximates the requirement with a fixed interval.
-This design measures the rail directly: the 3.3~V converter's power-good output
-drives this node (\cref{sec:3v3-house}), already terminated by
-\des{R}{3V3PG}, its own \SI{100}{\kilo\ohm} pull-up.
+EN must stay below \(0.25\,V_{DD}\) while the supply rises
+(\cref{sec:esp32}). The Espressif reference circuit uses an RC delay. This
+design uses the 3.3~V converter power-good output instead
+(\cref{sec:3v3-house}). \des{R}{3V3PG}, a \SI{100}{\kilo\ohm} resistor,
+pulls up the node.
 
-The substitution is exact, and it holds because the
-node cannot outrun the rail that feeds it. EN is pulled up to the converter's
-own output, so it can only rise as that output does, and PG holds it at ground
-until the output passes \SI{94.5}{\percent} of its programmed value. EN is
-therefore low across the whole ramp by construction, and released at the moment
-the rail is measurably good. No separate pull-up is needed: \des{R}{3V3PG}
-terminates PG because PG is open-drain, and the same resistor is what returns
-EN high. Steady-state current is the \SI{33}{\micro\ampere} that resistor
-carries only while PG is asserted.
+EN connects to the converter output through \des{R}{3V3PG}. Therefore, EN
+cannot rise faster than the supply. PG holds EN low until the output exceeds
+\SI{94.5}{\percent} of its programmed value. It then releases EN. No second
+pull-up is necessary. PG sinks \SI{33}{\micro\ampere} while it is asserted.
 
-Supervision comes with it at no cost. If the rail later falls below
-\SIrange{90}{94.5}{\percent}, PG reasserts and holds the module in reset until
-regulation returns, where an RC network alone would leave it running on a
-collapsing supply.
+If the rail falls below \SIrange{90}{94.5}{\percent}, PG asserts again. It
+holds the module in reset until regulation returns. An RC network cannot give
+this continuous supervision.
 
-\paragraph{The capacitor stays, for a different reason.} \(C503 =
-\SI{100}{\nano\farad}\) to ground is sized for the reset switch, which shorts EN
-to ground mechanically and chatters on release; without capacitance on the node
-each bounce is a reset edge. Against \des{R}{3V3PG} it gives \(\tau =
-\SI{10}{\milli\second}\), long
-enough to swallow the bounce of any tactile switch and too short to shift a
-release PG has already gated. It also gives a
-high-impedance node some immunity to injected noise. The full
-\SI{1}{\micro\farad} of the reference network would serve neither purpose
-better and would slow the switch's own assertion for no return.
+\paragraph{Reset capacitor.} \(C503 = \SI{100}{\nano\farad}\) filters contact
+bounce from the mechanical reset switch. With \des{R}{3V3PG}, it gives a
+\SI{10}{\milli\second} time constant. It also filters noise on the EN node. A
+\SI{1}{\micro\farad} capacitor would slow manual reset assertion without a
+necessary benefit.
 
 Download-mode entry requires GPIO0 held low across a reset release and for the
 \SI{3}{\milli\second} strapping hold time that follows
@@ -573,12 +455,10 @@ not a pull-up.
 
 \subsection{Summary}\label{sec:esp32-summary}
 
-Assumptions carried through this section: the MCU's GPIO pull-down impedance
-is bounded by its \SI{28}{\milli\ampere} sink rating, since no
-load-dependent output voltage is published; connector and cable capacitance
-on a serial line is at most \SI{50}{\pico\farad}; adapters in this class
-present TTL-referenced input thresholds. Each appears at its point of use
-above.
+The analysis uses three inferred values. The MCU GPIO pull-down resistance is
+derived from its \SI{28}{\milli\ampere} sink rating. Serial connector and cable
+capacitance is at most \SI{50}{\pico\farad}. The selected adapter has
+TTL-compatible input thresholds.
 
 {\footnotesize
 \begin{longtable}{|p{0.23\textwidth}|p{0.335\textwidth}|p{0.335\textwidth}|}
@@ -602,11 +482,12 @@ BCD low level & $\leq\SI{0.8}{\volt}$ while sinking
   \SI{3.2}{\milli\ampere}; pin impedance $\leq\SI{250}{\ohm}$ &
   $\approx\SI{11}{\ohm}$ implied by the \SI{28}{\milli\ampere} sink rating \\
 \hline
-BCD aggregate sink & --- & \SI{44.8}{\milli\ampere} from the 5~V rail,
+BCD aggregate sink & Not applicable & \SI{44.8}{\milli\ampere} from the 5~V rail,
   already inside the drivers' $I_{CC}$ \\
 \hline
-GPIO count & 16 BCD $+$ 2 serial $+$ 1 power-good & 19; assignment must
-  clear boot strapping \\
+GPIO count & 16 BCD $+$ 2 serial $+$ 1 power-good $+$ 1 display inhibit $+$
+  1 USB switch $+$ 3 HPI $+$ 1 fault & 25 control, serial, and BCD GPIOs;
+  dedicated native USB pins are additional \\
 \hline
 Serial buffers U502/U503 & input recommended to \SI{5.5}{\volt} at any
   $V_{CC}$; power-off leakage specified at $V_{CC}=0$; Schmitt input;

@@ -1,53 +1,36 @@
 \section{Introduction}
 \label{sec:introduction}
 
-The board exists to drive six cold-cathode gas-discharge indicator
-tubes from a USB-C Power Delivery source: four IN-12B numeric tubes
-forming a HH:MM digit display, and two INS-1 tubes forming a colon
-separator between the hour and minute pairs. Each numeric tube is
-paired one-to-one with a K155ID1 BCD decoder/driver, which
-selects one of ten cathodes per digit under control of an MCU. Every
-other subsystem on the board (the 170~V anode supply, the 5~V rail
-for the decoder/drivers, the 3.3~V rail for the MCU, and the USB-PD
-front end that supplies all three) exists only to put a stable,
-correctly proportioned high voltage across these tubes and to switch
-it through these driver chips. The derivation therefore begins with
-the tubes and drivers: their datasheet ratings set the requirements
-that every upstream converter stage must satisfy.
+The board drives six cold-cathode gas-discharge indicator tubes from a USB-C
+Power Delivery source. Four IN-12B tubes show the hours and minutes. Two INS-1
+tubes make the colon. One K155ID1 BCD decoder/driver controls each numeric
+tube. The MCU commands the driver to select one of ten cathodes.
 
-This document derives those requirements first (\cref{sec:tubes,sec:bcd-driver}),
-then works backward through the 170~V flyback converter that meets
-them (\cref{sec:hv-components,sec:hv-converter}), the 5~V rail that
-powers the decoder/drivers and the 3.3~V rail that powers the MCU
-(\cref{sec:lv-components,sec:5v-converter,sec:3v3-converter}), and
-finally the USB-PD input stage sized to supply all three downstream
-converters.
+The 170~V supply powers the tube anodes. The 5~V supply powers the drivers. The
+3.3~V supply powers the MCU. The USB-PD input stage supplies all three
+converters. Thus, the tube and driver ratings set the requirements for each
+upstream converter.
 
-\paragraph{Method.} Every parameter attributed to a named,
-design-driving component (a Nixie tube, the BCD decoder/driver, the
-flyback controller, the flyback transformer) is transcribed from a
-datasheet on file in \texttt{docs/datasheets/} and cited by filename
-and page. Where a datasheet gives a range, a tolerance, or a specific
-test condition, that context is carried through intact, because the
-converter design in \cref{sec:hv-converter} depends on knowing which
-figures are guaranteed worst cases and which are typical or
-test-condition values.
-\texttt{docs/datasheets/} is the boundary of that treatment: a part
-gets a cited, traceable figure if and only if its datasheet lives
-there, and everything else (resistors, capacitors, standard diodes,
-and any other component the design does not hinge on) is sized to
-ordinary engineering practice instead. Package constraints enter only
-where a single critical part is available in one specific package (for
-example, the flyback transformer or the load-switch dual MOSFET);
-otherwise the analysis stays at the schematic level.
+The analysis first derives the tube and driver requirements
+(\cref{sec:tubes,sec:bcd-driver}). It then derives the 170~V flyback converter
+(\cref{sec:hv-components,sec:hv-converter}). The next sections derive the 5~V
+and 3.3~V supplies
+(\cref{sec:lv-components,sec:5v-converter,sec:3v3-converter}). The last section
+derives the USB-PD input stage.
 
-\paragraph{Construction.} Two build styles coexist. The 170~V converter
-and the tube and driver stages are through-hole wherever a through-hole
-part exists, and prefer the larger body among parts that already meet
-the requirement, so the supply looks of a piece with the tubes it
-drives. The USB-PD front end and the low-voltage rails make no such
-attempt; a USB-C receptacle is anachronistic on this board in any
-case, and those stages follow current surface-mount practice, laid out
-for assembly by the fabricator. Neither preference reaches into the
-derivations that follow. Build style selects only among the parts that
-already satisfy a derived requirement.
+\paragraph{Method.} Each parameter for a critical named component comes from a
+datasheet in \texttt{docs/datasheets/}. Each parameter includes a file and page
+reference. Datasheet ranges, tolerances, and test conditions remain with the
+parameter. These details identify guaranteed limits, typical values, and test
+values.
+
+Parameters without a local datasheet use standard engineering practice. This
+rule applies to common resistors, capacitors, and diodes. Package constraints
+apply only when a critical part is available in one package. Otherwise, the
+analysis applies at the schematic level.
+
+\paragraph{Construction.} The 170~V converter, tube circuits, and driver
+circuits use through-hole parts when possible. Larger parts are preferred when
+multiple parts meet the requirements. The USB-PD circuit and low-voltage
+supplies use surface-mount parts. The assembly supplier installs these parts.
+Construction preferences do not change the derived electrical requirements.

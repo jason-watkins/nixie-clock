@@ -1,20 +1,18 @@
 \section{170~V converter: driving component characteristics}
 \label{sec:hv-components}
 
-The 170~V anode rail is produced by a current-mode flyback built
-around a TI LM51561H controller and a Coilcraft DA2032-AL flyback
-transformer. This section records the datasheet characteristics the
-converter derivation of \cref{sec:hv-converter} draws on; that section
-assigns the designators.
+The 170~V anode supply uses a current-mode flyback converter. Its main parts
+are a TI LM51561H controller and a Coilcraft DA2032-AL transformer.
+\Cref{sec:hv-converter} uses these characteristics and assigns the designators.
 
 \subsection{LM51561H flyback controller}
 \label{sec:lm5156h}
 
-Source: \texttt{lm5156h.pdf} (Texas Instruments, SNVSBV2, Sep.\ 2020). The
-LM5156H and LM51561H share one datasheet, one pinout, and every figure below;
-they differ only in that hiccup mode overload protection is enabled on the
-LM51561H and disabled on the LM5156H (p.~2). \Cref{sec:hv-ss} specifies the
-LM51561H. Pin numbers are those of the 14-pin HTSSOP (PWP) package.
+Source: \texttt{lm5156h.pdf}, Texas Instruments SNVSBV2, 2020-09. The LM5156H
+and LM51561H use the same datasheet and pinout. All table values apply to both
+parts. The LM51561H enables hiccup-mode overload protection. The LM5156H
+disables it (p.~2). \Cref{sec:hv-ss} specifies the LM51561H. Pin numbers apply
+to the 14-pin HTSSOP PWP package.
 
 {\footnotesize
 \begin{longtable}{|L{4.4cm}|c|c|c|c|L{3.8cm}|c|}
@@ -88,7 +86,7 @@ DITHOFF threshold, rising / falling & & \num{1.7} / \num{1.2} & & \si{\volt} & D
 \hline
 Minimum on-time \(t_{ON(MIN)}\) & & \num{50} & & \si{\nano\second} & At \(R_T=9.09\)~k\(\Omega\) (2.2~MHz); \(\approx\)165~ns read from Fig.~8-12 near 150~kHz & 6, 9 \\
 \hline
-Maximum duty cycle \(D_{MAX}\), at \(R_T=9.09\)~k\(\Omega\) & \num{80} & \num{85} & \num{90} & \% & \(V_{BIAS}=4\)~V; frequency-dependent, \(\approx\)91--92\% typ interpolated near 150~kHz & 6 \\
+Maximum duty cycle \(D_{MAX}\), at \(R_T=9.09\)~k\(\Omega\) & \num{80} & \num{85} & \num{90} & \% & \(V_{BIAS}=4\)~V; frequency-dependent, \(\approx\)91 to 92\% typical near 150~kHz (inferred) & 6 \\
 \hline
 Maximum duty cycle \(D_{MAX}\), at \(R_T=220\)~k\(\Omega\) & \num{90} & \num{93} & \num{96} & \% & \(V_{BIAS}=4\)~V; frequency-dependent & 6 \\
 \hline
@@ -102,43 +100,34 @@ RT, SS pin absolute maximum & \num{-0.3} & & \num{3.8} & \si{\volt} & FB is \num
 }
 \footnotetext{Whichever is lower: \(\SI{18}{\volt}\) or \(V_{BIAS}+0.3\)~V.}
 
-\paragraph{Current limit has no slope compensation as designed.} The
-100~mV current-limit threshold is a fixed DC level at the CS pin; the
-datasheet's peak-current-limit equation only subtracts a
-slope-compensation term if the optional external \(R_{SL}\) resistor
-is fitted, and TI recommends omitting it for accurate current
-limiting versus \(V_{IN}\). A separate, always-on slope ramp
-(\(V_{SLOPE}=40\,\text{mV}\times f_{RT}/f_{SYNC}\)) is summed only into
-the regulation (PWM/COMP) comparator, to prevent subharmonic
-oscillation (a different comparator from the current-limit path).
-\Cref{sec:hv-cs} sizes the current-sense resistor against the flat
-100~mV threshold, not a slope-adjusted figure.
+\paragraph{Current-limit slope compensation.} The \SI{100}{\milli\volt}
+current-limit threshold is a fixed DC level at the CS pin. The peak-current
+equation subtracts slope compensation only when optional resistor \(R_{SL}\) is
+installed. TI recommends that the designer omit this resistor for an accurate
+limit across \(V_{IN}\). A separate internal slope ramp enters only the PWM/COMP
+comparator. It prevents subharmonic oscillation. It does not enter the
+current-limit comparator. Thus, \cref{sec:hv-cs} uses the fixed
+\SI{100}{\milli\volt} threshold.
 
-\paragraph{No flyback-specific soft-start formula.} The datasheet
-gives soft-start timing equations for boost and SEPIC topologies only.
-Its own non-isolated flyback reference design (Fig.\ 10--12) wires
-FB/SS/COMP the same way as the boost case, but the boost formula
-assumes an input-to-output pass-through path that a flyback
-transformer does not provide; \cref{sec:hv-ss} therefore derives
-soft-start timing from the SS pin's charging mechanism rather than
-from either published formula. On the LM51561H that timing is a
-functional requirement: the datasheet requires soft start to outlast
-the output's rise, or hiccup trips on every power-up.
+\paragraph{Soft-start formula.} The datasheet gives soft-start equations only
+for boost and SEPIC converters. Its nonisolated flyback example connects
+FB, SS, and COMP as in the boost circuit. However, the boost equation assumes
+an input-to-output conduction path. A flyback transformer has no such path.
+Thus, \cref{sec:hv-ss} derives the time from the SS charging current. The
+LM51561H soft start must continue until the output reaches regulation.
+Otherwise, hiccup protection operates at each start.
 
-\paragraph{EN and UVLO are distinct comparators on one pin.} Pin 14
-(``EN/UVLO/SYNC'') carries two separate thresholds: EN (\(\approx\)0.5~V)
-gates shutdown$\leftrightarrow$standby, and UVLO
-(\(\approx\)1.5~V/1.45~V) gates standby$\leftrightarrow$run. An
-external resistor divider from the input rail to this pin, sized
-against the UVLO threshold and hysteresis current, sets the
-converter's input undervoltage lockout point.
+\paragraph{EN and UVLO comparators.} Pin 14 has separate EN and UVLO
+comparators. The approximately \SI{0.5}{\volt} EN threshold controls shutdown
+and standby. The approximately \SI{1.5}{\volt} rising and
+\SI{1.45}{\volt} falling UVLO thresholds control standby and operation. An
+input divider sets the UVLO voltage. Its design uses the UVLO threshold and
+hysteresis current.
 
-\paragraph{Maximum duty cycle bounds the achievable turns ratio.} The
-frequency-dependent \(D_{MAX}\) limit (interpolated to roughly
-91--92\% typical near 150~kHz) caps how much the transformer's
-reflected voltage can dominate the switching waveform at minimum input
-voltage; \cref{sec:hv-dcm} checks the design's duty cycle against this
-limit.
+\paragraph{Maximum duty cycle.} The frequency-dependent \(D_{MAX}\) is
+approximately \SIrange{91}{92}{\percent} near \SI{150}{\kilo\hertz}
+(inferred). This limit constrains the transformer turns ratio at minimum input
+voltage. \Cref{sec:hv-dcm} checks the design against this limit.
 
 \subsection{DA2032-AL flyback transformer}
 \label{sec:da2032}
@@ -184,18 +173,16 @@ Ambient/storage temperature, tape \& reel & \num{-40} & & \num{80} & \si{\celsiu
 \end{longtable}
 }
 
-Pin assignment: secondary on pins 1 and 12, primary windings on pins
-3--10; dot marks pin 1. No recommended operating frequency range is
-published beyond the 100~kHz condition used for the \(L_P\) and
-interwinding-capacitance measurements; the 150~kHz operating point
-used in this design is not independently characterized in the
-datasheet, and \cref{sec:hv-converter} notes this as an extrapolation.
-No direct saturation current is published either; the datasheet's
-proxy is the ``inductance at \(I_{pk}\)'' figure (\SI{9.0}{\micro\henry}
-min at \SI{3.0}{\ampere}), which this document treats as the effective
-peak-current rating. The isolation ratings (1500~V\textsubscript{rms}
-winding-to-winding, 750~V\textsubscript{rms} winding-to-core) presume
-an isolated application. Tying the secondary return to the primary
-ground forgoes that isolation, and nothing in the datasheet cautions
-against doing so; the windings remain galvanically separate however
-the secondary return is referenced.
+The secondary is on pins 1 and 12. The primary windings are on pins 3 to 10.
+The polarity dot identifies pin 1. The datasheet gives no operating-frequency
+range. It characterizes inductance and interwinding capacitance at
+\SI{100}{\kilo\hertz}. Thus, operation at \SI{150}{\kilo\hertz} is an
+extrapolation (inferred).
+
+The datasheet gives no saturation current. It specifies a minimum inductance
+of \SI{9.0}{\micro\henry} at \SI{3.0}{\ampere}. This analysis uses
+\SI{3.0}{\ampere} as the effective peak-current rating (inferred). The
+isolation ratings assume an isolated circuit. This board connects the
+secondary return to primary ground. This external connection removes circuit
+isolation. The transformer windings remain galvanically separate. The
+datasheet does not prohibit this connection.
