@@ -177,6 +177,7 @@ impl<'a> CommandAndTelemetry<'a> {
             Telemetry::InitAck {
                 version: PROTOCOL_VERSION,
                 firmware_id: env!("NIXIE_FIRMWARE_ID"),
+                built: env!("NIXIE_BUILD_TIMESTAMP"),
             },
         );
         self.connection.write(&reply).await?;
@@ -206,7 +207,7 @@ impl<'a> CommandAndTelemetry<'a> {
                                 self.sequence,
                                 nixie_wire::Telemetry::Log { sequence, frame },
                             );
-                            postcard::to_slice(&msg, buffer).map(|s| s.len()).ok()
+                            nixie_wire::encode(&msg, buffer).map(|f| f.len()).ok()
                         })
                     }
                     .flatten()

@@ -4,6 +4,9 @@ use std::hash::Hasher;
 use std::path::Path;
 use std::path::PathBuf;
 
+use chrono::DateTime;
+use chrono::Utc;
+
 fn main() {
     generate_wifi_credentials();
     generate_build_epoch();
@@ -148,16 +151,19 @@ fn generate_build_epoch() {
     let out = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("build_epoch.rs");
     std::fs::write(out, format!("pub const BUILD_EPOCH_SECS: u64 = {secs};\n")).unwrap();
 
-    let stamp = jiff::Timestamp::from_second(secs as i64).expect("build epoch out of range");
+    let stamp = DateTime::<Utc>::from_timestamp(secs as i64, 0).expect("build epoch out of range");
     println!(
         "cargo:rustc-env=NIXIE_BUILD_DATE={}",
-        stamp.strftime("%Y-%m-%d")
+        stamp.format("%Y-%m-%d")
     );
     println!(
         "cargo:rustc-env=NIXIE_BUILD_TIME={}",
-        stamp.strftime("%H:%M:%S")
+        stamp.format("%H:%M:%S")
     );
-    println!("cargo:rustc-env=NIXIE_BUILD_TIMESTAMP={stamp}");
+    println!(
+        "cargo:rustc-env=NIXIE_BUILD_TIMESTAMP={}",
+        stamp.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
+    );
 }
 
 fn generate_firmware_id() {

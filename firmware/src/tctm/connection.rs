@@ -5,6 +5,7 @@ use embassy_time::with_timeout;
 use embedded_io_async::Read;
 use embedded_io_async::Write;
 use nixie_wire::FRAME_HEADER_SIZE;
+use nixie_wire::MAX_FRAME_SIZE;
 use nixie_wire::MAX_MESSAGE_SIZE;
 use nixie_wire::TCTM_PORT;
 use nixie_wire::ToDevice;
@@ -118,19 +119,15 @@ impl<'a> Connection<'a> {
         let attempted = self
             .socket
             .write_with(|buffer| {
-                if buffer.len() < 2 + MAX_MESSAGE_SIZE {
+                if buffer.len() < MAX_FRAME_SIZE {
                     return (0, None);
                 }
 
-                // TODO: Re-write to use nixie_wire::encode
                 // safety: All branches below this take must return Some to indicate that fill has
                 // been taken.
                 let fill = fill.take().unwrap();
-                match fill(&mut buffer[2..2 + MAX_MESSAGE_SIZE]) {
-                    Some(len) => {
-                        buffer[..2].copy_from_slice(&(len as u16).to_le_bytes());
-                        (2 + len, Some(true))
-                    }
+                match fill(&mut buffer[..MAX_FRAME_SIZE]) {
+                    Some(len) => (len, Some(true)),
                     None => (0, Some(false)),
                 }
             })
@@ -146,10 +143,9 @@ impl<'a> Connection<'a> {
                 // safety: Can take here because only branches that do not call fill inside
                 // write_with return None.
                 let fill = fill.take().unwrap();
-                let mut buffer = [0u8; 2 + MAX_MESSAGE_SIZE];
-                if let Some(len) = fill(&mut buffer[2..2 + MAX_MESSAGE_SIZE]) {
-                    buffer[..2].copy_from_slice(&(len as u16).to_le_bytes());
-                    self.socket.write_all(&buffer[..(2 + len)]).await?;
+                let mut buffer = [0u8; MAX_FRAME_SIZE];
+                if let Some(len) = fill(&mut buffer[..MAX_FRAME_SIZE]) {
+                    self.socket.write_all(&buffer[..len]).await?;
                     Ok(true)
                 } else {
                     Ok(false)

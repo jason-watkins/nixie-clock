@@ -1,0 +1,4 @@
+[cargo]
+allTargets = false
+target = "xtensa-esp32s3-none-elf"
+extraEnv = { RUSTUP_TOOLCHAIN = "esp" }

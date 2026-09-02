@@ -19,6 +19,8 @@ pub const TCTM_PORT: u16 = 2718;
 pub const MAX_MESSAGE_SIZE: usize = 512;
 const _: () = assert!(MAX_MESSAGE_SIZE >= MAX_LOG_FRAME_SIZE as usize + 13);
 
+pub const MAX_FRAME_SIZE: usize = FRAME_HEADER_SIZE + MAX_MESSAGE_SIZE;
+
 /// A command is any payload sent to the device.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -58,6 +60,7 @@ pub enum Telemetry<'a> {
     InitAck {
         version: u16,
         firmware_id: &'a str,
+        built: &'a str,
     },
     /// Sent in reply to commands that generate no other telemetry. The wrapping packet carries the
     /// updated sequence number.
@@ -103,9 +106,13 @@ pub fn encode<'a, T: Serialize>(
     msg: &T,
     buffer: &'a mut [u8],
 ) -> Result<&'a mut [u8], postcard::Error> {
-    let len = postcard::to_slice(msg, &mut buffer[2..])?.len();
-    buffer[..2].copy_from_slice(&u16::to_le_bytes(len as u16));
-    Ok(&mut buffer[..(len + 2)])
+    if buffer.len() < FRAME_HEADER_SIZE {
+        return Err(postcard::Error::SerializeBufferFull);
+    }
+    let end = buffer.len().min(MAX_FRAME_SIZE);
+    let len = postcard::to_slice(msg, &mut buffer[FRAME_HEADER_SIZE..end])?.len();
+    buffer[..FRAME_HEADER_SIZE].copy_from_slice(&u16::to_le_bytes(len as u16));
+    Ok(&mut buffer[..(FRAME_HEADER_SIZE + len)])
 }
 
 /// Gets the length of a packet
@@ -162,5 +169,51 @@ mod tests {
         let bytes = postcard::to_slice(&sent, &mut buf).unwrap();
         let got: ToHost = postcard::from_bytes(bytes).unwrap();
         assert_eq!(got, sent);
+    }
+
+    #[test]
+    fn encode_prepends_little_endian_length() {
+        let msg = ToHost {
+            sequence: 2,
+            payload: Telemetry::Log {
+                sequence: 10,
+                frame: &[0xAA, 0x00],
+            },
+        };
+        let mut buf = [0u8; 64];
+        let frame = encode(&msg, &mut buf).unwrap();
+        assert_eq!(frame, &[0x06, 0x00, 0x02, 0x02, 0x0A, 0x02, 0xAA, 0x00][..]);
+
+        let header: [u8; FRAME_HEADER_SIZE] = frame[..FRAME_HEADER_SIZE].try_into().unwrap();
+        let len = payload_len(header).unwrap();
+        let got: ToHost = postcard::from_bytes(&frame[FRAME_HEADER_SIZE..][..len]).unwrap();
+        assert_eq!(got, msg);
+    }
+
+    #[test]
+    fn encode_rejects_oversize_and_undersize() {
+        // A frame larger than MAX_MESSAGE_SIZE must fail even when the caller's buffer would hold it.
+        let big = [0u8; MAX_MESSAGE_SIZE];
+        let msg = ToHost {
+            sequence: 1,
+            payload: Telemetry::Log {
+                sequence: 1,
+                frame: &big,
+            },
+        };
+        let mut roomy = [0u8; 2 * MAX_FRAME_SIZE];
+        assert!(encode(&msg, &mut roomy).is_err());
+
+        // A buffer that cannot hold the header must fail instead of panicking.
+        let mut tiny = [0u8; FRAME_HEADER_SIZE - 1];
+        assert!(encode(&Command::Reset, &mut tiny).is_err());
+    }
+
+    #[test]
+    fn payload_len_rejects_zero_and_oversize() {
+        assert_eq!(payload_len([0x06, 0x00]), Some(6));
+        assert_eq!(payload_len([0x00, 0x02]), Some(MAX_MESSAGE_SIZE));
+        assert_eq!(payload_len([0x00, 0x00]), None);
+        assert_eq!(payload_len([0x01, 0x02]), None);
     }
 }
