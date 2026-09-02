@@ -30,6 +30,8 @@ _autosave-*
 cad/**/boards/
 cad/case/bodies/
 cad/case/*.step
+cad/ins1-holder/**/*.step
+cad/ins1-holder/**/*.stl
 
 # --- Caches (regenerated automatically) ---
 fp-info-cache
