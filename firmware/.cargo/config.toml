@@ -2,7 +2,7 @@
 runner = "probe-rs run --chip=esp32s3 --preverify --always-print-stacktrace --no-location"
 
 [env]
-DEFMT_LOG="info"
+DEFMT_LOG="warn,nixie_clock=trace"
 
 [build]
 rustflags = [

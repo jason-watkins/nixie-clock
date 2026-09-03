@@ -96,7 +96,5 @@
     "files.associations": {
         "*.FCMacro": "python"
     },
-    "rust-analyzer.server.extraEnv": {
-        "RUSTUP_TOOLCHAIN": "stable"
-    },
+    "rust-analyzer.cargo.allTargets": false,
 }

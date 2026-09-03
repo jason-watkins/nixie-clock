@@ -5,6 +5,7 @@ use chrono::DateTime;
 use chrono::FixedOffset;
 use chrono::Timelike;
 use defmt::info;
+use defmt::trace;
 use defmt::warn;
 use embassy_executor::Spawner;
 use embassy_sync::watch::DynReceiver;
@@ -102,18 +103,22 @@ impl<'a> ClockFace<'a> {
 
     pub async fn write_digits(&mut self, digits: [Option<u8>; 4]) {
         self.m1.write(digits[3]);
+        trace!("M1: {}", digits[3]);
         if self.shown[3] == None {
             Timer::after_millis(25).await;
         }
         self.m10.write(digits[2]);
+        trace!("M10: {}", digits[2]);
         if self.shown[2] == None {
             Timer::after_millis(25).await;
         }
         self.h1.write(digits[1]);
+        trace!("H1: {}", digits[1]);
         if self.shown[1] == None {
             Timer::after_millis(25).await;
         }
         self.h10.write(digits[0]);
+        trace!("H10: {}", digits[0]);
         self.shown = digits;
     }
 

@@ -1,5 +1,7 @@
+use defmt::debug;
 use defmt::error;
 use defmt::info;
+use defmt::trace;
 use defmt::warn;
 use embassy_executor::Spawner;
 use embassy_futures::select::Either;
@@ -111,8 +113,10 @@ impl HvManager {
                     return HvStatus::Off;
                 }
                 Err(TimeoutError) => {
+                    debug!("HV startup timeout");
                     self.en.set_low();
                     if attempt == MAX_ATTEMPTS {
+                        trace!("HV startup giving up");
                         break;
                     }
 
@@ -134,6 +138,7 @@ impl HvManager {
                             return HvStatus::Off;
                         }
                         Err(TimeoutError) => {
+                            trace!("HV startup retry timeout");
                             continue;
                         }
                     }
@@ -152,9 +157,13 @@ impl HvManager {
                     warn!("HV disabled, permission revoked");
                     HvStatus::Off
                 }
-                HvPermission::Granted => HvStatus::Up,
+                HvPermission::Granted => {
+                    trace!("Repeated grant");
+                    HvStatus::Up
+                }
             },
             Either::Second(()) => {
+                debug!("HV PGOOD low");
                 const PGOOD_MAX_GLITCH: Duration = Duration::from_millis(2);
                 if let Ok(_) = with_timeout(
                     PGOOD_MAX_GLITCH,

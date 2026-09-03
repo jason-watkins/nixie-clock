@@ -15,7 +15,6 @@ use super::Request;
 
 const RECONNECT_MIN: Duration = Duration::from_secs(1);
 const RECONNECT_MAX: Duration = Duration::from_secs(10);
-const REBOOT_DELAY: Duration = Duration::from_secs(3);
 const REBOOT_RETRY: Duration = Duration::from_secs(1);
 const REBOOT_GRACE: Duration = Duration::from_secs(20);
 

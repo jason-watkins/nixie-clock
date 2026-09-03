@@ -1,5 +1,7 @@
+use defmt::debug;
 use defmt::error;
 use defmt::info;
+use defmt::trace;
 use defmt::warn;
 use embassy_futures::select::Either;
 use embassy_futures::select::select;
@@ -103,6 +105,7 @@ impl PdManager {
 
     pub async fn run(mut self) -> ! {
         if !self.pd_init().await {
+            error!("Init failed");
             Self::deny();
             status::report(status::PdStatus::Fault);
             core::future::pending::<()>().await;
@@ -110,11 +113,11 @@ impl PdManager {
         }
 
         if let Err(e) = self.sync().await {
-            error!("PD initial negotiation failed: {}", e);
+            error!("Initial negotiation failed: {}", e);
         }
 
         loop {
-            const INT_TIMEOUT: Duration = Duration::from_secs(1);
+            const INT_TIMEOUT: Duration = Duration::from_secs(60);
             match with_timeout(
                 INT_TIMEOUT,
                 select(
@@ -126,7 +129,7 @@ impl PdManager {
             {
                 Ok(Either::First(())) | Err(TimeoutError) => {
                     if let Err(e) = self.sync().await {
-                        error!("PD sync failed: {}", e);
+                        error!("Sync failed: {}", e);
                     }
                 }
                 Ok(Either::Second(())) => {
@@ -191,6 +194,16 @@ impl PdManager {
                 continue;
             }
 
+            debug!("Starting sync");
+            debug!("Current PDO: {}", snapshot.current_pdo);
+            debug!("Current RDO: {}", snapshot.current_rdo);
+            debug!(
+                "Bus Voltage: {}.{:02}",
+                snapshot.bus_voltage_mv / 1000,
+                (snapshot.bus_voltage_mv % 1000) / 10
+            );
+            debug!("{}", snapshot.pd_status);
+
             if matches!(
                 snapshot.charging_mode,
                 ChargingMode::None | ChargingMode::Bc12
@@ -207,6 +220,7 @@ impl PdManager {
             }
 
             let policy = evaluate(&snapshot);
+            debug!("{}", policy);
             match policy {
                 Policy::Deny => Self::deny(),
                 Policy::Grant { .. } => Self::grant(),
@@ -237,7 +251,7 @@ impl PdManager {
                         rdo,
                     } => {
                         info!(
-                            "PD Negotiated {}, success: {}, mismatch: {}",
+                            "Negotiated {}, success: {}, mismatch: {}",
                             rdo, success, mismatch
                         );
                         if !success {
@@ -246,22 +260,26 @@ impl PdManager {
                         }
                     }
                     ContractCompleteNoPayload => {
+                        warn!("ContractCompleteNoPayload")
                         // NOOP
                     }
                     Attach | Overcurrent | Overvoltage | HardReset | SoftReset | GotoMin
                     | RpChange | SourceCapabilities | SourceDisabled | CCOvervoltage => {
-                        warn!("PD Event: {} caused HV deny", event);
+                        warn!("{} caused HV deny", event);
                         Self::deny()
                     }
                     Detach => {
+                        debug!("Detach");
                         self.negotiation_inhibited = false;
                         Self::deny();
                     }
                     AcceptSeen | PsReadySeen | CommandSuccess | SwapCompleted | WaitReceived
                     | NotSupportedReceived => {
+                        debug!("{}", event);
                         // NOOP
                     }
                     QueueOverflow => {
+                        debug!("QueueOverflow");
                         self.reset_interrupts().await?;
                         self.negotiation_inhibited = false;
                     }
@@ -272,14 +290,17 @@ impl PdManager {
                         error!("Command failed with code {:#02x}", code);
                     }
                     DeviceReset => {
+                        debug!("DeviceReset");
                         Self::deny();
                         self.negotiation_inhibited = false;
                         self.hpi.write_event_mask(Self::EVENT_MASK).await?;
                     }
                     Rejected => {
+                        debug!("Rejected");
                         self.negotiation_inhibited = true;
                     }
                     TypeCErrorRecovery => {
+                        debug!("TypeCErrorRecovery");
                         Self::deny();
                         self.negotiation_inhibited = false;
                     }
@@ -288,6 +309,7 @@ impl PdManager {
 
             Timer::after_micros(60).await;
             if self.int_pin.is_high() {
+                trace!("Drained all interrupts");
                 return Ok(());
             }
         }
