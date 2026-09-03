@@ -1,4 +1,6 @@
-use egui_extras::{Column, TableBuilder};
+use egui::Color32;
+use egui::Visuals;
+use egui_extras::Column;
 
 use crate::net::LogEntry;
 
@@ -25,12 +27,16 @@ impl LogColumn {
     pub fn title(self) -> &'static str {
         match self {
             LogColumn::Sequence => "Sequence",
-            LogColumn::HostTime => "HostTime",
-            LogColumn::DeviceTime => "DeviceTime",
+            LogColumn::HostTime => "Host Time",
+            LogColumn::DeviceTime => "Device Time",
             LogColumn::Level => "Level",
             LogColumn::Location => "Location",
             LogColumn::Message => "Message",
         }
+    }
+
+    pub fn bounded(self) -> bool {
+        matches!(self, Self::HostTime | Self::DeviceTime | Self::Level)
     }
 
     pub fn spec(self) -> Column {
@@ -41,22 +47,36 @@ impl LogColumn {
         }
     }
 
-    pub fn text(self, e: &LogEntry) -> String {
+    pub fn text(self, entry: &LogEntry) -> String {
         match self {
-            Self::Sequence => e.sequence.to_string(),
-            Self::HostTime => e.host_timestamp.clone(),
-            Self::DeviceTime => e.device_timestamp.clone().unwrap_or_default(),
-            Self::Level => e
+            Self::Sequence => entry.sequence.to_string(),
+            Self::HostTime => entry.host_timestamp.clone(),
+            Self::DeviceTime => entry.device_timestamp.clone().unwrap_or_default(),
+            Self::Level => entry
                 .level
                 .map(|l| ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"][l as usize])
                 .unwrap_or("UNK")
                 .into(),
-            Self::Location => e
+            Self::Location => entry
                 .location
                 .as_ref()
                 .map(|(m, l)| format!("{m}:{l}"))
                 .unwrap_or_default(),
-            Self::Message => e.text.clone(),
+            Self::Message => entry.text.clone(),
+        }
+    }
+
+    pub fn color(self, entry: &LogEntry, visuals: &Visuals) -> Option<Color32> {
+        match self {
+            Self::Level => match entry.level {
+                Some(0) => Some(visuals.weak_text_color()),
+                Some(1) => Some(Color32::MAGENTA),
+                Some(2) => None,
+                Some(3) => Some(visuals.warn_fg_color),
+                Some(4) => Some(visuals.error_fg_color),
+                _ => Some(visuals.weak_text_color()),
+            },
+            _ => None,
         }
     }
 }

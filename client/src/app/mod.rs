@@ -11,7 +11,6 @@ use egui::Color32;
 use egui::Label;
 use egui::Panel;
 use egui::RichText;
-use egui::ScrollArea;
 use egui::TextEdit;
 use egui::TextStyle;
 use egui_extras::TableBuilder;
@@ -30,6 +29,7 @@ use crate::net::DeviceFirmware;
 use crate::net::Event;
 use crate::net::LogEntry;
 use crate::net::Request;
+use crate::theme;
 
 mod log;
 
@@ -39,6 +39,7 @@ pub struct Settings {
     pub address: String,
     pub autoscroll: bool,
     pub min_level: u8,
+    pub high_contrast_text: bool,
 }
 
 impl Default for Settings {
@@ -47,6 +48,7 @@ impl Default for Settings {
             address: "192.168.19.58:2718".into(),
             autoscroll: true,
             min_level: 1,
+            high_contrast_text: false,
         }
     }
 }
@@ -71,6 +73,7 @@ impl App {
             .storage
             .and_then(|s| eframe::get_value(s, eframe::APP_KEY))
             .unwrap_or_default();
+        theme::apply(&context.egui_ctx, &settings);
         let (requests, events) = net::spawn(context.egui_ctx.clone());
         App {
             settings,
@@ -256,6 +259,12 @@ impl eframe::App for App {
                 }
                 ui.separator();
                 ui.label(format!("{} entries", self.log.len()));
+                ui.separator();
+                if ui.button("Clear").clicked() {
+                    // TODO: Confirmation dialog
+                    self.log.clear();
+                    self.filtered.clear();
+                }
             })
         });
 
@@ -264,6 +273,7 @@ impl eframe::App for App {
             let mut table = TableBuilder::new(ui)
                 .id_salt("log")
                 .striped(true)
+                .resizable(true)
                 .auto_shrink(false)
                 .stick_to_bottom(self.settings.autoscroll);
             for column in LogColumn::ORDER {
@@ -282,10 +292,16 @@ impl eframe::App for App {
                         let entry = &self.log[self.filtered[row.index()]];
                         for column in LogColumn::ORDER {
                             row.col(|ui| {
-                                ui.add(
-                                    Label::new(RichText::new(column.text(entry)).monospace())
-                                        .truncate(),
-                                );
+                                let mut text = RichText::new(column.text(entry)).monospace();
+                                if let Some(color) = column.color(entry, ui.visuals()) {
+                                    text = text.color(color);
+                                }
+                                let label = Label::new(text);
+                                ui.add(if column.bounded() {
+                                    label.extend()
+                                } else {
+                                    label.truncate()
+                                });
                             });
                         }
                     });

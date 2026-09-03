@@ -2,6 +2,7 @@ use chrono::Local;
 use defmt_decoder::Locations;
 use defmt_decoder::Table;
 use egui::Context;
+use std::path::Path;
 use std::sync::mpsc::Sender;
 
 use super::DeviceFirmware;
@@ -37,6 +38,23 @@ impl Link {
     }
 
     pub fn decode(&self, sequence: u32, frame: &[u8]) -> LogEntry {
+        fn short_file(path: &Path) -> String {
+            let s = path.to_string_lossy().replace('\\', "/");
+            const FIRMWARE_ROOT: &'static str = "/firmware/";
+            if let Some(i) = s.find(FIRMWARE_ROOT) {
+                // Our files, e.g. src/tctm/mod.rs
+                return s[i + FIRMWARE_ROOT.len()..].to_owned();
+            }
+            const CRATE_ROOT: &'static str = "/index.crates.io-";
+            if let Some(i) = s.find(CRATE_ROOT) {
+                let from_registry = &s[i + 1..];
+                if let Some((_, rest)) = from_registry.split_once("/") {
+                    return rest.to_owned();
+                }
+            }
+            s
+        }
+
         let host_time = Local::now().format("%H:%M:%S%.3f").to_string();
         let mut d = self.table.new_stream_decoder();
         d.received(frame);
@@ -48,7 +66,7 @@ impl Link {
                 location: self
                     .locations
                     .get(&frame.index())
-                    .map(|l| (l.module.clone(), l.line)),
+                    .map(|l| (short_file(&l.file), l.line)),
                 text: frame.display_message().to_string(),
                 sequence,
             },

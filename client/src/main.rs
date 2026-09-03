@@ -7,6 +7,7 @@ use crate::app::App;
 mod app;
 mod firmware;
 mod net;
+mod theme;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app_name = "nixie_client";
